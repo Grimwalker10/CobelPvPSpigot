@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/CraftBukkit-1.7.iml" filepath="$PROJECT_DIR$/CraftBukkit-1.7.iml" />
+      <module fileurl="file://$PROJECT_DIR$/craftbukkit-api/spigot-api.iml" filepath="$PROJECT_DIR$/craftbukkit-api/spigot-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/craftbukkit-server/spigot-server.iml" filepath="$PROJECT_DIR$/craftbukkit-server/spigot-server.iml" />
+    </modules>
+  </component>
+</project>

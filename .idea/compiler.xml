@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="spigot-server" />
+        <module name="spigot-api" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="bukkit" target="1.6" />
+      <module name="craftbukkit" target="1.8" />
+      <module name="CraftBukkit-1.7" target="1.5" />
+      <module name="craftbukkit-api" target="1.8" />
+      <module name="craftbukkit-server" target="1.8" />
+      <module name="spigot-api" target="1.8" />
+      <module name="spigot-server" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
