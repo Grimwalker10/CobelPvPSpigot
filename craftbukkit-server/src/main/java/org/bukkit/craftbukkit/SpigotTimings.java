@@ -42,6 +42,26 @@ public class SpigotTimings {
     public static final CustomTimingsHandler entityActivationCheckTimer = new CustomTimingsHandler("entityActivationCheck");
     public static final CustomTimingsHandler checkIfActiveTimer = new CustomTimingsHandler("** checkIfActive");
 
+    // Poweruser start
+    public static final HashMap<String, CustomTimingsHandler> packetHandlerTimingMap = new HashMap<String, CustomTimingsHandler>();
+    public static final CustomTimingsHandler timerEntity_C = new CustomTimingsHandler("** livingEntityBaseTick_Entity_C()");
+    public static final CustomTimingsHandler timerEntityInsentient_C = new CustomTimingsHandler("** livingEntityBaseTick_EntityInsentient_C()");
+    public static final CustomTimingsHandler timerEntityLiving_C = new CustomTimingsHandler("** livingEntityBaseTick_EntityLiving_C()");
+    public static final CustomTimingsHandler timerEntity_C_portal = new CustomTimingsHandler("** livingEntityBaseTick_Entity_C()_portal");
+    public static final CustomTimingsHandler connectionTimer_PacketFlying_move = new CustomTimingsHandler("** Connection Handler_PacketFlying_move");
+    public static final CustomTimingsHandler connectionTimer_PacketFlying_playerChunks = new CustomTimingsHandler("** Connection Handler_PacketFlying_airCheck");
+
+    public static CustomTimingsHandler getPacketHandlerTimings(Packet packet) {
+        String packetType = packet.getClass().getSimpleName();
+        CustomTimingsHandler result = packetHandlerTimingMap.get(packetType);
+        if (result == null) {
+            result = new CustomTimingsHandler("** Connection Handler - " + packetType, connectionTimer);
+            packetHandlerTimingMap.put(packetType, result);
+        }
+        return result;
+    }
+    // Poweruser end
+
     public static final HashMap<String, CustomTimingsHandler> entityTypeTimingMap = new HashMap<String, CustomTimingsHandler>();
     public static final HashMap<String, CustomTimingsHandler> tileEntityTypeTimingMap = new HashMap<String, CustomTimingsHandler>();
     public static final HashMap<String, CustomTimingsHandler> pluginTaskTimingMap = new HashMap<String, CustomTimingsHandler>();

@@ -12,6 +12,7 @@ import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
 // CraftBukkit end
 
 // Poweruser start
+import org.bukkit.craftbukkit.SpigotTimings;
 import com.cobelpvp.pathsearch.AsyncNavigation;
 // Poweruser end
 
@@ -117,6 +118,7 @@ public abstract class EntityInsentient extends EntityLiving {
     }
 
     public void C() {
+        SpigotTimings.timerEntityInsentient_C.startTiming(); // Poweruser
         super.C();
         this.world.methodProfiler.a("mobBaseTick");
         if (this.isAlive() && this.random.nextInt(1000) < this.a_++) {
@@ -125,6 +127,7 @@ public abstract class EntityInsentient extends EntityLiving {
         }
 
         this.world.methodProfiler.b();
+        SpigotTimings.timerEntityInsentient_C.stopTiming(); // Poweruser
     }
 
     protected int getExpValue(EntityHuman entityhuman) {

@@ -28,6 +28,11 @@ import org.spigotmc.SpigotCompressor;
 import org.spigotmc.SpigotDecompressor;
 // Spigot end
 
+// Poweruser start
+import org.spigotmc.CustomTimingsHandler;
+import org.bukkit.craftbukkit.SpigotTimings;
+// Poweruser end
+
 public class NetworkManager extends SimpleChannelInboundHandler {
 
     private static final Logger i = LogManager.getLogger();
@@ -190,7 +195,16 @@ public class NetworkManager extends SimpleChannelInboundHandler {
                     continue;
                 }
                 // CraftBukkit end
-                packet.handle(this.o);
+
+                // Poweruser start
+                CustomTimingsHandler packetHandlerTimer = SpigotTimings.getPacketHandlerTimings(packet);
+                packetHandlerTimer.startTiming();
+                try {
+                    packet.handle(this.o);
+                } finally {
+                    packetHandlerTimer.stopTiming();
+                }
+                // Poweruser end
             }
 
             this.o.a();

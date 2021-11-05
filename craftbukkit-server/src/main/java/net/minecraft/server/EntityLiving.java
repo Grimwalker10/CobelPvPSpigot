@@ -162,6 +162,7 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void C() {
+        SpigotTimings.timerEntityLiving_C.startTiming(); // Poweruser
         this.aC = this.aD;
         super.C();
         this.world.methodProfiler.a("livingEntityBaseTick");
@@ -250,6 +251,7 @@ public abstract class EntityLiving extends Entity {
         this.lastYaw = this.yaw;
         this.lastPitch = this.pitch;
         this.world.methodProfiler.b();
+        SpigotTimings.timerEntityLiving_C.stopTiming(); // Poweruser
     }
 
     // CraftBukkit start

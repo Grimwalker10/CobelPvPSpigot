@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.HashSet;
 
+import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
@@ -395,6 +396,8 @@ public class PlayerConnection implements PacketPlayInListener {
                     return;
                 }
 
+                SpigotTimings.connectionTimer_PacketFlying_move.startTiming(); // Poweruser
+
                 float f4 = 0.0625F;
                 boolean flag = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
 
@@ -447,6 +450,9 @@ public class PlayerConnection implements PacketPlayInListener {
                 boolean rayTraceCollision = delta > 0.3 && worldserver.rayTrace(Vec3D.a(this.y, this.z + 1.0, this.q), Vec3D.a(d1, d2 + 1.0, d3), false, true, false) != null;
 
                 this.player.setLocation(calculatedX, calculatedY, calculatedZ, f2, f3);
+
+                SpigotTimings.connectionTimer_PacketFlying_move.stopTiming(); // Poweruser
+
                 if (flag1 || (!this.player.isSleeping() && flag && !flag2) || rayTraceCollision) {
                     if(!rayTraceCollision && !flag && e % 3 != 0) {
                         this.player.setPosition(this.y, this.z, this.q);
@@ -473,7 +479,9 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
 
                 this.player.onGround = packetplayinflying.i();
+                SpigotTimings.connectionTimer_PacketFlying_playerChunks.startTiming(); // Poweruser
                 this.minecraftServer.getPlayerList().d(this.player);
+                SpigotTimings.connectionTimer_PacketFlying_playerChunks.stopTiming(); // Poweruser
                 this.player.b(this.player.locY - d0, packetplayinflying.i());
             } else if (this.e % 20 == 0) {
                 this.a(this.y, this.z, this.q, this.player.yaw, this.player.pitch);

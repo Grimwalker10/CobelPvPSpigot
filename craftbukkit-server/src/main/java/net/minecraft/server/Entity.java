@@ -31,6 +31,10 @@ import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.plugin.PluginManager;
 // CraftBukkit end
 
+// Poweruser start
+import org.bukkit.craftbukkit.SpigotTimings;
+// Poweruser end
+
 public abstract class Entity {
 
     // CraftBukkit start
@@ -271,6 +275,7 @@ public abstract class Entity {
     }
 
     public void C() {
+        SpigotTimings.timerEntity_C.startTiming(); // Poweruser
         this.world.methodProfiler.a("entityBaseTick");
         if (this.vehicle != null && this.vehicle.dead) {
             this.vehicle = null;
@@ -302,7 +307,9 @@ public abstract class Entity {
                             b0 = -1;
                         }
 
+                        SpigotTimings.timerEntity_C_portal.startTiming(); // Poweruser
                         this.b(b0);
+                        SpigotTimings.timerEntity_C_portal.stopTiming(); // Poweruser
                     }
 
                     this.an = false;
@@ -369,6 +376,7 @@ public abstract class Entity {
 
         this.justCreated = false;
         this.world.methodProfiler.b();
+        SpigotTimings.timerEntity_C.stopTiming(); // Poweruser
     }
 
     public int D() {
