@@ -680,6 +680,16 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public void v() {
+        // CobelPvP start - tick connections earlier
+        // We tick the playerList here too so updated
+        // pings are sent out as soon as possible.
+        SpigotTimings.connectionTimer.startTiming(); // Spigot
+        this.ai().c();
+        SpigotTimings.connectionTimer.stopTiming(); // Spigot
+        SpigotTimings.playerListTimer.startTiming(); // Spigot
+        this.u.tick();
+        SpigotTimings.playerListTimer.stopTiming(); // Spigot
+        // CobelPvP end
         this.methodProfiler.a("levels");
 
         SpigotTimings.schedulerTimer.startTiming(); // Spigot
@@ -779,6 +789,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         }
 
         this.methodProfiler.c("connection");
+        // CobelPvP start - move up
+        /*
         SpigotTimings.connectionTimer.startTiming(); // Spigot
         this.ai().c();
         SpigotTimings.connectionTimer.stopTiming(); // Spigot
@@ -786,6 +798,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         SpigotTimings.playerListTimer.startTiming(); // Spigot
         this.u.tick();
         SpigotTimings.playerListTimer.stopTiming(); // Spigot
+        */
+        // CobelPvP end
         this.methodProfiler.c("tickables");
 
         SpigotTimings.tickablesTimer.startTiming(); // Spigot
