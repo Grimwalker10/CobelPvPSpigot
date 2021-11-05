@@ -51,7 +51,7 @@ public class LoginListener implements PacketLoginInListener {
 
     public void disconnect(String s) {
         try {
-            c.info("Disconnecting " + this.getName() + ": " + s);
+            c.info("Disconnecting " + this.i.getName() + ": " + s);
             ChatComponentText chatcomponenttext = new ChatComponentText(s);
 
             this.networkManager.handle(new PacketLoginOutDisconnect(chatcomponenttext), new GenericFutureListener[0]);
@@ -121,7 +121,7 @@ public class LoginListener implements PacketLoginInListener {
     }
 
     public void a(IChatBaseComponent ichatbasecomponent) {
-        c.info(this.getName() + " lost connection: " + ichatbasecomponent.c());
+        c.info((this.i != null ? this.i.getName() : this.networkManager.getSocketAddress()) + " lost connection: " + ichatbasecomponent.c());
     }
 
     public String getName() {

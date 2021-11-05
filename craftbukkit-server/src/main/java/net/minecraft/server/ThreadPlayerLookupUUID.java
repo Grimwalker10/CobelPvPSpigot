@@ -103,7 +103,7 @@ class ThreadPlayerLookupUUID extends Thread {
         }
         // CraftBukkit end
 
-        LoginListener.e().info("UUID of player " + LoginListener.a(this.a).getName() + " is " + LoginListener.a(this.a).getId());
+        //LoginListener.e().info("UUID of player " + LoginListener.a(this.a).getName() + " is " + LoginListener.a(this.a).getId());
         LoginListener.a(this.a, EnumProtocolState.READY_TO_ACCEPT);
     }
 }

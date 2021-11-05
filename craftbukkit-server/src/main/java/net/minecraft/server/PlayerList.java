@@ -211,7 +211,7 @@ public abstract class PlayerList {
         }
 
         // CraftBukkit - Moved from above, added world
-        g.info(entityplayer.getName() + "[" + s1 + "] logged in with entity id " + entityplayer.getId() + " at ([" + entityplayer.world.worldData.getName() + "] " + entityplayer.locX + ", " + entityplayer.locY + ", " + entityplayer.locZ + ")");
+        g.info(entityplayer.getName() + " logged in at (" + entityplayer.world.worldData.getName() + ", " + String.format("%.1f", entityplayer.locX) + ", " + String.format("%.1f", entityplayer.locY) + ", " + String.format("%.1f", entityplayer.locZ) + ")");
     }
 
     public void sendScoreboard(ScoreboardServer scoreboardserver, EntityPlayer entityplayer) { // CraftBukkit - protected -> public
