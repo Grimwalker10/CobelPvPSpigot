@@ -35,11 +35,14 @@ public class FileIOThread implements Runnable {
                 ++this.d;
             }
 
+            // MineHQ - don't sleep
+            /*
             try {
                 Thread.sleep(this.e ? 0L : 10L);
             } catch (InterruptedException interruptedexception) {
                 interruptedexception.printStackTrace();
             }
+            */
         }
 
         if (this.b.isEmpty()) {
