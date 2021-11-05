@@ -1323,11 +1323,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void setRealHealth(double health) {
-        double previous = this.health;
+        double previous = this.health; // CobelPvP
 
         this.health = health;
 
-        Bukkit.getPluginManager().callEvent(new PlayerHealthChangeEvent(this, previous, health));
+        // CobelPvP start
+        if (previous != health) {
+            Bukkit.getPluginManager().callEvent(new PlayerHealthChangeEvent(this, previous, health));
+        }
+        // CobelPvP end
     }
 
     public void updateScaledHealth() {
