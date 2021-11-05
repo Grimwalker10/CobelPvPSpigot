@@ -1245,6 +1245,7 @@ public abstract class World implements IBlockAccess {
             {
                 if ( !this.isChunkLoaded( chunkx, chunkz ) )
                 {
+                    entity.inUnloadedChunk = true; // PaperSpigot - Remove entities in unloaded chunks
                     continue;
                 }
                 int cz = chunkz << 4;
@@ -1609,6 +1610,14 @@ public abstract class World implements IBlockAccess {
         if (!org.spigotmc.ActivationRange.checkIfActive(entity)) {
             entity.ticksLived++;
             entity.inactiveTick();
+            // PaperSpigot start - Remove entities in unloaded chunks
+            if (!this.isChunkLoaded(i, j) && ((entity instanceof EntityEnderPearl && this.paperSpigotConfig.removeUnloadedEnderPearls) ||
+                    (entity instanceof EntityFallingBlock && this.paperSpigotConfig.removeUnloadedFallingBlocks) ||
+                    (entity instanceof EntityTNTPrimed && this.paperSpigotConfig.removeUnloadedTNTEntities))) {
+                entity.inUnloadedChunk = true;
+                entity.die();
+            }
+            // PaperSpigot end
         } else {
             MinecraftServer.getServer().activeEntities++; // Kohi
             entity.tickTimer.startTiming(); // Spigot
