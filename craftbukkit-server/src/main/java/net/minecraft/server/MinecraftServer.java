@@ -592,6 +592,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         long i = System.nanoTime();
 
         ThreadingManager.getTickCounter().increaseTickCounter(); // Poweruser
+        ThreadingManager.startTickTimerTask(); // Poweruser
 
         ++this.ticks;
         if (this.R) {
@@ -652,6 +653,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         org.spigotmc.WatchdogThread.tick(); // Spigot
         SpigotTimings.serverTickTimer.stopTiming(); // Spigot
         this.lastTickTime = (System.nanoTime() - i) / 1000000F;
+        ThreadingManager.cancelTimerTask(this.lastTickTime); // Poweruser
         org.spigotmc.CustomTimingsHandler.tick(); // Spigot
     }
 

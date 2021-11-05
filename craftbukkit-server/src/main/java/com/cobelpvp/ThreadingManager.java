@@ -16,6 +16,7 @@ import java.util.ArrayDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,10 +29,15 @@ public class ThreadingManager {
     private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(1, new NamePriorityThreadFactory(Thread.NORM_PRIORITY + 2, "mSpigot_TimerService"));
     private TickCounter tickCounter = new TickCounter();
 
+    private ScheduledFuture<Object> tickTimerTask;
+    private TickTimer tickTimerObject;
+    private static int timerDelay = 45;
+
     public ThreadingManager() {
         instance = this;
         this.pathSearchThrottler = new PathSearchThrottlerThread(2);
         this.timerService.scheduleAtFixedRate(this.tickCounter, 1, 1000, TimeUnit.MILLISECONDS);
+        this.tickTimerObject = new TickTimer();
     }
 
     public void shutdown() {
@@ -126,5 +132,42 @@ public class ThreadingManager {
 
     public static TickCounter getTickCounter() {
         return instance.tickCounter;
+    }
+
+    public static void startTickTimerTask() {
+        instance.tickTimerTask = instance.timerService.schedule(instance.tickTimerObject, timerDelay, TimeUnit.MILLISECONDS);
+    }
+
+    public static void cancelTimerTask(float tickTime) {
+        if(checkTickTime(tickTime) && instance.tickTimerTask.cancel(false)) {
+            instance.tickTimerObject.tickFinishedEarly();
+        }
+    }
+
+    private static boolean checkTickTime(float tickTime) {
+        if(tickTime > 45.0F) {
+            if(timerDelay > 40) {
+                timerDelay--;
+            }
+        } else {
+            if(timerDelay < 45) {
+                timerDelay++;
+            }
+            return tickTime < 40.0F;
+        }
+        return false;
+    }
+
+    private class TickTimer implements Callable<Object> {
+        public Object call() {
+            this.tickIsGoingToFinishLate();
+            return null;
+        }
+
+        public void tickIsGoingToFinishLate() {
+        }
+
+        public void tickFinishedEarly() {
+        }
     }
 }
