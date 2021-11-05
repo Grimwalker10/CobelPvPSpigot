@@ -6,8 +6,8 @@
     <version>dev-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>spigot-api</artifactId>
-  <name>spigot-api</name>
+  <artifactId>craftbukkit-api</artifactId>
+  <name>craftbukkit-api</name>
   <version>1.7.10-R0.1-SNAPSHOT</version>
   <url>https://cobelpvp.com</url>
   <build>

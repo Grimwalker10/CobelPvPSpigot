@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.cobelpvp</groupId>
-  <artifactId>spigot-server</artifactId>
+  <artifactId>craftbukkit-server</artifactId>
   <name>Spigot</name>
   <version>1.7.10-R0.1-SNAPSHOT</version>
   <url>https://cobelpvp.com</url>
