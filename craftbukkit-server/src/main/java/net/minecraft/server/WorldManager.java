@@ -52,12 +52,12 @@ public class WorldManager implements IWorldAccess {
     }
 
     public void b(int i, int j, int k, int l, int i1) {
-        Iterator iterator = this.server.getPlayerList().players.iterator();
+        Iterator iterator = this.world.players.iterator(); // CobelPvP
 
         while (iterator.hasNext()) {
             EntityPlayer entityplayer = (EntityPlayer) iterator.next();
 
-            if (entityplayer != null && entityplayer.world == this.world && entityplayer.getId() != i) {
+            if (entityplayer != null && entityplayer.getId() != i) { // CobelPvP
                 double d0 = (double) j - entityplayer.locX;
                 double d1 = (double) k - entityplayer.locY;
                 double d2 = (double) l - entityplayer.locZ;

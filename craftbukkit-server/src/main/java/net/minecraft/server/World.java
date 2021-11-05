@@ -1341,7 +1341,7 @@ public abstract class World implements IBlockAccess {
                         for ( int y = ystart; y < l; y++ )
                         {
                             Block block = chunk.getType(x - cx, y, z - cz );
-                            if ( block != null && block != Blocks.AIR) // MineHQ
+                            if ( block != null && block != Blocks.AIR) // CobelPvP
                             {
                                 // PaperSpigot start - FallingBlocks and TNT collide with specific non-collidable blocks
                                 if (entity.world.paperSpigotConfig.fallingBlocksCollideWithSigns && (entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock) &&
