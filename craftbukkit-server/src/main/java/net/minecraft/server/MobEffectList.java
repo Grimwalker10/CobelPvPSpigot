@@ -20,7 +20,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class MobEffectList {
 
-    private static final File CONFIG_FILE = new File("effects.yml");
+    private static final File CONFIG_FILE = new File("config/server", "effects.yml"); // MineHQ - Dedicated config directory
     protected static YamlConfiguration config = YamlConfiguration.loadConfiguration(CONFIG_FILE);
 
     public static final MobEffectList[] byId = new MobEffectList[32];

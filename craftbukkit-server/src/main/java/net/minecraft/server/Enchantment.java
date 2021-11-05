@@ -9,7 +9,7 @@ import java.util.List;
 
 public abstract class Enchantment {
 
-    private static final File CONFIG_FILE = new File("enchantments.yml");
+    private static final File CONFIG_FILE = new File("config/server", "enchantments.yml"); // MineHQ - Dedicated config directory
     protected static YamlConfiguration config = YamlConfiguration.loadConfiguration(CONFIG_FILE);
 
     // CraftBukkit - update CraftEnchant.getName(i) if this changes
