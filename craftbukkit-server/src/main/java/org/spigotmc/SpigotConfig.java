@@ -459,6 +459,17 @@ public class SpigotConfig
     }
     // Poweruser end
 
+    // MineHQ start
+    private static void noTrackCommand() {
+        commands.put( "notrack", new net.frozenorb.command.NoTrackCommand( "notrack" ) );
+    }
+
+    public static boolean disableTracking;
+    private static void disableTracking() {
+        disableTracking = getBoolean("settings.disable.entityTracking", false);
+    }
+    // MineHQ end
+
     public static boolean reduceArmorDamage;
     private static void reduceArmorDamage() {
         reduceArmorDamage = getBoolean("settings.reduce-armor-damage", false);

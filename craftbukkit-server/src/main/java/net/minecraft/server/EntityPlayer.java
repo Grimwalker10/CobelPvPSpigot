@@ -40,7 +40,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public double e;
     public final List chunkCoordIntPairQueue = new LinkedList();
     public final Set<ChunkCoordIntPair> paddingChunks = new HashSet<ChunkCoordIntPair>(); // CobelPvP
-    public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public
+    // public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public // MineHQ
     private final ServerStatisticManager bO;
     private float bP = Float.MIN_VALUE;
     private float bQ = -1.0E8F;
@@ -204,6 +204,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.activeContainer = this.defaultContainer;
         }
 
+        // MineHQ start - nope
+        /*
         while (!this.removeQueue.isEmpty()) {
             int i = Math.min(this.removeQueue.size(), 127);
             int[] aint = new int[i];
@@ -217,6 +219,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
             this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
         }
+        */
+        // MineHQ end
 
         if (!this.chunkCoordIntPairQueue.isEmpty()) {
             ArrayList arraylist = new ArrayList();
@@ -264,12 +268,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                     this.b(tileentity);
                 }
 
+                // MineHQ start - nope
+                /*
                 iterator2 = arraylist.iterator();
 
                 while (iterator2.hasNext()) {
                     chunk = (Chunk) iterator2.next();
                     this.r().getTracker().a(this, chunk);
                 }
+                */
+                // MineHQ end
             }
         }
         this.world.timings.entityPlayerTickNormal.stopTiming(); // Poweruser
@@ -961,7 +969,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.lastSentExp = -1;
         this.bQ = -1.0F;
         this.bR = -1;
-        this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue);
+        // this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue); // MineHQ
     }
 
     protected void a(MobEffect mobeffect) {
@@ -1095,11 +1103,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void d(Entity entity) {
-        if (entity instanceof EntityHuman) {
-            this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[] { entity.getId()}));
-        } else {
-            this.removeQueue.add(Integer.valueOf(entity.getId()));
-        }
+        this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[] { entity.getId() })); // MineHQ
     }
 
     public long x() {
