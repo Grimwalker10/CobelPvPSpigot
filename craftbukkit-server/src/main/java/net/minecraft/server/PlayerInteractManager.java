@@ -405,7 +405,7 @@ public class PlayerInteractManager {
             }
 
             // If we have 'true' and no explicit deny *or* an explicit allow -- run the item part of the hook
-            if (itemstack != null && ((!result && event.useItemInHand() != Event.Result.DENY) || event.useItemInHand() == Event.Result.ALLOW)) {
+            if (itemstack != null && ((!result && event.useItemInHand() != Event.Result.DENY && !(block == Blocks.FENCE || block == Blocks.NETHER_FENCE)) || event.useItemInHand() == Event.Result.ALLOW)) { // Poweruser - special case fences
                 this.useItem(entityhuman, world, itemstack);
             }
         }
