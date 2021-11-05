@@ -458,4 +458,16 @@ public class SpigotConfig
         lagSpikeLoggerTickLimitNanos = ((long) getInt( "settings.lagSpikeLogger.tickLimitInMilliseconds", 100)) * 1000000L;
     }
     // Poweruser end
+
+    // Griffin start
+    public static int brewingMultiplier;
+    private static void brewingMultiplier() {
+        brewingMultiplier = getInt("settings.brewingMultiplier", 1);
+    }
+
+    public static int smeltingMultiplier;
+    private static void smeltingMultiplier() {
+        brewingMultiplier = getInt("settings.smeltingMultiplier", 1);
+    }
+    // Griffin end
 }

@@ -8,6 +8,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.spigotmc.SpigotConfig;
 // CraftBukkit end
 
 public class TileEntityFurnace extends TileEntity implements IWorldInventory {
@@ -171,7 +172,7 @@ public class TileEntityFurnace extends TileEntity implements IWorldInventory {
 
         // CraftBukkit - moved from below
         if (this.isBurning() && this.canBurn()) {
-            this.cookTime += elapsedTicks;
+            this.cookTime += elapsedTicks * SpigotConfig.smeltingMultiplier; // MineHQ
             if (this.cookTime >= 200) {
                 this.cookTime %= 200;
                 this.burn();
