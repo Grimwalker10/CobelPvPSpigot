@@ -35,7 +35,7 @@ public class PacketPlayOutNamedEntitySpawn extends Packet {
         ItemStack itemstack = entityhuman.inventory.getItemInHand();
 
         this.h = itemstack == null ? 0 : Item.getId(itemstack.getItem());
-        this.i = entityhuman.getDataWatcher();
+        this.i = entityhuman.getDataWatcher().clone(); // CobelPvP
     }
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException { // CraftBukkit - added throws

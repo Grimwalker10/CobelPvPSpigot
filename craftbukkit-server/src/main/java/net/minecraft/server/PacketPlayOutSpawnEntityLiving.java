@@ -61,7 +61,7 @@ public class PacketPlayOutSpawnEntityLiving extends Packet {
         this.f = (int) (d1 * 8000.0D);
         this.g = (int) (d2 * 8000.0D);
         this.h = (int) (d3 * 8000.0D);
-        this.l = entityliving.getDataWatcher();
+        this.l = entityliving.getDataWatcher().clone(); // CobelPvP
     }
 
     public void a(PacketDataSerializer packetdataserializer) {
