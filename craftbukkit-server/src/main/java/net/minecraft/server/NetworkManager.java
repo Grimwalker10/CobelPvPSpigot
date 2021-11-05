@@ -28,17 +28,6 @@ import org.spigotmc.SpigotCompressor;
 import org.spigotmc.SpigotDecompressor;
 // Spigot end
 
-// Poweruser start
-import java.util.Collections;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import net.minecraft.util.io.netty.channel.EventLoop;
-// Poweruser end
-
 public class NetworkManager extends SimpleChannelInboundHandler {
 
     private static final Logger i = LogManager.getLogger();
@@ -81,35 +70,6 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     public static final GenericFutureListener[] emptyListenerArray = new GenericFutureListener[0]; // Poweruser
 
-    // Poweruser start
-    private static final Map<EventLoop, PacketSender> senderTasks = Collections.synchronizedMap(new HashMap<EventLoop, NetworkManager.PacketSender>());
-    private PacketSender assignedPacketSender;
-
-    public static class PacketSender implements Runnable {
-
-        private Queue<QueuedPacket> commonPacketQueue = new ConcurrentLinkedQueue<QueuedPacket>();
-
-        private void queuePacket(QueuedPacket queuedPacket) {
-            this.commonPacketQueue.add(queuedPacket);
-        }
-
-        private void queuePackets(Collection<QueuedPacket> collection) {
-            this.commonPacketQueue.addAll(collection);
-        }
-
-        @Override
-        public void run() {
-            QueuedPacket packet = null;
-            while((packet = this.commonPacketQueue.poll()) != null) {
-                NetworkManager manager = QueuedPacket.getNetworkManager(packet);
-                if(manager.isConnected()) {
-                    manager.b(QueuedPacket.a(packet), QueuedPacket.b(packet));
-                }
-            }
-        }
-    }
-    // Poweruser end
-
     public NetworkManager(boolean flag) {
         this.j = flag;
     }
@@ -122,18 +82,6 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         this.preparing = false;
         // Spigot End
         this.a(EnumProtocol.HANDSHAKING);
-        // Poweruser start
-        EventLoop eventLoop = this.m.eventLoop();
-        PacketSender sender;
-        if(senderTasks.containsKey(eventLoop)) {
-            sender = senderTasks.get(eventLoop);
-        } else {
-            sender = new NetworkManager.PacketSender();
-            senderTasks.put(eventLoop, sender);
-            eventLoop.scheduleAtFixedRate(sender, 5L, 5L, TimeUnit.MILLISECONDS);
-        }
-        this.assignedPacketSender = sender;
-        // Poweruser end
     }
 
     public void a(EnumProtocol enumprotocol) {
@@ -178,26 +126,12 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void handle(Packet packet, GenericFutureListener... agenericfuturelistener) {
-        /*
         if (this.m != null && this.m.isOpen()) {
             this.i();
             this.b(packet, agenericfuturelistener);
         } else {
             this.l.add(new QueuedPacket(packet, agenericfuturelistener));
         }
-        */
-        // Poweruser start
-        QueuedPacket queuedpacket = new QueuedPacket(this, packet, agenericfuturelistener);
-        if(this.assignedPacketSender != null && this.isConnected()) {
-            if(!this.l.isEmpty()) {
-                this.assignedPacketSender.queuePackets(this.l);
-                this.l.clear();
-            }
-            this.assignedPacketSender.queuePacket(queuedpacket);
-        } else {
-            this.l.add(queuedpacket);
-        }
-        // Poweruser end
     }
 
     private void b(Packet packet, GenericFutureListener[] agenericfuturelistener) {
@@ -234,7 +168,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void a() {
-        //this.i(); // Poweruser - done through PacketSender
+        this.i();
         EnumProtocol enumprotocol = (EnumProtocol) this.m.attr(d).get();
 
         if (this.p != enumprotocol) {
@@ -261,7 +195,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
             this.o.a();
         }
-        //this.m.flush(); // Poweruser - done through PacketSender
+
+        this.m.flush();
     }
 
     public SocketAddress getSocketAddress() {
@@ -269,7 +204,6 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void close(IChatBaseComponent ichatbasecomponent) {
-        this.assignedPacketSender = null; // Poweruser
         // Spigot Start
         this.preparing = false;
         this.k.clear();

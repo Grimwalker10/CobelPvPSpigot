@@ -8,16 +8,7 @@ class QueuedPacket {
     private final Packet a;
     private final GenericFutureListener[] b;
 
-    // Poweruser start
-    private final NetworkManager manager;
-
-    static NetworkManager getNetworkManager(QueuedPacket queuedpacket) {
-        return queuedpacket.manager;
-    }
-
-    public QueuedPacket(NetworkManager manager, Packet packet, GenericFutureListener... agenericfuturelistener) {
-        this.manager = manager;
-    // Poweruser end
+    public QueuedPacket(Packet packet, GenericFutureListener... agenericfuturelistener) {
         this.a = packet;
         this.b = agenericfuturelistener;
     }
