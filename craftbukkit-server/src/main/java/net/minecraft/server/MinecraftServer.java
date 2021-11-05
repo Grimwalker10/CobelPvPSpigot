@@ -591,6 +591,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         SpigotTimings.serverTickTimer.startTiming(); // Spigot
         long i = System.nanoTime();
 
+        ThreadingManager.getTickCounter().increaseTickCounter(); // Poweruser
+
         ++this.ticks;
         if (this.R) {
             this.R = false;

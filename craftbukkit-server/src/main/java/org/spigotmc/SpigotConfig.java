@@ -407,5 +407,10 @@ public class SpigotConfig
             disableStatSaving = true;
         }
     }
+
+    private static void powertpsCommand()
+    {
+        commands.put( "tps2", new com.cobelpvp.commands.TPSCommand( "tps2" ) );
+    }
     // Poweruser end
 }

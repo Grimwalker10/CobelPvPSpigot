@@ -12,9 +12,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ThreadingManager {
 
@@ -22,15 +25,19 @@ public class ThreadingManager {
     private ExecutorService nbtFileService = Executors.newSingleThreadExecutor(new NamePriorityThreadFactory(Thread.NORM_PRIORITY - 2, "mSpigot_NBTFileSaver"));
     private static ThreadingManager instance;
     private PathSearchThrottlerThread pathSearchThrottler;
+    private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(1, new NamePriorityThreadFactory(Thread.NORM_PRIORITY + 2, "mSpigot_TimerService"));
+    private TickCounter tickCounter = new TickCounter();
 
     public ThreadingManager() {
         instance = this;
         this.pathSearchThrottler = new PathSearchThrottlerThread(2);
+        this.timerService.scheduleAtFixedRate(this.tickCounter, 1, 1000, TimeUnit.MILLISECONDS);
     }
 
     public void shutdown() {
         this.pathSearchThrottler.shutdown();
         this.nbtFileService.shutdown();
+        this.timerService.shutdown();
         while(!this.nbtFileService.isTerminated()) {
             try {
                 if(!this.nbtFileService.awaitTermination(3, TimeUnit.MINUTES)) {
@@ -83,5 +90,41 @@ public class ThreadingManager {
 
     public static boolean queuePathSearch(PathSearchJob pathSearchJob) {
         return instance.pathSearchThrottler.queuePathSearch(pathSearchJob);
+    }
+
+    public class TickCounter implements Runnable {
+
+        private ArrayDeque<Integer> ticksPerSecond;
+        private AtomicInteger ticksCounter;
+
+        public TickCounter() {
+            this.ticksPerSecond = new ArrayDeque<Integer>();
+            this.ticksCounter = new AtomicInteger(0);
+        }
+
+        @Override
+        public void run() {
+            int lastCount = this.ticksCounter.getAndSet(0);
+            synchronized(this.ticksPerSecond) {
+                this.ticksPerSecond.addLast(lastCount);
+                if(this.ticksPerSecond.size() > 30) {
+                    this.ticksPerSecond.removeFirst();
+                }
+            }
+        }
+
+        public void increaseTickCounter() {
+            this.ticksCounter.incrementAndGet();
+        }
+
+        public Integer[] getTicksPerSecond() {
+            synchronized(this.ticksPerSecond) {
+                return this.ticksPerSecond.toArray(new Integer[0]);
+            }
+        }
+    }
+
+    public static TickCounter getTickCounter() {
+        return instance.tickCounter;
     }
 }
