@@ -81,11 +81,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             throw new IllegalArgumentException("Health must be between 0 and " + getMaxHealth());
         }
 
+        getHandle().setHealth((float) health);
+
         if (entity instanceof EntityPlayer && health == 0) {
             ((EntityPlayer) entity).die(DamageSource.GENERIC);
         }
-
-        getHandle().setHealth((float) health);
     }
 
     public double getMaxHealth() {
