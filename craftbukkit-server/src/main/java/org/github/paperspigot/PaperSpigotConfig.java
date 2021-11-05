@@ -171,4 +171,10 @@ public class PaperSpigotConfig
         strengthEffectModifier = getDouble( "effect-modifiers.strength", 0.46D );
         weaknessEffectModifier = getDouble( "effect-modifiers.weakness", -0.5D );
     }
+
+    public static int maxPacketsPerPlayer;
+    private static void maxPacketsPerPlayer()
+    {
+        maxPacketsPerPlayer = getInt( "max-packets-per-player", 1000 );
+    }
 }
