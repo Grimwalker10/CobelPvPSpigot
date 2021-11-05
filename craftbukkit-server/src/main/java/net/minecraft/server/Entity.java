@@ -127,7 +127,7 @@ public abstract class Entity {
     public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getEntityTimings(this); // Spigot
     public final byte activationType = org.spigotmc.ActivationRange.initializeEntityActivationType(this);
     public final boolean defaultActivationState;
-    public long activatedTick = Integer.MIN_VALUE; // PaperSpigot - EAR backport
+    public long activatedTick = MinecraftServer.currentTick + 20; // Kohi - activate for 20 ticks on first adding to the world
     public boolean fromMobSpawner;
     public void inactiveTick() { }
     // Spigot end

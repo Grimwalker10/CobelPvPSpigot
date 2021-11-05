@@ -17,6 +17,7 @@ import org.bukkit.event.entity.EntityRegainHealthEvent;
 // CraftBukkit end
 
 import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+import org.spigotmc.ActivationRange;
 
 public abstract class EntityLiving extends Entity {
 
@@ -689,6 +690,8 @@ public abstract class EntityLiving extends Entity {
                     this.noDamageTicks = this.maxNoDamageTicks;
                     // CraftBukkit end
                     this.hurtTicks = this.ay = 10;
+                    // Kohi - activate for twice the no damage time
+                    this.activatedTick = MinecraftServer.currentTick + (this.maxNoDamageTicks * 2);
                 }
 
                 this.az = 0.0F;
@@ -1596,6 +1599,11 @@ public abstract class EntityLiving extends Entity {
     protected void bn() {}
 
     protected void bo() {
+        // Kohi - skip checks if not activated
+        if (!ActivationRange.checkIfActive(this)) {
+            return;
+        }
+
         List list = this.world.getEntities(this, this.boundingBox.grow(0.20000000298023224D, 0.0D, 0.20000000298023224D));
 
         if (this.R() && list != null && !list.isEmpty()) { // Spigot: Add this.R() condition
@@ -1611,7 +1619,7 @@ public abstract class EntityLiving extends Entity {
                 }
                 // CraftBukkit end
 
-                if (entity.S()) {
+                if (entity.S() && ActivationRange.checkIfActive(entity)) {
                     entity.numCollisions++; // Spigot
                     numCollisions++; // Spigot
                     this.o(entity);

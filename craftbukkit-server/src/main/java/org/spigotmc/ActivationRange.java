@@ -29,6 +29,7 @@ import net.minecraft.server.EntityWither;
 import net.minecraft.server.MathHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.World;
+import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.SpigotTimings;
 
 public class ActivationRange
@@ -38,6 +39,9 @@ public class ActivationRange
     static AxisAlignedBB miscBB = AxisAlignedBB.a( 0, 0, 0, 0, 0, 0 );
     static AxisAlignedBB animalBB = AxisAlignedBB.a( 0, 0, 0, 0, 0, 0 );
     static AxisAlignedBB monsterBB = AxisAlignedBB.a( 0, 0, 0, 0, 0, 0 );
+
+    // Kohi - interval to update activation states
+    public static int INTERVAL = 10;
 
     /**
      * Initializes an entities type on construction to specify what group this
@@ -69,11 +73,15 @@ public class ActivationRange
      */
     public static boolean initializeEntityActivationState(Entity entity, SpigotWorldConfig config)
     {
+        // Kohi - add EntityArrow to this list of entity classes
+        // We shouldn't need to, as we test for EntityProjectile, but kohi does so why not.
+
         if ( ( entity.activationType == 3 && config.miscActivationRange == 0 )
                 || ( entity.activationType == 2 && config.animalActivationRange == 0 )
                 || ( entity.activationType == 1 && config.monsterActivationRange == 0 )
                 || entity instanceof EntityHuman
                 || entity instanceof EntityProjectile
+                || entity instanceof EntityArrow
                 || entity instanceof EntityEnderDragon
                 || entity instanceof EntityComplexPart
                 || entity instanceof EntityWither
@@ -117,41 +125,37 @@ public class ActivationRange
      */
     public static void activateEntities(World world)
     {
+        if (MinecraftServer.currentTick % INTERVAL != 0) return; // Kohi - only update on our interval
+
         SpigotTimings.entityActivationCheckTimer.startTiming();
         final int miscActivationRange = world.spigotConfig.miscActivationRange;
         final int animalActivationRange = world.spigotConfig.animalActivationRange;
         final int monsterActivationRange = world.spigotConfig.monsterActivationRange;
 
-        int maxRange = Math.max( monsterActivationRange, animalActivationRange );
-        maxRange = Math.max( maxRange, miscActivationRange );
-        maxRange = Math.min( ( world.spigotConfig.viewDistance << 4 ) - 8, maxRange );
+        int maxRange = Math.max(monsterActivationRange, animalActivationRange);
+        maxRange = Math.max(maxRange, miscActivationRange);
+        maxRange = Math.min((world.spigotConfig.viewDistance << 4) - 8, maxRange);
 
-        for ( Entity player : (List<Entity>) world.players )
-        {
-
+        for (Entity player : (List<Entity>) world.players) {
             player.activatedTick = MinecraftServer.currentTick;
             growBB( maxBB, player.boundingBox, maxRange, 256, maxRange );
             growBB( miscBB, player.boundingBox, miscActivationRange, 256, miscActivationRange );
             growBB( animalBB, player.boundingBox, animalActivationRange, 256, animalActivationRange );
             growBB( monsterBB, player.boundingBox, monsterActivationRange, 256, monsterActivationRange );
 
-            int i = MathHelper.floor( maxBB.a / 16.0D );
-            int j = MathHelper.floor( maxBB.d / 16.0D );
-            int k = MathHelper.floor( maxBB.c / 16.0D );
-            int l = MathHelper.floor( maxBB.f / 16.0D );
+            int i = MathHelper.floor(maxBB.a / 16.0D);
+            int j = MathHelper.floor(maxBB.d / 16.0D);
+            int k = MathHelper.floor(maxBB.c / 16.0D);
+            int l = MathHelper.floor(maxBB.f / 16.0D);
 
-            for ( int i1 = i; i1 <= j; ++i1 )
-            {
-                for ( int j1 = k; j1 <= l; ++j1 )
-                {
-                    if ( world.getWorld().isChunkLoaded( i1, j1 ) )
-                    {
-                        activateChunkEntities( world.getChunkAt( i1, j1 ) );
+            for (int i1 = i; i1 <= j; ++i1) {
+                for (int j1 = k; j1 <= l; ++j1) {
+                    if (world.getWorld().isChunkLoaded(i1, j1)) {
+                        activateChunkEntities(world.getChunkAt(i1, j1));
                     }
                 }
             }
         }
-        SpigotTimings.entityActivationCheckTimer.stopTiming();
     }
 
     /**
@@ -165,34 +169,36 @@ public class ActivationRange
         {
             for ( Entity entity : slice )
             {
-                if ( MinecraftServer.currentTick > entity.activatedTick )
+                if ( entity.activatedTick > MinecraftServer.currentTick + INTERVAL )
                 {
-                    if ( entity.defaultActivationState )
-                    {
-                        entity.activatedTick = MinecraftServer.currentTick;
-                        continue;
-                    }
-                    switch ( entity.activationType )
-                    {
-                        case 1:
-                            if ( monsterBB.b( entity.boundingBox ) )
-                            {
-                                entity.activatedTick = MinecraftServer.currentTick;
-                            }
-                            break;
-                        case 2:
-                            if ( animalBB.b( entity.boundingBox ) )
-                            {
-                                entity.activatedTick = MinecraftServer.currentTick;
-                            }
-                            break;
-                        case 3:
-                        default:
-                            if ( miscBB.b( entity.boundingBox ) )
-                            {
-                                entity.activatedTick = MinecraftServer.currentTick;
-                            }
-                    }
+                    continue;
+                }
+                if ( entity.defaultActivationState || checkEntityImmunities( entity ) )
+                {
+                    entity.activatedTick = MinecraftServer.currentTick + INTERVAL;
+                    continue;
+                }
+
+                switch ( entity.activationType )
+                {
+                    case 1:
+                        if ( monsterBB.b( entity.boundingBox ) )
+                        {
+                            entity.activatedTick = MinecraftServer.currentTick + INTERVAL;
+                        }
+                        break;
+                    case 2:
+                        if ( animalBB.b( entity.boundingBox ) )
+                        {
+                            entity.activatedTick = MinecraftServer.currentTick + INTERVAL;
+                        }
+                        break;
+                    case 3:
+                    default:
+                        if ( miscBB.b( entity.boundingBox ) )
+                        {
+                            entity.activatedTick = MinecraftServer.currentTick + INTERVAL;
+                        }
                 }
             }
         }
@@ -212,14 +218,9 @@ public class ActivationRange
         {
             return true;
         }
-        if ( !( entity instanceof EntityArrow ) )
-        {
-            if ( !entity.onGround || entity.passenger != null
-                    || entity.vehicle != null )
-            {
-                return true;
-            }
-        } else if ( !( (EntityArrow) entity ).inGround )
+
+        // Kohi - remove arrow checks, they are excluded already
+        if ( !entity.onGround || entity.passenger != null || entity.vehicle != null )
         {
             return true;
         }
@@ -227,13 +228,22 @@ public class ActivationRange
         if ( entity instanceof EntityLiving )
         {
             EntityLiving living = (EntityLiving) entity;
-            if ( living.attackTicks > 0 || living.hurtTicks > 0 || living.effects.size() > 0 )
+            // Kohi -  remove hurtticks check, we will activate entities in their hurt routine
+            if ( living.attackTicks > 0 || living.effects.size() > 0 )
             {
                 return true;
             }
-            if ( entity instanceof EntityCreature && ( (EntityCreature) entity ).target != null )
+            if ( entity instanceof EntityCreature )
             {
-                return true;
+                EntityCreature creature = (EntityCreature) entity;
+                if ( creature.target != null )
+                {
+                    return true;
+                }
+                if ( creature.getLeashHolder() != null )
+                {
+                    return true;
+                }
             }
             if ( entity instanceof EntityVillager && ( (EntityVillager) entity ).bY() /* Getter for first boolean */ )
             {
@@ -242,7 +252,7 @@ public class ActivationRange
             if ( entity instanceof EntityAnimal )
             {
                 EntityAnimal animal = (EntityAnimal) entity;
-                if ( animal.isBaby() || animal.ce() /*love*/ )
+                if ( animal.ce() /*love*/ )
                 {
                     return true;
                 }
@@ -275,24 +285,25 @@ public class ActivationRange
 
         boolean isActive = entity.activatedTick >= MinecraftServer.currentTick || entity.defaultActivationState;
 
-        // Should this entity tick?
-        if ( !isActive )
-        {
-            if ( ( MinecraftServer.currentTick - entity.activatedTick - 1 ) % 20 == 0 )
-            {
-                // Check immunities every 20 ticks.
-                if ( checkEntityImmunities( entity ) )
-                {
-                    // Triggered some sort of immunity, give 20 full ticks before we check again.
-                    entity.activatedTick = MinecraftServer.currentTick + 20;
-                }
-                isActive = true;
-            }
-            // Add a little performance juice to active entities. Skip 1/4 if not immune.
-        } else if ( !entity.defaultActivationState && entity.ticksLived % 4 == 0 && !checkEntityImmunities( entity ) )
+        // Kohi - if tps is less than 17 don't activate entities 2/3 of the time
+        if ( isActive && !entity.defaultActivationState && MinecraftServer.getServer().recentTps[0] < 17.0 && entity.ticksLived % 3 != 0 )
         {
             isActive = false;
         }
+
+        // Kohi - activate entities with a 1 in 20 chance randomly
+        if ( !isActive && entity.world.random.nextInt( 20 ) == 0 )
+        {
+            isActive = true;
+            // and check immunities
+            if ( checkEntityImmunities( entity ) )
+            {
+                entity.activatedTick = MinecraftServer.currentTick + 40;
+            }
+        }
+
+        // Kohi - remove immunity checks and other things that were here
+
         int x = MathHelper.floor( entity.locX );
         int z = MathHelper.floor( entity.locZ );
         // Make sure not on edge of unloaded chunk
