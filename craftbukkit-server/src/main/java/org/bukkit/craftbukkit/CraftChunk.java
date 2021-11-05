@@ -173,7 +173,9 @@ public class CraftChunk implements Chunk {
                     blockids[j] = (short) (baseids[j] & 0xFF);
                 }
 
-                if (cs[i].getExtendedIdArray() != null) { /* If we've got extended IDs */
+                // CobelPvP start - 1.7 has no extended block IDs
+                /*
+                if (cs[i].getExtendedIdArray() != null) { /* If we've got extended IDs *//*
                     byte[] extids = cs[i].getExtendedIdArray().a;
 
                     for (int j = 0; j < 2048; j++) {
@@ -187,7 +189,8 @@ public class CraftChunk implements Chunk {
                         blockids[(j<<1)+1] |= (b & 0xF0) << 4;
                     }
                 }
-
+                */
+                // CobelPvP end
                 sectionBlockIDs[i] = blockids;
 
                 /* Get block data nibbles */

@@ -167,10 +167,13 @@ public class PacketPlayOutMapChunk extends Packet {
         for (l = 0; l < achunksection.length; ++l) {
             if (achunksection[l] != null && (!flag || !achunksection[l].isEmpty()) && (i & 1 << l) != 0) {
                 chunkmap.b |= 1 << l;
+                // CobelPvP start - 1.7 has no extended block IDs
+                /*
                 if (achunksection[l].getExtendedIdArray() != null) {
                     chunkmap.c |= 1 << l;
                     ++k;
                 }
+                */
             }
         }
 
@@ -248,6 +251,8 @@ public class PacketPlayOutMapChunk extends Packet {
             }
         }
 
+        // CobelPvP start - 1.7 has no extended block IDs
+        /*
         if (k > 0 && version < 24) {
             for (l = 0; l < achunksection.length; ++l) {
                 if (achunksection[l] != null && (!flag || !achunksection[l].isEmpty()) && achunksection[l].getExtendedIdArray() != null && (i & 1 << l) != 0) {
@@ -257,6 +262,8 @@ public class PacketPlayOutMapChunk extends Packet {
                 }
             }
         }
+        */
+        // CobelPvP end
 
         if (flag) {
             byte[] abyte2 = chunk.m();
