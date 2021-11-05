@@ -571,16 +571,10 @@ public final class CraftServer implements Server {
         // PaperSpigot end
     }
 
-    // TODO: In 1.8+ this should use the server's UUID->EntityPlayer map
     @Override
     public Player getPlayer(UUID id) {
-        for (Player player : getOnlinePlayers()) {
-            if (player.getUniqueId().equals(id)) {
-                return player;
-            }
-        }
-
-        return null;
+        EntityPlayer player = playerList.uuidMap.get(id);
+        return player != null ? player.getBukkitEntity() : null;
     }
 
     @Override
