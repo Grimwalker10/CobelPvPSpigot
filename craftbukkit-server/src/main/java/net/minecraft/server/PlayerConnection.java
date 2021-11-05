@@ -410,8 +410,9 @@ public class PlayerConnection implements PacketPlayInListener {
 
                 this.player.setLocation(d1, d2, d3, f2, f3);
                 boolean flag2 = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
+                boolean rayTraceCollision = delta > 0.3 && worldserver.rayTrace(Vec3D.a(this.y, this.z + 1.0, this.q), Vec3D.a(d1, d2 + 1.0, d3), false, true, false) != null;
 
-                if (flag && (flag1 || !flag2) && !this.player.isSleeping()) {
+                if (flag && (flag1 || !flag2 || rayTraceCollision) && !this.player.isSleeping()) {
                     this.a(this.y, this.z, this.q, f2, f3);
                     return;
                 }
