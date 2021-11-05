@@ -32,4 +32,14 @@ public class RegistryBlocks extends RegistryMaterials {
     public Object get(Object object) {
         return this.get((String) object);
     }
+
+    // Poweruser start
+    public Object getDefaultBlock() {
+        return this.e;
+    }
+
+    public Object getByIdWithoutDefaulting(int i) {
+        return super.a(i);
+    }
+    // Poweruser end
 }
