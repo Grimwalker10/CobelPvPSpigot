@@ -75,11 +75,10 @@ public class BlockFire extends Block {
 
     public void a(World world, int i, int j, int k, Random random) {
         if (world.getGameRules().getBoolean("doFireTick")) {
-            boolean flag = world.getType(i, j - 1, k) == Blocks.NETHERRACK;
-
-            if (world.worldProvider instanceof WorldProviderTheEnd && world.getType(i, j - 1, k) == Blocks.BEDROCK) {
-                flag = true;
-            }
+            // Poweruser start
+            Block blockBeneath = world.getType(i, j - 1, k);
+            boolean flag = blockBeneath == Blocks.NETHERRACK || (world.worldProvider instanceof WorldProviderTheEnd && blockBeneath == Blocks.BEDROCK);
+            // Poweruser end
 
             if (!this.canPlace(world, i, j, k)) {
                 fireExtinguished(world, i, j, k); // CraftBukkit - invalid place location
@@ -178,11 +177,13 @@ public class BlockFire extends Block {
     }
 
     private void a(World world, int i, int j, int k, int l, Random random, int i1) {
-        int j1 = this.b[Block.getId(world.getType(i, j, k))];
+        // Poweruser start
+        Block blockAtPos = world.getType(i, j, k);
+        int j1 = this.b[Block.getId(blockAtPos)];
 
         if (random.nextInt(l) < j1) {
-            boolean flag = world.getType(i, j, k) == Blocks.TNT;
-
+            boolean flag = blockAtPos == Blocks.TNT;
+        // Poweruser end
             // CraftBukkit start
             org.bukkit.block.Block theBlock = world.getWorld().getBlockAt(i, j, k);
 
