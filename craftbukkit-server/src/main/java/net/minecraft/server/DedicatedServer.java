@@ -275,7 +275,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     }
 
     protected void t() {
-        System.exit(0);
+        System.exit(abnormalTermination ? 1 : 0); // SportBukkit
     }
 
     public void v() { // CraftBukkit - protected -> public (decompile error?)

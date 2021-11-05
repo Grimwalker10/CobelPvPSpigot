@@ -181,6 +181,7 @@ public class Main {
                 MinecraftServer.main(options);
             } catch (Throwable t) {
                 t.printStackTrace();
+                System.exit(1); // SportBukkit
             }
         }
     }

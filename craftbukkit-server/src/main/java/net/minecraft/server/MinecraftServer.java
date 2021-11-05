@@ -117,6 +117,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     private static final int SAMPLE_INTERVAL = 100;
     public final double[] recentTps = new double[ 3 ];
     // Spigot end
+    protected boolean abnormalTermination; // SportBukkit
 
     // Kohi start
     public int entities;
@@ -510,9 +511,11 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 }
                 // Spigot end
             } else {
-                this.a((CrashReport) null);
+                //this.a((CrashReport) null); // CraftBukkit - if init fails, stop the server
+                this.abnormalTermination = true; // SportBukkit
             }
         } catch (Throwable throwable) {
+            this.abnormalTermination = true; // SportBukkit
             i.error("Encountered an unexpected exception", throwable);
             // Spigot Start
             if ( throwable.getCause() != null )
@@ -883,6 +886,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             // CraftBukkit end
         } catch (Exception exception) {
             i.fatal("Failed to start the minecraft server", exception);
+            System.exit(1); // Sportbukkit
         }
     }
 

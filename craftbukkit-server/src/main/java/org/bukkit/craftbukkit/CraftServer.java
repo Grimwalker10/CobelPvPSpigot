@@ -360,6 +360,18 @@ public final class CraftServer implements Server {
         }
     }
 
+    // SportBukkit start
+    public boolean getRequireAllPlugins() {
+        return this.configuration.getBoolean("settings.require-all-plugins");
+    }
+
+    private void pluginFailedToLoad(Plugin plugin) {
+        if(getRequireAllPlugins()) {
+            throw new RuntimeException("Required plugin " + plugin.getDescription().getFullName() + " failed to load (server will shutdown)");
+        }
+    }
+    // SportBukkit end
+
     public void loadPlugins() {
         pluginManager.registerInterface(JavaPluginLoader.class);
 
@@ -372,8 +384,9 @@ public final class CraftServer implements Server {
                     String message = String.format("Loading %s", plugin.getDescription().getFullName());
                     plugin.getLogger().info(message);
                     plugin.onLoad();
-                } catch (Throwable ex) {
+                } catch (RuntimeException ex) { // SportBukkit
                     Logger.getLogger(CraftServer.class.getName()).log(Level.SEVERE, ex.getMessage() + " initializing " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
+                    pluginFailedToLoad(plugin); // SportBukkit
                 }
             }
         } else {
@@ -484,9 +497,15 @@ public final class CraftServer implements Server {
                     getLogger().log(Level.WARNING, "Plugin " + plugin.getDescription().getFullName() + " tried to register permission '" + perm.getName() + "' but it's already registered", ex);
                 }
             }
-        } catch (Throwable ex) {
+        } catch (RuntimeException ex) { // SportBukkit
             Logger.getLogger(CraftServer.class.getName()).log(Level.SEVERE, ex.getMessage() + " loading " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
         }
+
+        // SportBukkit start
+        if(!plugin.isEnabled()) {
+            pluginFailedToLoad(plugin);
+        }
+        // SportBukkit end
     }
 
     @Override
