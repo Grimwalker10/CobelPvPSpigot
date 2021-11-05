@@ -77,33 +77,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 
         i.info("Loading properties");
         this.propertyManager = new PropertyManager(this.options); // CraftBukkit - CLI argument support
-        // PaperSpigot start - Display a EULA warning then continue
-        File EULALock = new File( ".eula-lock");
-        // Spigot Start
-        boolean eulaAgreed = Boolean.getBoolean( "com.mojang.eula.agree" );
-        if ( eulaAgreed )
-        {
-            System.err.println( "You have used the Spigot command line EULA agreement flag." );
-            System.err.println( "By using this setting you are indicating your agreement to Mojang's EULA (https://account.mojang.com/documents/minecraft_eula)." );
-            System.err.println( "If you do not agree to the above EULA please stop your server and remove this flag immediately." );
-            // Spigot End
-        } else {
-            if (!EULALock.exists()) {
-                System.err.println("WARNING: By using this server you are indicating your agreement to Mojang's EULA (https://account.mojang.com/documents/minecraft_eula)");
-                System.err.println("If you do not agree to the above EULA please stop this server and remove it from your system immediately.");
-                System.err.println("The server will start in 10 seconds, you will only see this message and have to wait this one time.");
-                try {
-                    EULALock.createNewFile();
-                } catch (IOException e1) {
-                    System.err.println("Unable to create EULA lock file");
-                    e1.printStackTrace();
-                }
-                try {
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-                } catch (InterruptedException ex) {
-                }
-            }
-                // PaperSpigot end
+        // screw the EULA
+        if (true) {
             if (this.N()) {
                 this.c("127.0.0.1");
             } else {
