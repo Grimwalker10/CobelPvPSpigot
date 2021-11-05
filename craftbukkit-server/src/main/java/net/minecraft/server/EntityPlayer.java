@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.util.com.google.common.collect.Sets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
@@ -38,6 +39,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public double d;
     public double e;
     public final List chunkCoordIntPairQueue = new LinkedList();
+    public final Set<ChunkCoordIntPair> paddingChunks = new HashSet<ChunkCoordIntPair>(); // CobelPvP
     public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public
     private final ServerStatisticManager bO;
     private float bP = Float.MIN_VALUE;
@@ -236,6 +238,18 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             }
 
             if (!arraylist.isEmpty()) {
+                // CobelPvP start - if any real chunks overlap padding chunks, first send an unload then remove it from this player's padding list
+                for (Object o : arraylist) {
+                    if (this.paddingChunks.isEmpty()) {
+                        break;
+                    }
+                    Chunk c = (Chunk) o;
+                    if (this.paddingChunks.contains(c.l())) {
+                        this.paddingChunks.remove(c.l());
+                        this.playerConnection.sendPacket(PacketPlayOutMapChunk.unload(c.locX, c.locZ));
+                    }
+                }
+                // CobelPvP end
                 this.playerConnection.sendPacket(new PacketPlayOutMapChunkBulk(arraylist, this.playerConnection.networkManager.getVersion())); // Spigot - protocol patch
                 Iterator iterator2 = arraylist1.iterator();
 

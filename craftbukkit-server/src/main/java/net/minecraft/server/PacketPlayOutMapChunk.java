@@ -13,13 +13,13 @@ public class PacketPlayOutMapChunk extends Packet {
     private int b;
     private int c;
     private int d;
-    private static final ReusableByteArray bufferCache = new ReusableByteArray(164196); // MineHQ
+    private static final ReusableByteArray bufferCache = new ReusableByteArray(164196); // CobelPvP
     private byte[] f;
     private boolean g;
     private int h;
     private static byte[] i = new byte[196864];
 
-    private World world; // MineHQ - use world instead of chunk
+    private World world; // CobelPvP - use world instead of chunk
     private int mask; // Spigot
 
     public PacketPlayOutMapChunk() {}
@@ -31,6 +31,11 @@ public class PacketPlayOutMapChunk extends Packet {
         this.a = chunk.locX;
         this.b = chunk.locZ;
         this.g = flag;
+        // CobelPvP start - don't need to do chunkmap for unload chunk packets
+        if (i == 0 && this.g) {
+            return;
+        }
+        // CobelPvP end
         ChunkMap chunkmap = a(chunk, flag, i, version);
 
         this.d = chunkmap.c;
@@ -39,12 +44,22 @@ public class PacketPlayOutMapChunk extends Packet {
         this.f = chunkmap.a;
     }
 
+    // CobelPvP start - constructor for unload chunk packets
+    public static PacketPlayOutMapChunk unload(int x, int z) {
+        PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk();
+        packet.a = x;
+        packet.b = z;
+        packet.g = true;
+        return packet;
+    }
+    // CobelPvP end
+
     public static int c() {
         return 196864;
     }
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
-        // MineHQ start - this is client code
+        // CobelPvP start - this is client code
         /*
         this.a = packetdataserializer.readInt();
         this.b = packetdataserializer.readInt();
@@ -83,7 +98,7 @@ public class PacketPlayOutMapChunk extends Packet {
             inflater.end();
         }
         */
-        // MineHQ end
+        // CobelPvP end
     }
 
     public void b(PacketDataSerializer packetdataserializer) {
@@ -91,6 +106,17 @@ public class PacketPlayOutMapChunk extends Packet {
         packetdataserializer.writeInt(this.b);
         packetdataserializer.writeBoolean(this.g);
         packetdataserializer.writeShort((short) (this.c & '\uffff'));
+        // CobelPvP start - don't send any data for unload chunks, the client still accepts the packets fine without it
+        if (this.g && this.c == 0) {
+            if (packetdataserializer.version < 27) {
+                packetdataserializer.writeShort((short) (this.d & '\uffff'));
+                packetdataserializer.writeInt(0);
+            } else {
+                packetdataserializer.b(0);
+            }
+            return;
+        }
+        // CobelPvP end
         // Spigot start - protocol patch
         if ( packetdataserializer.version < 27 )
         {

@@ -211,6 +211,7 @@ public class PlayerChunkMap {
                 }
             }
         }
+        entityplayer.paddingChunks.clear(); // CobelPvP
 
         this.managedPlayers.remove(entityplayer);
     }
@@ -242,6 +243,18 @@ public class PlayerChunkMap {
             List<ChunkCoordIntPair> chunksToLoad = new LinkedList<ChunkCoordIntPair>(); // CraftBukkit
 
             if (j1 != 0 || k1 != 0) {
+                // CobelPvP start - unload padding chunks when players move away from them
+                Iterator<ChunkCoordIntPair> iter = entityplayer.paddingChunks.iterator();
+                while (iter.hasNext()) {
+                    ChunkCoordIntPair chunk = iter.next();
+                    int xDist = chunk.x - k;
+                    int zDist = chunk.z - l;
+                    if (xDist > i1 || zDist > i1 || xDist < -i1 || zDist < -i1) {
+                        entityplayer.playerConnection.sendPacket(PacketPlayOutMapChunk.unload(chunk.x, chunk.z));
+                        iter.remove();
+                    }
+                }
+                // CobelPvP end
                 for (int l1 = i - i1; l1 <= i + i1; ++l1) {
                     for (int i2 = j - i1; i2 <= j + i1; ++i2) {
                         if (!this.a(l1, i2, k, l, i1)) {

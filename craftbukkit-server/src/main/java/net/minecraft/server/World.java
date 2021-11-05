@@ -1088,7 +1088,7 @@ public abstract class World implements IBlockAccess {
         }
     }
 
-    // MineHQ start - hack to silence sounds from cancelled block place
+    // CobelPvP start - hack to silence sounds from cancelled block place
     private boolean interceptSounds = false;
     private final List<Runnable> interceptedSounds = new ArrayList<Runnable>();
     public void interceptSounds() {
@@ -1117,7 +1117,7 @@ public abstract class World implements IBlockAccess {
             });
             return;
         }
-        // MineHQ end
+        // CobelPvP end
         for (int i = 0; i < this.u.size(); ++i) {
             ((IWorldAccess) this.u.get(i)).a(s, d0, d1, d2, f, f1);
         }
