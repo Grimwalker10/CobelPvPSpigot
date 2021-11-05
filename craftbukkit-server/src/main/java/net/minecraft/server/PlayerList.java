@@ -261,6 +261,8 @@ public abstract class PlayerList {
                 hashset.add(scoreboardobjective);
             }
         }
+
+        scoreboardserver.addViewer(entityplayer); // MineHQ
     }
 
     public void setPlayerFileData(WorldServer[] aworldserver) {
