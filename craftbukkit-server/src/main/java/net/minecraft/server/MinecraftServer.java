@@ -106,7 +106,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public org.bukkit.command.ConsoleCommandSender console;
     public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
     public ConsoleReader reader;
-    public static int currentTick = (int) (System.currentTimeMillis() / 50);
+    public static int currentTick = 0;
     public final Thread primaryThread;
     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
     public int autosavePeriod;
