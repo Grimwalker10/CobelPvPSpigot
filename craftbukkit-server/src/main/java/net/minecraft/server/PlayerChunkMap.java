@@ -368,4 +368,8 @@ public class PlayerChunkMap {
         }
     }
     // CraftBukkit end
+
+    public int getWorldViewDistance() {
+        return this.g;
+    }
 }

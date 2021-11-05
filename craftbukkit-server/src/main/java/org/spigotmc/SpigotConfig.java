@@ -1,5 +1,6 @@
 package org.spigotmc;
 
+import com.cobelpvp.commands.SetViewDistanceCommand;
 import com.cobelpvp.commands.WorldStatsCommand;
 import com.google.common.base.Throwables;
 import java.io.File;
@@ -416,6 +417,10 @@ public class SpigotConfig
 
     private static void worldstatsCommand() {
         commands.put( "worldstats", new WorldStatsCommand( "worldstats" ) );
+    }
+
+    private static void setviewdistanceCommand() {
+        commands.put( "setviewdistance", new SetViewDistanceCommand( "setviewdistance" ) );
     }
     // Poweruser end
 }
