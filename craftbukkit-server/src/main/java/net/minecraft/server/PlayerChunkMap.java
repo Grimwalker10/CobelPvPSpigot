@@ -116,8 +116,10 @@ public class PlayerChunkMap {
     }
 
     public void addPlayer(EntityPlayer entityplayer) {
-        int i = (int) entityplayer.locX >> 4;
-        int j = (int) entityplayer.locZ >> 4;
+        // Poweruser start
+        int i = MathHelper.floor(entityplayer.locX) >> 4;
+        int j = MathHelper.floor(entityplayer.locZ) >> 4;
+        // Poweruser end
 
         entityplayer.d = entityplayer.locX;
         entityplayer.e = entityplayer.locZ;
@@ -144,8 +146,10 @@ public class PlayerChunkMap {
         ArrayList arraylist = new ArrayList(entityplayer.chunkCoordIntPairQueue);
         int i = 0;
         int j = this.g;
-        int k = (int) entityplayer.locX >> 4;
-        int l = (int) entityplayer.locZ >> 4;
+        // Poweruser start
+        int k = MathHelper.floor(entityplayer.locX) >> 4;
+        int l = MathHelper.floor(entityplayer.locZ) >> 4;
+        // Poweruser end
         int i1 = 0;
         int j1 = 0;
         ChunkCoordIntPair chunkcoordintpair = PlayerChunk.a(this.a(k, l, true));
@@ -185,8 +189,10 @@ public class PlayerChunkMap {
     }
 
     public void removePlayer(EntityPlayer entityplayer) {
-        int i = (int) entityplayer.d >> 4;
-        int j = (int) entityplayer.e >> 4;
+        // Poweruser start
+        int i = MathHelper.floor(entityplayer.d) >> 4;
+        int j = MathHelper.floor(entityplayer.e) >> 4;
+        // Poweruser end
 
         for (int k = i - this.g; k <= i + this.g; ++k) {
             for (int l = j - this.g; l <= j + this.g; ++l) {
@@ -209,15 +215,19 @@ public class PlayerChunkMap {
     }
 
     public void movePlayer(EntityPlayer entityplayer) {
-        int i = (int) entityplayer.locX >> 4;
-        int j = (int) entityplayer.locZ >> 4;
+        // Poweruser start
+        int i = MathHelper.floor(entityplayer.locX) >> 4;
+        int j = MathHelper.floor(entityplayer.locZ) >> 4;
+        // Poweruser end
         double d0 = entityplayer.d - entityplayer.locX;
         double d1 = entityplayer.e - entityplayer.locZ;
         double d2 = d0 * d0 + d1 * d1;
 
         if (d2 >= 64.0D) {
-            int k = (int) entityplayer.d >> 4;
-            int l = (int) entityplayer.e >> 4;
+            // Poweruser start
+            int k = MathHelper.floor(entityplayer.d) >> 4;
+            int l = MathHelper.floor(entityplayer.e) >> 4;
+            // Poweruser end
             int i1 = this.g;
             int j1 = i - k;
             int k1 = j - l;
@@ -272,8 +282,8 @@ public class PlayerChunkMap {
 
             while (iterator.hasNext()) {
                 EntityPlayer entityplayer = (EntityPlayer) iterator.next();
-                int k = (int) entityplayer.locX >> 4;
-                int l = (int) entityplayer.locZ >> 4;
+                int k = MathHelper.floor(entityplayer.locX) >> 4;
+                int l = MathHelper.floor(entityplayer.locZ) >> 4;
                 int i1;
                 int j1;
 
@@ -332,8 +342,10 @@ public class PlayerChunkMap {
         private int z;
 
         public ChunkCoordComparator (EntityPlayer entityplayer) {
-            x = (int) entityplayer.locX >> 4;
-            z = (int) entityplayer.locZ >> 4;
+            // Poweruser start
+            x = MathHelper.floor(entityplayer.locX) >> 4;
+            z = MathHelper.floor(entityplayer.locZ) >> 4;
+            // Poweruser end
         }
 
         public int compare(ChunkCoordIntPair a, ChunkCoordIntPair b) {
