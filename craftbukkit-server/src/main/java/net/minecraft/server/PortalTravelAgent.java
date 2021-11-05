@@ -91,7 +91,14 @@ public class PortalTravelAgent {
 
     public boolean b(Entity entity, double d0, double d1, double d2, float f) {
         // CraftBukkit start - Modularize portal search process and entity teleportation
-        ChunkCoordinates found = this.findPortal(entity.locX, entity.locY, entity.locZ, 128);
+
+        // Poweruser start - check a small area first
+        ChunkCoordinates found = this.findPortal(entity.locX, entity.locY, entity.locZ, 10);
+        if(found == null) {
+            found = this.findPortal(entity.locX, entity.locY, entity.locZ, 128);
+        }
+        // Poweruser end
+
         if (found == null) {
             return false;
         }
@@ -134,19 +141,24 @@ public class PortalTravelAgent {
             chunkcoordinatesportal.d = this.a.getTime();
             flag = false;
         } else {
+            // Poweruser start
+            int zOffset = 0, yOffset = 0;
             for (k1 = l - short1; k1 <= l + short1; ++k1) {
-                double d5 = (double) k1 + 0.5D - x; // CraftBukkit
-
-                for (int l1 = i1 - short1; l1 <= i1 + short1; ++l1) {
-                    double d6 = (double) l1 + 0.5D - z; // CraftBukkit
-
-                    for (int i2 = this.a.S() - 1; i2 >= 0; --i2) {
+                zOffset = (zOffset + 1) % 2;
+                for (int l1 = i1 - short1 + zOffset; l1 <= i1 + short1; l1 = l1 + 2) { // skipping every 2nd block in z direction and alternating from row to row in x direction
+                    yOffset = (yOffset + 1) % 3;
+                    for (int i2 = this.a.S() - (1 + yOffset) ; i2 >= 0; i2 = i2 - 3) { // checking only every 3rd block in y direction and alternating in high in each column
+            // Poweruser end
                         if (this.a.getType(k1, i2, l1) == Blocks.PORTAL) {
                             while (this.a.getType(k1, i2 - 1, l1) == Blocks.PORTAL) {
                                 --i2;
                             }
 
                             d4 = (double) i2 + 0.5D - y; // CraftBukkit
+                            // Poweruser start
+                            double d5 = (double) k1 + 0.5D - x; // CraftBukkit
+                            double d6 = (double) l1 + 0.5D - z; // CraftBukkit
+                            // Poweruser end
                             double d7 = d5 * d5 + d4 * d4 + d6 * d6;
 
                             if (d3 < 0.0D || d7 < d3) {
