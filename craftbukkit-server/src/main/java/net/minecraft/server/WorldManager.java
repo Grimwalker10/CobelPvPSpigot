@@ -24,12 +24,12 @@ public class WorldManager implements IWorldAccess {
 
     public void a(String s, double d0, double d1, double d2, float f, float f1) {
         // CraftBukkit - this.world.dimension
-        this.server.getPlayerList().sendPacketNearby(d0, d1, d2, f > 1.0F ? (double) (16.0F * f) : 16.0D, this.world.dimension, new PacketPlayOutNamedSoundEffect(s, d0, d1, d2, f, f1));
+        this.world.playerMap.sendPacketNearby(null, d0, d1, d2, f > 1.0F ? (double) (16.0F * f) : 16.0D, new PacketPlayOutNamedSoundEffect(s, d0, d1, d2, f, f1));
     }
 
     public void a(EntityHuman entityhuman, String s, double d0, double d1, double d2, float f, float f1) {
         // CraftBukkit - this.world.dimension
-        this.server.getPlayerList().sendPacketNearby(entityhuman, d0, d1, d2, f > 1.0F ? (double) (16.0F * f) : 16.0D, this.world.dimension, new PacketPlayOutNamedSoundEffect(s, d0, d1, d2, f, f1));
+        this.world.playerMap.sendPacketNearby((EntityPlayer) entityhuman, d0, d1, d2, f > 1.0F ? (double) (16.0F * f) : 16.0D, new PacketPlayOutNamedSoundEffect(s, d0, d1, d2, f, f1)); // CobelPvP
     }
 
     public void a(int i, int j, int k, int l, int i1, int j1) {}
@@ -44,7 +44,7 @@ public class WorldManager implements IWorldAccess {
 
     public void a(EntityHuman entityhuman, int i, int j, int k, int l, int i1) {
         // CraftBukkit - this.world.dimension
-        this.server.getPlayerList().sendPacketNearby(entityhuman, (double) j, (double) k, (double) l, 64.0D, this.world.dimension, new PacketPlayOutWorldEvent(i, j, k, l, i1, false));
+        this.world.playerMap.sendPacketNearby((EntityPlayer) entityhuman, (double) j, (double) k, (double) l, 64.0D, new PacketPlayOutWorldEvent(i, j, k, l, i1, false)); // CobelPvP
     }
 
     public void a(int i, int j, int k, int l, int i1) {
@@ -52,21 +52,11 @@ public class WorldManager implements IWorldAccess {
     }
 
     public void b(int i, int j, int k, int l, int i1) {
-        Iterator iterator = this.world.players.iterator(); // CobelPvP
-
-        while (iterator.hasNext()) {
-            EntityPlayer entityplayer = (EntityPlayer) iterator.next();
-
-            if (entityplayer != null && entityplayer.getId() != i) { // CobelPvP
-                double d0 = (double) j - entityplayer.locX;
-                double d1 = (double) k - entityplayer.locY;
-                double d2 = (double) l - entityplayer.locZ;
-
-                if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
-                    entityplayer.playerConnection.sendPacket(new PacketPlayOutBlockBreakAnimation(i, j, k, l, i1));
-                }
-            }
-        }
+        // CobelPvP start - PlayerMap
+        Entity entity = this.world.getEntity(i);
+        EntityPlayer player = entity instanceof EntityPlayer ? (EntityPlayer) entity : null;
+        this.world.playerMap.sendPacketNearby(player, j, k, l, 32.0D, new PacketPlayOutBlockBreakAnimation(i, j, k, l, i1));
+        // CobelPvP end
     }
 
     public void b() {}

@@ -83,6 +83,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
     // Spigot end
 
+    // CobelPvP start
+    public int playerMapX;
+    public int playerMapZ;
+    // CobelPvP end
+
     public EntityPlayer(MinecraftServer minecraftserver, WorldServer worldserver, GameProfile gameprofile, PlayerInteractManager playerinteractmanager) {
         super(worldserver, gameprofile);
         playerinteractmanager.player = this;

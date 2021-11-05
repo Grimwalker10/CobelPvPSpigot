@@ -22,6 +22,9 @@ import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.generator.ChunkGenerator;
+
+import com.google.common.base.Function;
+
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -35,6 +38,7 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 // Poweruser start
 import com.cobelpvp.LightingUpdater;
 import com.cobelpvp.WeakChunkCache;
+import com.cobelpvp.PlayerMap;
 import com.cobelpvp.ThreadingManager;
 import com.cobelpvp.ThreadingManager.TaskQueueWorker;
 import com.cobelpvp.autosave.AutoSaveWorldData;
@@ -185,6 +189,10 @@ public abstract class World implements IBlockAccess {
         }
     }
     // Spigot end
+
+    // CobelPvP start
+    public final PlayerMap playerMap = new PlayerMap();
+    // CobelPvP end
 
     public BiomeBase getBiome(int i, int j) {
         if (this.isLoaded(i, 0, j)) {
@@ -1212,6 +1220,7 @@ public abstract class World implements IBlockAccess {
                 EntityHuman entityhuman = (EntityHuman) entity;
 
                 this.players.add(entityhuman);
+                this.playerMap.add((EntityPlayer) entityhuman); // CobelPvP
                 this.everyoneSleeping();
                 this.b(entity);
             }
@@ -1251,6 +1260,7 @@ public abstract class World implements IBlockAccess {
         entity.die();
         if (entity instanceof EntityHuman) {
             this.players.remove(entity);
+            this.playerMap.remove((EntityPlayer) entity); // CobelPvP
             // Spigot start
             for ( Object o : worldMaps.c )
             {
@@ -1277,6 +1287,7 @@ public abstract class World implements IBlockAccess {
         entity.die();
         if (entity instanceof EntityHuman) {
             this.players.remove(entity);
+            this.playerMap.remove((EntityPlayer) entity); // CobelPvP
             this.everyoneSleeping();
         }
         // Spigot start
@@ -2972,6 +2983,11 @@ public abstract class World implements IBlockAccess {
     }
 
     public EntityHuman findNearbyPlayer(double d0, double d1, double d2, double d3) {
+        // CobelPvP start
+        if (0 <= d3 && d3 <= 64) {
+            return this.playerMap.getNearestPlayer(d0, d1, d2, d3);
+        }
+        // CobelPvP end
         double d4 = -1.0D;
         EntityHuman entityhuman = null;
 
@@ -2997,7 +3013,32 @@ public abstract class World implements IBlockAccess {
         return this.findNearbyVulnerablePlayer(entity.locX, entity.locY, entity.locZ, d0);
     }
 
+    // CobelPvP start
+    private static final Function<EntityHuman, Double> invisibilityFunction = new Function<EntityHuman, Double>() {
+        @Override
+        public Double apply(EntityHuman entityHuman) {
+
+            if (entityHuman.isInvisible()) {
+                float f = entityHuman.bE();
+
+                if (f < 0.1F) {
+                    f = 0.1F;
+                }
+
+                return (double) (0.7F * f);
+            }
+
+            return null;
+        }
+    };
+    // CobelPvP end
+
     public EntityHuman findNearbyVulnerablePlayer(double d0, double d1, double d2, double d3) {
+        // CobelPvP start
+        if (0 <= d3 && d3 <= 64.0D) {
+            return this.playerMap.getNearestAttackablePlayer(d0, d1, d2, d3, d3, invisibilityFunction);
+        }
+        // CobelPvP end
         double d4 = -1.0D;
         EntityHuman entityhuman = null;
 
@@ -3043,6 +3084,11 @@ public abstract class World implements IBlockAccess {
     }
 
     public EntityHuman findNearbyPlayerWhoAffectsSpawning(double x, double y, double z, double radius) {
+        // CobelPvP start
+        if (0 <= radius && radius <= 64.0) {
+            return this.playerMap.getNearbyPlayer(x, y, z, radius, true);
+        }
+        // CobelPvP end
         double nearestRadius = - 1.0D;
         EntityHuman entityHuman = null;
 

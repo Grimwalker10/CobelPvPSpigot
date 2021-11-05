@@ -379,6 +379,7 @@ public abstract class PlayerList {
 
     public void d(EntityPlayer entityplayer) {
         entityplayer.r().getPlayerChunkMap().movePlayer(entityplayer);
+        entityplayer.world.playerMap.move(entityplayer); // CobelPvP
     }
 
     public String disconnect(EntityPlayer entityplayer) { // CraftBukkit - return string
