@@ -253,4 +253,10 @@ public class PaperSpigotWorldConfig
     {
         fallingBlocksCollideWithSigns = getBoolean( "falling-blocks-collide-with-signs", false );
     }
+
+    public boolean disableEndCredits;
+    private void disableEndCredits()
+    {
+        disableEndCredits = getBoolean( "game-mechanics.disable-end-credits", true );
+    }
 }
