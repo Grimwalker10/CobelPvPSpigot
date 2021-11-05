@@ -5,6 +5,7 @@ import java.io.IOException;
 public class PacketPlayOutChat extends Packet {
 
     private IChatBaseComponent a;
+    public net.md_5.bungee.api.chat.BaseComponent[] components; // Spigot
     private boolean b;
     private int pos; // Spigot
 
@@ -38,7 +39,15 @@ public class PacketPlayOutChat extends Packet {
     }
 
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
-        packetdataserializer.a(ChatSerializer.a(this.a));
+        // Spigot start
+        if ( components != null )
+        {
+            packetdataserializer.a( net.md_5.bungee.chat.ComponentSerializer.toString( components ) );
+        } else
+        {
+            packetdataserializer.a( ChatSerializer.a( this.a ) );
+        }
+        // Spigot end
         // Spigot start - protocol patch
         if ( packetdataserializer.version >= 16 )
         {

@@ -1837,6 +1837,35 @@ public final class CraftServer implements Server {
         {
             return org.spigotmc.SpigotConfig.config;
         }
+
+        /**
+         * Sends the component to the player
+         *
+         * @param component the components to send
+         */
+        @Override
+        public void broadcast(net.md_5.bungee.api.chat.BaseComponent component)
+        {
+            for ( Player player : getOnlinePlayers() )
+            {
+                player.spigot().sendMessage( component );
+            }
+        }
+
+        /**
+         * Sends an array of components as a single message to the
+         * player
+         *
+         * @param components the components to send
+         */
+        @Override
+        public void broadcast(net.md_5.bungee.api.chat.BaseComponent ...components)
+        {
+            for ( Player player : getOnlinePlayers() )
+            {
+                player.spigot().sendMessage( components );
+            }
+        }
     };
 
     public Spigot spigot()
