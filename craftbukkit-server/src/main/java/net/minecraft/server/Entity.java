@@ -440,8 +440,17 @@ public abstract class Entity {
      * PaperSpigot - Load surrounding chunks the entity is moving through
      */
     public void loadChunks() {
-        for (int cx = (int) locX >> 4; cx <= (int) (locX + motX) >> 4; ++cx) {
-            for (int cz = (int) locZ >> 4; cz <= (int) (locZ + motZ) >> 4; ++cz) {
+        int xstart = MathHelper.floor(this.locX);
+        int zstart = MathHelper.floor(this.locZ);
+        int xend = MathHelper.floor(this.locX + this.motX);
+        int zend = MathHelper.floor(this.locZ + this.motZ);
+
+        int xmin = Math.min(xstart, xend) - 3;
+        int xmax = Math.max(xstart, xend) + 3;
+        int zmin = Math.min(zstart, zend) - 3;
+        int zmax = Math.max(zstart, zend) + 3;
+        for (int cx = xmin >> 4; cx <= xmax >> 4; ++cx) {
+            for (int cz = zmin >> 4; cz <= zmax >> 4; ++cz) {
                 world.chunkProvider.getChunkAt(cx, cz);
             }
         }
