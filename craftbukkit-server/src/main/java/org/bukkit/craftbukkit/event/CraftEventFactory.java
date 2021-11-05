@@ -844,6 +844,7 @@ public class CraftEventFactory {
     }
 
     public static void handleInventoryCloseEvent(EntityHuman human) {
+        if (human.activeContainer == human.defaultContainer) return; // Spigot
         InventoryCloseEvent event = new InventoryCloseEvent(human.activeContainer.getBukkitView());
         human.world.getServer().getPluginManager().callEvent(event);
         human.activeContainer.transferTo(human.defaultContainer, human.getBukkitEntity());
