@@ -153,6 +153,10 @@ public class Main {
                 } catch (InterruptedException ex) {
                 }
             }
+            System.err.println("This Spigot build supports Minecraft clients both of versions 1.7.x and of 1.8.x.\n"
+                    + "*** It is imperative that backups be taken before running this build on your server! ***\n"
+                    + "Please report any such issues to http://www.spigotmc.org/, stating your client, server, and if applicable BungeeCord versions.\n"
+                    + "*** Any bug reports not running the very latest versions of these softwares will be ignored ***\n\n");
             // Spigot End
             try {
                 // This trick bypasses Maven Shade's clever rewriting of our getProperty call when using String literals
