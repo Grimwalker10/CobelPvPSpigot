@@ -447,5 +447,15 @@ public class SpigotConfig
     private static void autoSaveClearRegionFileCache() {
         autoSaveClearRegionFileCache = getBoolean ( "settings.autosave.clear-RegionFileCache", false);
     }
+
+    public static boolean lagSpikeLoggerEnabled;
+    private static void lagSpikeLoggerEnabled() {
+        lagSpikeLoggerEnabled = getBoolean ( "settings.lagSpikeLogger.enabled", true);
+    }
+
+    public static long lagSpikeLoggerTickLimitNanos;
+    private static void lagSpikeLoggerTickLimitNanos() {
+        lagSpikeLoggerTickLimitNanos = ((long) getInt( "settings.lagSpikeLogger.tickLimitInMilliseconds", 100)) * 1000000L;
+    }
     // Poweruser end
 }

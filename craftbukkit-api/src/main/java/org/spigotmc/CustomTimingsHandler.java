@@ -22,7 +22,7 @@ import java.util.ArrayDeque; // Poweruser
 public class CustomTimingsHandler
 {
 
-    private static Queue<CustomTimingsHandler> HANDLERS = new ConcurrentLinkedQueue<CustomTimingsHandler>();
+    protected static Queue<CustomTimingsHandler> HANDLERS = new ConcurrentLinkedQueue<CustomTimingsHandler>(); // Poweruser - protected
     /*========================================================================*/
     private final String name;
     private final CustomTimingsHandler parent;
@@ -111,9 +111,9 @@ public class CustomTimingsHandler
             for ( CustomTimingsHandler timings : HANDLERS )
             {
                 timings.updateAverageCalculation(); // Poweruser
-                if ( timings.curTickTotal > 50000000 )
+                if ( timings.curTickTotal > 50000000L ) // Poweruser - add L, mark number as long
                 {
-                    timings.violations += Math.ceil( timings.curTickTotal / 50000000 );
+                    timings.violations += Math.ceil( timings.curTickTotal / 50000000L ); // Poweruser - add L, mark number as long
                 }
                 timings.curTickTotal = 0;
                 timings.timingDepth = 0; // incase reset messes this up
@@ -195,6 +195,18 @@ public class CustomTimingsHandler
             return this.currentTimingsSum / this.currentTimings.size();
         }
         return 0L;
+    }
+
+    public long getCurrentTickTotal() {
+        return this.curTickTotal;
+    }
+
+    public long getCurrentCount() {
+        return this.count;
+    }
+
+    public String getName() {
+        return this.name;
     }
     // Poweruser end
 }

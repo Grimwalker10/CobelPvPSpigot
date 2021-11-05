@@ -675,7 +675,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         SpigotTimings.serverTickTimer.stopTiming(); // Spigot
         this.lastTickTime = (System.nanoTime() - i) / 1000000F;
         ThreadingManager.cancelTimerTask(this.lastTickTime); // Poweruser
-        org.spigotmc.CustomTimingsHandler.tick(); // Spigot
+        net.frozenorb.timings.ExtendedCustomTimingsHandler.tick(); // Poweruser
     }
 
     public void v() {
