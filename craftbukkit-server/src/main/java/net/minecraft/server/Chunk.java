@@ -931,10 +931,15 @@ public class Chunk {
             if (this.o && this.world.getTime() != this.lastSaved || this.n) {
                 return true;
             }
-        } else if (this.o && this.world.getTime() >= this.lastSaved + MinecraftServer.getServer().autosavePeriod * 4) { // PaperSpigot - Only save if we've passed 2 auto save intervals without modification
+        // Poweruser start
+        } else if (this.n && this.world.getAutoSaveWorldData().getLastAutosaveTimeStamp() >= this.lastSaved) {
             return true;
+        } else if (this.o && this.world.getTime() >= this.lastSaved + MinecraftServer.getServer().autosavePeriod) {
+            return true;
+        } else {
+            return false;
         }
-
+        // Poweruser end
         return this.n;
     }
 

@@ -432,5 +432,20 @@ public class SpigotConfig
     private static void playersPerChunkIOThread() {
         playersPerChunkIOThread = Math.max(1, getInt( "settings.chunkio.players-per-thread", 150) );
     }
+
+    public static int autoSaveChunksPerTick;
+    private static void autoSaveChunksPerTick() {
+        autoSaveChunksPerTick = getInt( "settings.autosave.chunks-per-tick" , 200 );
+    }
+
+    public static boolean autoSaveFireWorldSaveEvent;
+    private static void autoSaveFireWorldSaveEvent() {
+        autoSaveFireWorldSaveEvent = getBoolean ( "settings.autosave.fire-WorldSaveEvent", false);
+    }
+
+    public static boolean autoSaveClearRegionFileCache;
+    private static void autoSaveClearRegionFileCache() {
+        autoSaveClearRegionFileCache = getBoolean ( "settings.autosave.clear-RegionFileCache", false);
+    }
     // Poweruser end
 }

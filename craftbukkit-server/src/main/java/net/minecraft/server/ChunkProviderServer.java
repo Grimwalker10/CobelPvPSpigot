@@ -331,11 +331,19 @@ public class ChunkProviderServer implements IChunkProvider {
                 this.saveChunk(chunk);
                 chunk.n = false;
                 ++i;
-                if (i == 24 && !flag) {
+                // Poweruser start
+                if (i >= org.spigotmc.SpigotConfig.autoSaveChunksPerTick && !flag) {
+                    this.world.getAutoSaveWorldData().addAutoSaveChunkCount(i);
+                // Poweruser end
                     return false;
                 }
             }
         }
+        // Poweruser start
+        if(!flag) {
+            this.world.getAutoSaveWorldData().addAutoSaveChunkCount(i);
+        }
+        // Poweruser end
 
         return true;
     }

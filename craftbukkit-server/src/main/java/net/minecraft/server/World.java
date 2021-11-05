@@ -11,11 +11,8 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 
 // PaperSpigot start
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
 // PaperSpigot end
 
 // CraftBukkit start
@@ -39,6 +36,7 @@ import com.cobelpvp.LightingUpdater;
 import com.cobelpvp.WeakChunkCache;
 import com.cobelpvp.ThreadingManager;
 import com.cobelpvp.ThreadingManager.TaskQueueWorker;
+import com.cobelpvp.autosave.AutoSaveWorldData;
 // Poweruser end
 
 public abstract class World implements IBlockAccess {
@@ -209,6 +207,16 @@ public abstract class World implements IBlockAccess {
         return this.worldProvider.e;
     }
 
+
+    // Poweruser start
+    public ChunkProviderServer chunkProviderServer; // moved here from WorldServer
+    private final AutoSaveWorldData autoSaveWorldData;
+
+    public AutoSaveWorldData getAutoSaveWorldData() {
+        return this.autoSaveWorldData;
+    }
+    // Poweruser end
+
     // CraftBukkit start
     private final CraftWorld world;
     public boolean pvpMode;
@@ -310,6 +318,8 @@ public abstract class World implements IBlockAccess {
         if (!spigotConfig.mobsEnabled) {
             this.world.setSpawnFlags(false, false);
         }
+
+        this.autoSaveWorldData = new AutoSaveWorldData(this); // Poweruser
     }
 
     protected abstract IChunkProvider j();

@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -45,6 +44,7 @@ import org.bukkit.event.world.WorldSaveEvent;
 
 // Poweruser start
 import com.cobelpvp.ThreadingManager;
+import com.cobelpvp.autosave.AutoSave;
 // Poweruser end
 
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
@@ -126,6 +126,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
     // Poweruser start
     private ThreadingManager threadingManager;
+    private AutoSave autoSaveManager;
     // Poweruser end
 
     public float lastTickTime = 0F; // CobelPvP
@@ -136,6 +137,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         j = this;
         this.d = proxy;
         this.threadingManager = new ThreadingManager(); // Poweruser
+        this.autoSaveManager = new AutoSave(); // Poweruser
         // this.universe = file1; // CraftBukkit
         // this.p = new ServerConnection(this); // Spigot
         this.o = new CommandDispatcher();
@@ -620,7 +622,22 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             this.q.b().a(agameprofile);
         }
 
-        if ((this.autosavePeriod > 0) && ((this.ticks % this.autosavePeriod) == 0)) { // CraftBukkit
+        // Poweruser start
+        if(this.autoSaveManager.isActive()) {
+            SpigotTimings.worldSaveTimer.startTiming(); // Spigot
+            server.playerCommandState = true;
+            this.autoSaveManager.execute();
+            server.playerCommandState = false;
+            SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
+        } else if ((this.autosavePeriod > 0) && ((this.ticks % this.autosavePeriod) == 0)) { // CraftBukkit
+            this.autoSaveManager.reset();
+            for(WorldServer worldserver: worlds) {
+                this.autoSaveManager.queueWorld(worldserver);
+            }
+            this.autoSaveManager.start();
+        }
+        // Poweruser end
+        /*
             SpigotTimings.worldSaveTimer.startTiming(); // Spigot
             this.methodProfiler.a("save");
             this.u.savePlayers();
@@ -638,6 +655,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             this.methodProfiler.b();
             SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
         }
+        */
 
         this.methodProfiler.a("tallying");
         this.g[this.ticks % 100] = System.nanoTime() - i;

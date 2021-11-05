@@ -337,7 +337,7 @@ public class WorldServer extends World {
             this.timings.doTickTiles_tickingChunks_getChunk.startTiming(); // Poweruser
             // Poweruser start
             Chunk chunk = this.getChunkIfLoaded(chunkX, chunkZ);
-            if(chunk == null || chunk.wasUnloaded() || !chunk.areNeighborsLoaded(1) || this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ )) {
+            if(chunk == null || !chunk.areNeighborsLoaded(1) || this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ )) {
                 iter.remove();
                 continue;
             }
@@ -811,18 +811,30 @@ public class WorldServer extends World {
         return this.worldProvider.h();
     }
 
-    public void save(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict { // CraftBukkit - added throws
+    // Poweruser start
+    public void saveOnlyLevel(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict {
         if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.a("Saving level");
             }
 
             this.a();
+        }
+    }
+
+    public boolean saveOnlyChunks(boolean flag, IProgressUpdate iprogressupdate) {
+        if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.c("Saving chunks");
             }
 
-            this.chunkProvider.saveChunks(flag, iprogressupdate);
+            return this.chunkProvider.saveChunks(flag, iprogressupdate);
+        }
+        return true;
+    }
+
+    public void unloadOnlyUnusedChunks(boolean flag, IProgressUpdate iprogressupdate) {
+        if (this.chunkProvider.canSave()) {
             // CraftBukkit - ArrayList -> Collection
             Collection arraylist = this.chunkProviderServer.a();
             Iterator iterator = arraylist.iterator();
@@ -834,6 +846,17 @@ public class WorldServer extends World {
                     this.chunkProviderServer.queueUnload(chunk.locX, chunk.locZ);
                 }
             }
+        }
+    }
+    // Poweruser end
+
+    public void save(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict { // CraftBukkit - added throws
+        if (this.chunkProvider.canSave()) {
+            // Poweruser start
+            this.saveOnlyLevel(flag, iprogressupdate);
+            this.saveOnlyChunks(flag, iprogressupdate);
+            this.unloadOnlyUnusedChunks(flag, iprogressupdate);
+            // Poweruser end
         }
     }
 

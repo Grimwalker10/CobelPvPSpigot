@@ -67,4 +67,14 @@ public class FileIOThread implements Runnable {
 
         this.e = false;
     }
+
+    // Poweruser start
+    public boolean isDone() {
+        return this.c == this.d;
+    }
+
+    public void setNoDelay(boolean active) {
+        this.e = active;
+    }
+    // Poweruser end
 }
