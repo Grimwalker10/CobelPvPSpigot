@@ -1,9 +1,17 @@
 package net.minecraft.server;
 
+import org.github.paperspigot.PaperSpigotConfig; // PaperSpigot
+
 public class ItemMilkBucket extends Item {
 
     public ItemMilkBucket() {
-        this.e(1);
+        // PaperSpigot start - Stackable Buckets
+        if (PaperSpigotConfig.stackableMilkBuckets) {
+            this.e(org.bukkit.Material.BUCKET.getMaxStackSize());
+        } else {
+            this.e(1);
+        }
+        // PaperSpigot end
         this.a(CreativeModeTab.f);
     }
 
@@ -15,6 +23,16 @@ public class ItemMilkBucket extends Item {
         if (!world.isStatic) {
             entityhuman.removeAllEffects();
         }
+
+        // PaperSpigot start - Stackable Buckets
+        if (PaperSpigotConfig.stackableMilkBuckets) {
+            if (itemstack.count <= 0) {
+                return new ItemStack(Items.BUCKET);
+            } else if (!entityhuman.inventory.pickup(new ItemStack(Items.BUCKET))) {
+                entityhuman.drop(new ItemStack(Items.BUCKET), false);
+            }
+        }
+        // PaperSpigot end
 
         return itemstack.count <= 0 ? new ItemStack(Items.BUCKET) : itemstack;
     }
