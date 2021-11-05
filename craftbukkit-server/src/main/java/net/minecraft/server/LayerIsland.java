@@ -1,13 +1,27 @@
 package net.minecraft.server;
 
+import java.util.Arrays;
+
 public class LayerIsland extends GenLayer {
 
-    public LayerIsland(long i) {
+    // CobelPvP start - add world
+    private final World world;
+
+    public LayerIsland(long i, World world) {
         super(i);
+        this.world = world;
+        // CobelPvP end
     }
 
     public int[] a(int i, int j, int k, int l) {
         int[] aint = IntCache.a(k * l);
+
+        // CobelPvP start - oceans option
+        if (!world.generatorConfig.oceans) {
+            Arrays.fill(aint, 1);
+            return aint;
+        }
+        // CobelPvP end
 
         for (int i1 = 0; i1 < l; ++i1) {
             for (int j1 = 0; j1 < k; ++j1) {

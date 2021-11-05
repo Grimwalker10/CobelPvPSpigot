@@ -13,6 +13,7 @@ import java.util.concurrent.Callable;
 // PaperSpigot start
 import java.util.HashMap;
 import java.util.Map;
+import com.cobelpvp.generator.GeneratorConfig;
 // PaperSpigot end
 
 // CraftBukkit start
@@ -239,10 +240,13 @@ public abstract class World implements IBlockAccess {
         return ((ChunkProviderServer) this.chunkProvider).getChunkIfLoaded(x, z);
     }
 
+    public final GeneratorConfig generatorConfig;// CobelPvP
+
     // Changed signature - added gen and env
     public World(IDataManager idatamanager, String s, WorldSettings worldsettings, WorldProvider worldprovider, MethodProfiler methodprofiler, ChunkGenerator gen, org.bukkit.World.Environment env) {
         this.spigotConfig = new org.spigotmc.SpigotWorldConfig( s ); // Spigot
         this.paperSpigotConfig = new org.github.paperspigot.PaperSpigotWorldConfig( s ); // PaperSpigot
+        this.generatorConfig = new GeneratorConfig(s); // CobelPvP
         this.generator = gen;
         this.world = new CraftWorld((WorldServer) this, gen, env);
         this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit

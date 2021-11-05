@@ -51,7 +51,7 @@ import com.cobelpvp.autosave.AutoSave;
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
 
     private static final Logger i = LogManager.getLogger();
-    private static final File a = new File( "config/misc", "usercache.json"); // MineHQ - Dedicated config directory
+    private static final File a = new File( "config/misc", "usercache.json"); // CobelPvP - Dedicated config directory
     private static MinecraftServer j;
     public Convertable convertable; // CraftBukkit - private final -> public
     private final MojangStatisticsGenerator l = new MojangStatisticsGenerator("server", this, ar());

@@ -41,12 +41,12 @@ import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 public abstract class PlayerList {
 
-    // MineHQ start - Dedicated config directory
+    // CobelPvP start - Dedicated config directory
     public static final File a = new File("config/misc", "banned-players.json");
     public static final File b = new File("config/misc", "banned-ips.json");
     public static final File c = new File("config/misc", "ops.json");
     public static final File d = new File("config/misc", "whitelist.json");
-    // MineHQ end
+    // CobelPvP end
     private static final Logger g = LogManager.getLogger();
     private static final SimpleDateFormat h = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
     private final MinecraftServer server;

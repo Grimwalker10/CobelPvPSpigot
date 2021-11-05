@@ -1,12 +1,15 @@
 package net.minecraft.server;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class WorldGenMinable extends WorldGenerator {
 
     private Block a;
     private int b;
     private Block c;
+    private boolean mustTouchAir; // CobelPvP
 
     public WorldGenMinable(Block block, int i) {
         this(block, i, Blocks.STONE);
@@ -18,6 +21,13 @@ public class WorldGenMinable extends WorldGenerator {
         this.c = block1;
     }
 
+    // CobelPvP start
+    public WorldGenMinable(Block block, int size, boolean mustTouchAir) {
+        this(block, size, Blocks.STONE);
+        this.mustTouchAir = mustTouchAir;
+    }
+    // CobelPvP end
+
     public boolean generate(World world, Random random, int i, int j, int k) {
         float f = random.nextFloat() * 3.1415927F;
         double d0 = (double) ((float) (i + 8) + MathHelper.sin(f) * (float) this.b / 8.0F);
@@ -26,6 +36,9 @@ public class WorldGenMinable extends WorldGenerator {
         double d3 = (double) ((float) (k + 8) - MathHelper.cos(f) * (float) this.b / 8.0F);
         double d4 = (double) (j + random.nextInt(3) - 2);
         double d5 = (double) (j + random.nextInt(3) - 2);
+
+        boolean touchedAir = false;
+        Set<ChunkPosition> blocks = mustTouchAir ? new HashSet<ChunkPosition>() : null;
 
         for (int l = 0; l <= this.b; ++l) {
             double d6 = d0 + (d1 - d0) * (double) l / (double) this.b;
@@ -53,12 +66,29 @@ public class WorldGenMinable extends WorldGenerator {
                                 double d14 = ((double) i3 + 0.5D - d8) / (d10 / 2.0D);
 
                                 if (d12 * d12 + d13 * d13 + d14 * d14 < 1.0D && world.getType(k2, l2, i3) == this.c) {
-                                    world.setTypeAndData(k2, l2, i3, this.a, 0, 2);
+                                    if (mustTouchAir) {
+                                        blocks.add(new ChunkPosition(k2, l2, i3));
+                                        touchedAir |=
+                                                world.getType(k2 + 1, l2, i3) == Blocks.AIR ||
+                                                world.getType(k2 - 1, l2, i3) == Blocks.AIR ||
+                                                world.getType(k2, l2 + 1, i3) == Blocks.AIR ||
+                                                world.getType(k2, l2 - 1, i3) == Blocks.AIR ||
+                                                world.getType(k2, l2, i3 + 1) == Blocks.AIR ||
+                                                world.getType(k2, l2, i3 - 1) == Blocks.AIR;
+                                    } else {
+                                        world.setTypeAndData(k2, l2, i3, this.a, 0, 2);
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            }
+        }
+
+        if (mustTouchAir && touchedAir) {
+            for (ChunkPosition block : blocks) {
+                world.setTypeAndData(block.x, block.y, block.z, this.a, 0, 2);
             }
         }
 

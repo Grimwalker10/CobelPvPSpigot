@@ -173,9 +173,9 @@ public class WorldGenCaves extends WorldGenBase {
     }
 
     protected void a(World world, int i, int j, int k, int l, Block[] ablock) {
-        int i1 = this.b.nextInt(this.b.nextInt(this.b.nextInt(15) + 1) + 1);
+        int i1 = this.b.nextInt(this.b.nextInt(this.b.nextInt((int) (15 * world.generatorConfig.cavesMultiplier)) + 1) + 1);
 
-        if (this.b.nextInt(7) != 0) {
+        if (this.b.nextFloat() > world.generatorConfig.cavesMultiplier / 7) {
             i1 = 0;
         }
 

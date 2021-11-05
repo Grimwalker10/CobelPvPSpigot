@@ -70,7 +70,7 @@ public class TileEntityBrewingStand extends TileEntity implements IWorldInventor
         this.lastTick = MinecraftServer.currentTick;
 
         if (this.brewTime > 0) {
-            this.brewTime -= elapsedTicks * SpigotConfig.brewingMultiplier; // MineHQ
+            this.brewTime -= elapsedTicks * SpigotConfig.brewingMultiplier; // CobelPvP
             if (this.brewTime <= 0) { // == -> <=
                 // CraftBukkit end
                 this.l();

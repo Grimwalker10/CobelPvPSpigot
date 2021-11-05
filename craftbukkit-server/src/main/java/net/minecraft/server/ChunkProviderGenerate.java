@@ -150,7 +150,7 @@ public class ChunkProviderGenerate implements IChunkProvider {
         this.z = this.n.getWorldChunkManager().getBiomeBlock(this.z, i * 16, j * 16, 16, 16);
         this.a(i, j, ablock, abyte, this.z);
         // PaperSpigot start
-        if (this.n.paperSpigotConfig.generateCaves) this.t.a(this, this.n, i, j, ablock);
+        if (this.n.paperSpigotConfig.generateCaves && this.n.generatorConfig.cavesMultiplier > 0) this.t.a(this, this.n, i, j, ablock);
         if (this.n.paperSpigotConfig.generateCanyon) this.y.a(this, this.n, i, j, ablock);
         // PaperSpigot end
         if (this.o) {

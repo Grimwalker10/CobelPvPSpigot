@@ -33,7 +33,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class SpigotConfig
 {
 
-    private static final File CONFIG_FILE = new File( "config/server", "spigot.yml" ); // MineHQ - Dedicated config directory
+    private static final File CONFIG_FILE = new File( "config/server", "spigot.yml" ); // CobelPvP - Dedicated config directory
     private static final String HEADER = "This is the main configuration file for Spigot.\n"
             + "As you can see, there's tons to configure. Some options may impact gameplay, so use\n"
             + "with caution, and make sure you know what each option does before configuring.\n"

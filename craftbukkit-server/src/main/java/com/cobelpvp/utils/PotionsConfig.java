@@ -9,7 +9,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class PotionsConfig
 {
-    private static final YamlConfiguration conf = YamlConfiguration.loadConfiguration(new File("config/server", "potions.yml")); // MineHQ
+    private static final YamlConfiguration conf = YamlConfiguration.loadConfiguration(new File("config/server", "potions.yml")); // CobelPvP
     private static final List<PotionMatcher> disableBrewing = new ArrayList<PotionMatcher>();
     private static final Map<Integer, Boolean> disableBrewingCache = new HashMap<Integer, Boolean>();
 
