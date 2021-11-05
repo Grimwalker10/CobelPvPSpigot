@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import net.frozenorb.util.IndexedLinkedHashSet;
+import com.cobelpvp.utils.IndexedLinkedHashSet;
 
 public class EntityTracker {
 

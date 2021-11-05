@@ -1,4 +1,4 @@
-package net.frozenorb.command;
+package com.cobelpvp.commands;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;

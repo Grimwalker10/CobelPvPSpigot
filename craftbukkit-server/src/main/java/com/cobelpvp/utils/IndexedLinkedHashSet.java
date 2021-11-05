@@ -1,4 +1,4 @@
-package net.frozenorb.util;
+package com.cobelpvp.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;

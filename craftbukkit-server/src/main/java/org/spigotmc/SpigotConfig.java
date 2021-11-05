@@ -1,5 +1,6 @@
 package org.spigotmc;
 
+import com.cobelpvp.commands.NoTrackCommand;
 import com.cobelpvp.commands.SetViewDistanceCommand;
 import com.cobelpvp.commands.WorldStatsCommand;
 import com.google.common.base.Throwables;
@@ -461,7 +462,7 @@ public class SpigotConfig
 
     // CobelPvP start
     private static void noTrackCommand() {
-        commands.put( "notrack", new net.frozenorb.command.NoTrackCommand( "notrack" ) );
+        commands.put( "notrack", new NoTrackCommand( "notrack" ) );
     }
 
     public static boolean disableTracking;
