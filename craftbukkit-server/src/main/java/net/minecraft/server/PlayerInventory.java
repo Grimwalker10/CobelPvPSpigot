@@ -443,7 +443,7 @@ public class PlayerInventory implements IInventory {
     }
 
     public void a(float f) {
-        f /= 4.0F;
+        f /= org.spigotmc.SpigotConfig.reduceArmorDamage ? 8.0F : 4.0F; // MineHQ
         if (f < 1.0F) {
             f = 1.0F;
         }

@@ -459,6 +459,11 @@ public class SpigotConfig
     }
     // Poweruser end
 
+    public static boolean reduceArmorDamage;
+    private static void reduceArmorDamage() {
+        reduceArmorDamage = getBoolean("settings.reduce-armor-damage", false);
+    }
+
     // Griffin start
     public static int brewingMultiplier;
     private static void brewingMultiplier() {
