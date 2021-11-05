@@ -14,10 +14,7 @@ import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
-import org.bukkit.event.player.PlayerBedEnterEvent;
-import org.bukkit.event.player.PlayerBedLeaveEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.*;
 // CraftBukkit end
 import org.spigotmc.ProtocolData; // Spigot - protocol patch
 
@@ -948,6 +945,13 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                         // CraftBukkit end
                     }
 
+                    // Kohi start
+                    // Save the victim's velocity before they are potentially knocked back
+                    double victimMotX = entity.motX;
+                    double victimMotY = entity.motY;
+                    double victimMotZ = entity.motZ;
+                    // Kohi end
+
                     boolean flag2 = entity.damageEntity(DamageSource.playerAttack(this), f);
 
                     if (flag2) {
@@ -957,6 +961,31 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                             this.motZ *= 0.6D;
                             this.setSprinting(false);
                         }
+
+                        // Kohi start
+                        // If the attack caused knockback, send the new velocity to the victim's client immediately,
+                        // and undo the change. Otherwise, if movement packets from the victim are processed before
+                        // the end of the tick, then friction may reduce the velocity considerably before it's sent
+                        // to the client, particularly if the victim was standing on the ground when those packets
+                        // were generated. And because this glitch is also likely to make server-side velocity very
+                        // inconsistent, we simply reverse the knockback after sending it so that KB, like most other
+                        // things, doesn't affect server velocity at all.
+                        if (entity instanceof EntityPlayer && entity.velocityChanged) {
+                            EntityPlayer attackedPlayer = (EntityPlayer) entity;
+                            PlayerVelocityEvent event = new PlayerVelocityEvent(attackedPlayer.getBukkitEntity(), attackedPlayer.getBukkitEntity().getVelocity());
+                            this.world.getServer().getPluginManager().callEvent(event);
+
+                            if (!event.isCancelled()) {
+                                attackedPlayer.getBukkitEntity().setVelocityDirect(event.getVelocity());
+                                attackedPlayer.playerConnection.sendPacket(new PacketPlayOutEntityVelocity(attackedPlayer));
+                            }
+
+                            attackedPlayer.velocityChanged = false;
+                            attackedPlayer.motX = victimMotX;
+                            attackedPlayer.motY = victimMotY;
+                            attackedPlayer.motZ = victimMotZ;
+                        }
+                        // Kohi end
 
                         if (flag) {
                             this.b(entity);
