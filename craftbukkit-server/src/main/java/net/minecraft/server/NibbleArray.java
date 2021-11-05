@@ -33,4 +33,10 @@ public class NibbleArray {
         this.a[position >> 1] = (byte) (this.a[position >> 1] & ~(15 << shift) | (l & 15) << shift);
         // CobelPvP end
     }
+
+    // CobelPvP start - chunk snapshot api
+    public NibbleArray clone() {
+        return new NibbleArray(a.clone(), 4);
+    }
+    // CobelPvP end
 }

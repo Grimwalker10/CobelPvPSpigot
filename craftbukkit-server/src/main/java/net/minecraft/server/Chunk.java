@@ -29,7 +29,7 @@ public class Chunk {
     public final int locX;
     public final int locZ;
     private boolean w;
-    public Map tileEntities;
+    public Map<ChunkPosition, TileEntity> tileEntities; // CobelPvP - added generic
     public List[] entitySlices;
     public boolean done;
     public boolean lit;

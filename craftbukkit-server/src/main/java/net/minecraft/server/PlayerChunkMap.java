@@ -407,4 +407,14 @@ public class PlayerChunkMap {
     public int getWorldViewDistance() {
         return this.g;
     }
+
+    // CobelPvP start - chunk snapshot api
+    public void resend(int chunkX, int chunkZ) {
+        PlayerChunk playerchunk = this.a(chunkX, chunkZ, false);
+
+        if (playerchunk != null) {
+            playerchunk.resend();
+        }
+    }
+    // CobelPvP end
 }

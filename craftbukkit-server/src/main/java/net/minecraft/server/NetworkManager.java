@@ -46,7 +46,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public static final NetworkStatistics h = new NetworkStatistics();
     private final boolean j;
     private final Queue k = Queues.newConcurrentLinkedQueue();
-    // private final Queue l = Queues.newConcurrentLinkedQueue(); // MineHQ
+    // private final Queue l = Queues.newConcurrentLinkedQueue(); // CobelPvP
     private Channel m;
     // Spigot Start
     public SocketAddress n;
@@ -142,10 +142,10 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     public void handle(Packet packet, GenericFutureListener... agenericfuturelistener) {
         if (this.m != null && this.m.isOpen()) {
-            // this.i(); // MineHQ
+            // this.i(); // CobelPvP
             this.b(packet, agenericfuturelistener);
         } else {
-            // this.l.add(new QueuedPacket(packet, agenericfuturelistener)); // MineHQ
+            // this.l.add(new QueuedPacket(packet, agenericfuturelistener)); // CobelPvP
         }
     }
 
@@ -170,7 +170,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
             this.m.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener));
         }
     }
-// MineHQ start - remove unneeded packet queue
+// CobelPvP start - remove unneeded packet queue
     /*
 
     private void i() {
@@ -184,10 +184,10 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         }
     }
     */
-    // MineHQ end
+    // CobelPvP end
 
     public void a() {
-        // this.i(); // MineHQ
+        // this.i(); // CobelPvP
         EnumProtocol enumprotocol = (EnumProtocol) this.m.attr(d).get();
 
         if (this.p != enumprotocol) {
@@ -240,7 +240,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         // Spigot Start
         this.preparing = false;
         this.k.clear();
-        // this.l.clear(); // Spigot Update - 20140921a // MineHQ
+        // this.l.clear(); // Spigot Update - 20140921a // CobelPvP
         // Spigot End
         if (this.m.isOpen()) {
             this.m.close();

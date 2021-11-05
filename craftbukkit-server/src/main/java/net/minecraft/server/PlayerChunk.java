@@ -270,4 +270,14 @@ class PlayerChunk {
     static List b(PlayerChunk playerchunk) {
         return playerchunk.b;
     }
+
+    // CobelPvP start - chunk snapshot api
+    public void resend() {
+        if (this.dirtyCount == 0) {
+            PlayerChunkMap.d(this.playerChunkMap).add(this);
+        }
+        this.dirtyCount = 64;
+        this.f = 0xFFFF;
+    }
+    // CobelPvP end
 }

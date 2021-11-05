@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.cobelpvp.chunksnapshot.ChunkSectionSnapshot;
+
 import java.util.Arrays; // CraftBukkit
 
 public class ChunkSection {
@@ -444,4 +446,48 @@ public class ChunkSection {
         return byteArray;
     }
     // CraftBukkit end
+
+    // CobelPvP start - chunk snapshot api
+    public ChunkSectionSnapshot createSnapshot() {
+        return new ChunkSectionSnapshot(
+                nonEmptyBlockCount,
+                tickingBlockCount,
+                clone(blockIds),
+                clone(blockData),
+                clone(emittedLight),
+                clone(skyLight),
+                compactId,
+                compactData,
+                compactEmitted,
+                compactSky);
+    }
+
+    public void restoreSnapshot(ChunkSectionSnapshot snap) {
+        nonEmptyBlockCount = snap.getNonEmptyBlockCount();
+        tickingBlockCount = snap.getTickingBlockCount();
+        blockIds = clone(snap.getBlockIds());
+        blockData = clone(snap.getBlockData());
+        emittedLight = clone(snap.getEmittedLight());
+        skyLight = clone(snap.getSkyLight());
+        compactId = snap.getCompactId();
+        compactData = snap.getCompactData();
+        compactEmitted = snap.getCompactEmitted();
+        compactSky = snap.getCompactSky();
+        isDirty = true;
+    }
+
+    private static byte[] clone(byte[] array) {
+        if (array != null) {
+            return array.clone();
+        }
+        return null;
+    }
+
+    private static NibbleArray clone(NibbleArray array) {
+        if (array != null) {
+            return array.clone();
+        }
+        return null;
+    }
+    // CobelPvP end
 }
