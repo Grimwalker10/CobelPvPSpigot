@@ -137,22 +137,6 @@ public class Main {
             System.out.println(CraftServer.class.getPackage().getImplementationVersion());
         } else {
             // Spigot Start
-            File lock = new File(".update-lock");
-            if (!new File("update-lock").exists() && !lock.exists() && System.getProperty("IReallyKnowWhatIAmDoingThisUpdate") == null) {
-                System.err.println("WARNING: This Minecraft update alters the way in which saved data is stored.");
-                System.err.println("Please ensure your server is in the correct online/offline mode state, as the changes made are PERMANENT");
-                System.err.println("If you are running in offline mode, but your BungeeCord is in online mode, it is imperative that BungeeCord support is enabled in spigot.yml and BungeeCord's config.yml");
-                System.err.println("By typing `yes` you acknowledge that you have taken the necessary backups and are aware of this conversion");
-                System.err.println("Please type yes to continue starting the server. You have been warned :)");
-                System.err.println("See http://www.spigotmc.org/wiki/uuid-conversion/ if you have any questions and remember BACKUP BACKUP BACKUP");
-                System.err.println("=================================================================================");
-                System.err.println("Starting server in 10 seconds");
-                lock.createNewFile();
-                try {
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-                } catch (InterruptedException ex) {
-                }
-            }
             System.err.println("This is a custom Spigot for CobelPvP, the versions are 1.7.x and 1.8.x.\n"
                     + "Dont run this spigot if you don't know what it is, this is only compatible with CobelPvP plugins\n");
             // Spigot End
