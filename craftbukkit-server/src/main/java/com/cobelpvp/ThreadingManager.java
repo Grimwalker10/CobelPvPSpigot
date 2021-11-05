@@ -2,6 +2,7 @@ package com.cobelpvp;
 
 import com.cobelpvp.pathsearch.PathSearchThrottlerThread;
 import com.cobelpvp.pathsearch.jobs.PathSearchJob;
+import com.cobelpvp.utils.PlayerDataSaveJob;
 import net.minecraft.server.NBTCompressedStreamTools;
 import net.minecraft.server.NBTTagCompound;
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +38,10 @@ public class ThreadingManager {
                 }
             } catch(InterruptedException e) {}
         }
+    }
+
+    public static void saveNBTPlayerDataStatic(PlayerDataSaveJob savejob) {
+        instance.nbtFileService.execute(savejob);
     }
 
     public static void saveNBTFileStatic(NBTTagCompound compound, File file) {
