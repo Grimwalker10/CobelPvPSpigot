@@ -92,7 +92,7 @@ public abstract class Command {
 
         ArrayList<String> matchedPlayers = new ArrayList<String>();
         for (Player player : sender.getServer().getOnlinePlayers()) {
-            String name = player.getName();
+            String name = player.getDisguisedName(); // CobelPvP - Disguises
             if ((senderPlayer == null || senderPlayer.canSee(player)) && StringUtil.startsWithIgnoreCase(name, lastWord)) {
                 matchedPlayers.add(name);
             }

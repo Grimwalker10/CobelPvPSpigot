@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -565,11 +566,28 @@ public final class CraftServer implements Server {
     @Override
     @Deprecated
     public Player getPlayerExact(String name) {
-        // PaperSpigot start - Improved player lookup, replace whole method
+        // CobelPvP start - Take disguises into account, replace whole method.
+        Validate.notNull(name, "Name cannot be null");
+
+        // PaperSpigot's optimization start
         EntityPlayer player = playerList.playerMap.get(name);
+        if (player != null) {
+            return player.getBukkitEntity();
+        }
+        // PaperSpigot's optimization end
+
+        player = playerList.disguisePlayerMap.get(name);
+
         return player != null ? player.getBukkitEntity() : null;
-        // PaperSpigot end
+        // CobelPvP end
     }
+
+    @Override
+    public Player getPlayerExactByDisguise(String name) {
+        EntityPlayer player = playerList.disguisePlayerMap.get(name);
+        return player != null ? player.getBukkitEntity() : null;
+    }
+    // CobelPvP end
 
     @Override
     public Player getPlayer(UUID id) {
@@ -1766,9 +1784,11 @@ public final class CraftServer implements Server {
         PlayerChatTabCompleteEvent event = new PlayerChatTabCompleteEvent(player, message, completions);
         String token = event.getLastToken();
         for (Player p : getOnlinePlayers()) {
-            if (player.canSee(p) && StringUtil.startsWithIgnoreCase(p.getName(), token)) {
-                completions.add(p.getName());
+            // CobelPvP start - Disguises: Use #getDisguisedName instead of #getName
+            if (player.canSee(p) && StringUtil.startsWithIgnoreCase(p.getDisguisedName(), token)) {
+                completions.add(p.getDisguisedName());
             }
+            // CobelPvP end
         }
         pluginManager.callEvent(event);
 
@@ -1846,6 +1866,35 @@ public final class CraftServer implements Server {
     public int getIdleTimeout() {
         return console.getIdleTimeout();
     }
+
+    // CobelPvP start
+    @Override
+    public Player getPlayerByDisguise(String name) {
+        Validate.notNull(name, "Name cannot be null");
+
+        Player found = getPlayerExactByDisguise(name);
+        if (found != null) {
+            return found;
+        }
+
+        String lowerName = name.toLowerCase();
+        int delta = Integer.MAX_VALUE;
+        for (Entry<String, EntityPlayer> entry : playerList.disguisePlayerMap.entrySet()) {
+            String disguisedName = entry.getKey();
+            EntityPlayer player = entry.getValue();
+            if (disguisedName.toLowerCase().startsWith(lowerName)) {
+                int curDelta = disguisedName.length() - lowerName.length();
+                if (curDelta < delta) {
+                    found = player.getBukkitEntity();
+                    delta = curDelta;
+                }
+                if (curDelta == 0) break;
+            }
+        }
+
+        return found;
+    }
+    // CobelPvP end
 
     @Deprecated
     @Override

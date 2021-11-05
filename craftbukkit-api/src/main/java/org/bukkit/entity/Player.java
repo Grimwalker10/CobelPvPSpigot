@@ -35,6 +35,45 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
      */
     public String getDisplayName();
 
+    // CobelPvP start - Disguises
+    /**
+     * Gets the disguised name of this player, or their
+     * actual name if they're not currently disguised.
+     */
+    public String getDisguisedName();
+
+    /**
+     * Is this {@link Player} currently disguised?
+     */
+    public boolean isDisguised();
+
+    /**
+     * Disguise this {@link Player} as someone else.
+     * This will disguise their tab-list name and tab-completion
+     * should take this into account.
+     *
+     * {@link #getDisplayName()} will return the disguised name, as
+     * well as {@link #getDisguisedName()}. {@link #getName()} should
+     * only be used in situations where we absolutely need the player's
+     * real name, and should never be outputted to other players.
+     *
+     * @param name    The name of the player we want to disguise as
+     * @param texture We can add custom skins by doing this.
+     */
+    public void disguise(String name, String texture);
+
+    /**
+     * @see #disguise(String, String)
+     * This method does not allow for a custom skin.
+     */
+    public void disguise(String name);
+
+    /**
+     * Un-disguise this player.
+     */
+    public void undisguise();
+    // CobelPvP end
+
     /**
      * Sets the "friendly" name to display of this player. This may include
      * color.

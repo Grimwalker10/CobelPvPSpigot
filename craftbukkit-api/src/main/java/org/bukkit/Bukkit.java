@@ -745,6 +745,22 @@ public final class Bukkit {
         return server.getIdleTimeout();
     }
 
+    // CobelPvP start
+    /**
+     * @see Server#getPlayerByDisguise(String name)
+     */
+    public static Player getPlayerByDisguise(String name) {
+        return server.getPlayerByDisguise(name);
+    }
+
+    /**
+     * @see Server#getPlayerExactByDisguise(String name)
+     */
+    public static Player getPlayerExactByDisguise(String name) {
+        return server.getPlayerExactByDisguise(name);
+    }
+    // CobelPvP end
+
     /**
      * @see Server#getUnsafe()
      */

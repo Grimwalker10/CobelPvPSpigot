@@ -70,6 +70,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private double health = 20;
     private boolean scaledHealth = false;
     private double healthScale = 20;
+    // CobelPvP start - Disguises
+     private String disguisedName;
+     private String originalPlayerListName;
+     public GameProfile disguisedProfile;
+     // CobelPvP end
 
     public CraftPlayer(CraftServer server, EntityPlayer entity) {
         super(server, entity);
@@ -185,13 +190,107 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public String getDisplayName() {
-        return getHandle().displayName;
+        return disguisedName != null ? disguisedName : getHandle().displayName; // CobelPvP - Disguises
     }
 
     @Override
     public void setDisplayName(final String name) {
         getHandle().displayName = name == null ? getName() : name;
     }
+
+    // CobelPvP start - Disguises
+    @Override
+    public String getDisguisedName() {
+        return disguisedName != null ? disguisedName : getName();
+    }
+
+    @Override
+    public boolean isDisguised() {
+        return disguisedName != null;
+    }
+
+    @Override
+    public void disguise(String name, String texture) {
+        Validate.isTrue(!isDisguised(), "Player is already disguised");
+        Validate.isTrue(!MinecraftServer.getServer().getPlayerList().disguisePlayerMap.containsKey(name), "Disguise name is already in use");
+
+        // we construct this here, before we actually make any changes to their profile and whatnot.
+        PacketPlayOutPlayerInfo removeTabPacket = PacketPlayOutPlayerInfo.removePlayer(getHandle());
+
+        disguisedName = name;
+        disguisedProfile = new GameProfile(getUniqueId(), disguisedName);
+        if (texture != null) {
+            // TODO: disguisedProfile.getProperties().put("texture", new Property("textures", texture, textureSignature));
+        }
+
+        originalPlayerListName = getPlayerListName();
+        setPlayerListName(disguisedName);
+
+        MinecraftServer.getServer().getPlayerList().disguisePlayerMap.put(disguisedName, getHandle());
+
+        PacketPlayOutPlayerInfo addThisTabPacket = PacketPlayOutPlayerInfo.addPlayer(getHandle());
+
+        for (Object playerObj : MinecraftServer.getServer().getPlayerList().players) {
+            EntityPlayer player = (EntityPlayer) playerObj;
+
+            if (player.playerConnection != null) {
+                player.playerConnection.sendPacket(removeTabPacket);
+                player.playerConnection.sendPacket(addThisTabPacket);
+            }
+        }
+
+        EntityTrackerEntry trackerEntry = (EntityTrackerEntry)((WorldServer)this.entity.world).getTracker().trackedEntities.get(getEntityId());
+
+        if (trackerEntry != null) {
+            PacketPlayOutEntityDestroy destroyPacket = new PacketPlayOutEntityDestroy(getEntityId());
+            PacketPlayOutNamedEntitySpawn spawnPacket = new PacketPlayOutNamedEntitySpawn(getHandle());
+
+            trackerEntry.broadcast(destroyPacket);
+            trackerEntry.broadcast(spawnPacket);
+        }
+    }
+
+    @Override
+    public void disguise(String name) {
+        disguise(name, null);
+    }
+
+    @Override
+    public void undisguise() {
+        Validate.isTrue(isDisguised(), "Player is not disguised");
+
+        PacketPlayOutPlayerInfo removeTabPacket = PacketPlayOutPlayerInfo.removePlayer(getHandle());
+
+        setPlayerListName(originalPlayerListName);
+
+        MinecraftServer.getServer().getPlayerList().disguisePlayerMap.remove(disguisedName);
+
+        disguisedName = null;
+        disguisedProfile = null;
+        originalPlayerListName = null;
+
+        PacketPlayOutNamedEntitySpawn spawnPacket = new PacketPlayOutNamedEntitySpawn(getHandle());
+        PacketPlayOutPlayerInfo addThisTabPacket = PacketPlayOutPlayerInfo.addPlayer(getHandle());
+
+        for (Object playerObj : MinecraftServer.getServer().getPlayerList().players) {
+            EntityPlayer player = (EntityPlayer) playerObj;
+
+            if (player.playerConnection != null) {
+                player.playerConnection.sendPacket(removeTabPacket);
+                player.playerConnection.sendPacket(addThisTabPacket);
+            }
+        }
+
+        EntityTrackerEntry trackerEntry = (EntityTrackerEntry)((WorldServer)this.entity.world).getTracker().trackedEntities.get(getEntityId());
+
+        if (trackerEntry != null) {
+            PacketPlayOutEntityDestroy destroyPacket = new PacketPlayOutEntityDestroy(getEntityId());
+
+            trackerEntry.broadcast(destroyPacket);
+            trackerEntry.broadcast(spawnPacket);
+        }
+    }
+    // CobelPvP end
 
     @Override
     public String getPlayerListName() {
