@@ -107,7 +107,14 @@ public class Explosion {
         int k1 = MathHelper.floor(this.posY + (double) this.size + 1.0D);
         int l1 = MathHelper.floor(this.posZ - (double) this.size - 1.0D);
         int i2 = MathHelper.floor(this.posZ + (double) this.size + 1.0D);
-        List list = this.world.getEntities(this.source, AxisAlignedBB.a((double) i, (double) k, (double) l1, (double) j, (double) k1, (double) i2));
+        // PaperSpigot start - Fix lag from explosions processing dead entities
+        List list = this.world.getEntities(this.source, AxisAlignedBB.a((double) i, (double) k, (double) l1, (double) j, (double) k1, (double) i2), new IEntitySelector() {
+            @Override
+            public boolean a(Entity entity) {
+                return !entity.dead;
+            }
+        });
+        // PaperSpigot end
         Vec3D vec3d = Vec3D.a(this.posX, this.posY, this.posZ);
 
         for (int j2 = 0; j2 < list.size(); ++j2) {
