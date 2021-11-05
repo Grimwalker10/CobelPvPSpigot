@@ -1,9 +1,6 @@
 package net.minecraft.server;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import org.apache.logging.log4j.LogManager;
@@ -201,14 +198,19 @@ public class EntityTracker {
     }
 
     public void a(EntityPlayer entityplayer, Chunk chunk) {
-        Iterator iterator = this.c.iterator();
+        // Kohi start - Optimized EntityTracker
+        for (List<Entity> slice : chunk.entitySlices) {
+            for (Entity entity : slice) {
+                if (entity != entityplayer) {
+                    EntityTrackerEntry entry = (EntityTrackerEntry) trackedEntities.get(entity.getId());
 
-        while (iterator.hasNext()) {
-            EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
-
-            if (entitytrackerentry.tracker != entityplayer && entitytrackerentry.tracker.ah == chunk.locX && entitytrackerentry.tracker.aj == chunk.locZ) {
-                entitytrackerentry.updatePlayer(entityplayer);
+                    if (entry != null) {
+                        entry.updatePlayer(entityplayer);
+                    }
+                }
             }
         }
+        // Kohi end
     }
+
 }
