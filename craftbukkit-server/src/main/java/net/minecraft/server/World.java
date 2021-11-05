@@ -1602,11 +1602,14 @@ public abstract class World implements IBlockAccess {
         int j = MathHelper.floor(entity.locZ);
         byte b0 = 32;
 
+        MinecraftServer.getServer().entities++; // Kohi
+
         // Spigot start
         if (!org.spigotmc.ActivationRange.checkIfActive(entity)) {
             entity.ticksLived++;
             entity.inactiveTick();
         } else {
+            MinecraftServer.getServer().activeEntities++; // Kohi
             entity.tickTimer.startTiming(); // Spigot
             // CraftBukkit end
             entity.S = entity.locX;
