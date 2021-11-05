@@ -245,4 +245,10 @@ public class PaperSpigotWorldConfig
         loadUnloadedTNTEntities = getBoolean( "load-chunks.tnt-entities", false );
         loadUnloadedFallingBlocks = getBoolean( "load-chunks.falling-blocks", false );
     }
+
+    public boolean fallingBlocksCollideWithSigns;
+    private void fallingBlocksCollideWithSigns()
+    {
+        fallingBlocksCollideWithSigns = getBoolean( "falling-blocks-collide-with-signs", false );
+    }
 }

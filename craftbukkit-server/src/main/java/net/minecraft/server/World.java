@@ -1284,7 +1284,15 @@ public abstract class World implements IBlockAccess {
                             Block block = chunk.getType(x - cx, y, z - cz );
                             if ( block != null )
                             {
-                                block.a( this, x, y, z, axisalignedbb, this.L, entity );
+                                // PaperSpigot start - FallingBlocks and TNT collide with specific non-collidable blocks
+                                if (entity.world.paperSpigotConfig.fallingBlocksCollideWithSigns && (entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock) &&
+                                        (block instanceof BlockSign || block instanceof BlockFenceGate || block instanceof BlockTorch || block instanceof BlockButtonAbstract || block instanceof BlockLever || block instanceof BlockTripwireHook || block instanceof BlockTripwire)) {
+                                    AxisAlignedBB aabb = AxisAlignedBB.a(x, y, z, x + 1.0, y + 1.0, z + 1.0);
+                                    if (axisalignedbb.b(aabb)) this.L.add(aabb);
+                                } else {
+                                    block.a( this, x, y, z, axisalignedbb, this.L, entity );
+                                }
+                                // PaperSpigot end
                             }
                         }
                     }
