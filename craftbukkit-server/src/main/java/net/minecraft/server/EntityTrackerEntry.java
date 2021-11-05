@@ -408,8 +408,11 @@ public class EntityTrackerEntry {
                     }
 
                     // CraftBukkit start - Fix for nonsensical head yaw
-                    this.i = MathHelper.d(this.tracker.getHeadRotation() * 256.0F / 360.0F);
-                    this.broadcast(new PacketPlayOutEntityHeadRotation(this.tracker, (byte) i));
+                    // MineHQ start - fix head rotation packet spam (properly)
+                    if (this.tracker instanceof EntityLiving) {
+                        entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(this.tracker, (byte) MathHelper.d(this.tracker.getHeadRotation() * 256.0F / 360.0F)));
+                    }
+                    // MineHQ end
                     // CraftBukkit end
 
                     if (this.tracker instanceof EntityLiving) {
