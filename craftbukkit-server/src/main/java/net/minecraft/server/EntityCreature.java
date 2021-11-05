@@ -63,6 +63,11 @@ public abstract class EntityCreature extends EntityInsentient {
     }
     // Poweruser end
 
+    // CobelPvP start
+    private long lastRayTraceTick = -1L;
+    private boolean lastRayTraceResult = false;
+    // CobelPvP end
+
     public EntityCreature(World world) {
         super(world);
     }
@@ -106,7 +111,14 @@ public abstract class EntityCreature extends EntityInsentient {
         } else if (this.target.isAlive()) {
             float f1 = this.target.e((Entity) this);
 
-            if (this.hasLineOfSight(this.target)) {
+            // CobelPvP start - don't constantly ray trace
+            if (this.lastRayTraceTick + 50 < this.ticksLived) {
+                this.lastRayTraceTick = this.ticksLived;
+                this.lastRayTraceResult = this.hasLineOfSight(this.target);
+            }
+
+            if (this.lastRayTraceResult) {
+            // CobelPvP end
                 this.a(this.target, f1);
             }
         } else {

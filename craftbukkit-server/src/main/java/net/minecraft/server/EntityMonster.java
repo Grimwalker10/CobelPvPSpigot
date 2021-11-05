@@ -41,7 +41,15 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
         return "game.hostile.swim.splash";
     }
 
+    private long lastTargetSearchTick = -1L; // CobelPvP
     protected Entity findTarget() {
+        // CobelPvP start
+        if (this.lastTargetSearchTick + 50 < this.ticksLived) {
+            this.lastTargetSearchTick = this.ticksLived;
+        } else {
+            return null;
+        }
+        // CobelPvP end
         EntityHuman entityhuman = this.world.findNearbyVulnerablePlayer(this, 16.0D);
 
         return entityhuman != null && this.hasLineOfSight(entityhuman) ? entityhuman : null;
