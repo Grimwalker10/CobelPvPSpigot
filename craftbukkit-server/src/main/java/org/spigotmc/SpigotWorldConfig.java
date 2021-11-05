@@ -370,4 +370,11 @@ public class SpigotWorldConfig
         log("Mobs enabled: " + mobsEnabled);
     }
 
+    // Poweruser start
+    public boolean enderPearlsCanPassNonSolidBlocks;
+    private void enderPearlsCanPassNonSolidBlocks() {
+        enderPearlsCanPassNonSolidBlocks = getBoolean("enderPearlsCanPassNonSolidBlocks", false);
+        log("Enderpearls can pass non-solid blocks: " + enderPearlsCanPassNonSolidBlocks);
+    }
+    // Poweruser end
 }
