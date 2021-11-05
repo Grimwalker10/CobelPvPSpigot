@@ -1264,6 +1264,7 @@ public class PlayerConnection implements PacketPlayInListener {
         if (this.player.dead) return; // CraftBukkit
 
         this.player.v();
+        if (!this.player.activeContainer.a(this.player)) return; // PaperSpigot - check if player is able to use this container
         if (this.player.activeContainer.windowId == packetplayinwindowclick.c() && this.player.activeContainer.c(this.player)) {
             // CraftBukkit start - Call InventoryClickEvent
             if (packetplayinwindowclick.d() < -1 && packetplayinwindowclick.d() != -999) {
@@ -1668,6 +1669,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
     public void a(PacketPlayInTransaction packetplayintransaction) {
         if (this.player.dead) return; // CraftBukkit
+        if (!this.player.activeContainer.a(this.player)) return; // PaperSpigot - check if player is able to use this container
         Short oshort = (Short) this.n.get(this.player.activeContainer.windowId);
 
         if (oshort != null && packetplayintransaction.d() == oshort.shortValue() && this.player.activeContainer.windowId == packetplayintransaction.c() && !this.player.activeContainer.c(this.player)) {
