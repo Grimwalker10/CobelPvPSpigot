@@ -1341,7 +1341,7 @@ public abstract class World implements IBlockAccess {
                         for ( int y = ystart; y < l; y++ )
                         {
                             Block block = chunk.getType(x - cx, y, z - cz );
-                            if ( block != null )
+                            if ( block != null && block != Blocks.AIR) // MineHQ
                             {
                                 // PaperSpigot start - FallingBlocks and TNT collide with specific non-collidable blocks
                                 if (entity.world.paperSpigotConfig.fallingBlocksCollideWithSigns && (entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock) &&
@@ -1400,7 +1400,7 @@ public abstract class World implements IBlockAccess {
                             block = Blocks.BEDROCK;
                         }
 
-                        block.a(this, k1, i2, l1, axisalignedbb, this.L, (Entity) null);
+                        if (block != Blocks.AIR) block.a(this, k1, i2, l1, axisalignedbb, this.L, (Entity) null);
                     }
                 }
             }
