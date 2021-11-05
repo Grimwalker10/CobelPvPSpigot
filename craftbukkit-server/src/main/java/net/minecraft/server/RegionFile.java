@@ -14,7 +14,7 @@ import java.util.zip.InflaterInputStream;
 
 public class RegionFile {
 
-    private static final byte[] a = new byte[4096];
+    private static final byte[] a = new byte[4096]; // Spigot - note: if this ever changes to not be 4096 bytes, update constructor! // PAIL: empty 4k block
     private final File b;
     private RandomAccessFile c;
     private final int[] d = new int[1024];
@@ -55,13 +55,10 @@ public class RegionFile {
             int i;
 
             if (this.c.length() < 4096L) {
-                for (i = 0; i < 1024; ++i) {
-                    this.c.writeInt(0);
-                }
-
-                for (i = 0; i < 1024; ++i) {
-                    this.c.writeInt(0);
-                }
+                // Spigot start - more effecient chunk zero'ing
+                this.c.write(RegionFile.a);
+                this.c.write(RegionFile.a);
+                // Spigot end
 
                 this.g += 8192;
             }
@@ -203,7 +200,7 @@ public class RegionFile {
     }
 
     public DataOutputStream b(int i, int j) {
-        return this.d(i, j) ? null : new DataOutputStream(new DeflaterOutputStream(new ChunkBuffer(this, i, j)));
+        return this.d(i, j) ? null : new DataOutputStream(new java.io.BufferedOutputStream(new DeflaterOutputStream(new ChunkBuffer(this, i, j)))); // Spigot - use a BufferedOutputStream to greatly improve file write performance
     }
 
     protected synchronized void a(int i, int j, byte[] abyte, int k) {
