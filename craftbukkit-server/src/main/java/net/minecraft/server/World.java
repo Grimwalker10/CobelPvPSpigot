@@ -136,6 +136,8 @@ public abstract class World implements IBlockAccess {
     // Poweruser end
     public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<Explosion.CacheKey, Float>(); // PaperSpigot - Optimize explosions
 
+    public double hardDespawnDistance = -1D; // CobelPvP
+
     public static long chunkToKey(int x, int z)
     {
         long k = ( ( ( (long) x ) & 0xFFFF0000L ) << 16 ) | ( ( ( (long) x ) & 0x0000FFFFL ) << 0 );

@@ -396,10 +396,14 @@ public abstract class EntityInsentient extends EntityLiving {
     // Kohi end
 
     protected void w() {
+        this.aU++; // CobelPvP
         if (this.persistent) {
             this.aU = 0;
         } else if (this.ticksLived % 50 == 0) { // Kohi - only check every 50 ticks
-            EntityHuman entityhuman = this.world.findNearbyPlayerWhoAffectsSpawning(this, -1.0D); // PaperSpigot
+            // CobelPvP start
+            if (this.world.hardDespawnDistance == -1D) this.world.hardDespawnDistance = Math.sqrt(this.world.paperSpigotConfig.hardDespawnDistance);
+            EntityHuman entityhuman = this.world.findNearbyPlayerWhoAffectsSpawning(this, this.world.hardDespawnDistance); // PaperSpigot
+            // CobelPvP end
 
             if (entityhuman != null) {
                 double d0 = entityhuman.locX - this.locX;
@@ -413,17 +417,25 @@ public abstract class EntityInsentient extends EntityLiving {
 
                 // Kohi - decrease random check to account for decreased interval
                 // CobelPvP - decrease random check even more for performance
-                if (this.aU > 600 && this.random.nextInt(10) == 0 && d3 > this.world.paperSpigotConfig.softDespawnDistance) { // CraftBukkit - remove isTypeNotPersistent() check // PaperSpigot - custom despawn distances
+                // CobelPvP - remove random
+                if (this.aU > 600 && d3 > this.world.paperSpigotConfig.softDespawnDistance) { // CraftBukkit - remove isTypeNotPersistent() check // PaperSpigot - custom despawn distances
                     this.die();
                 } else if (d3 < this.world.paperSpigotConfig.softDespawnDistance) { // PaperSpigot - custom despawn distances
                     this.aU = 0;
                 }
             }
+            // CobelPvP start
+            else {
+                if (this.aU > 600) {
+                    this.die();
+                }
+            }
+            // CobelPvP end
         }
     }
 
     protected void bn() {
-        ++this.aU;
+        //++this.aU; // CobelPvP
         this.navigation.cleanUpExpiredSearches(); // Poweruser
         this.world.methodProfiler.a("checkDespawn");
         this.w();
