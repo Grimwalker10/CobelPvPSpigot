@@ -16,7 +16,6 @@ public class PacketPlayOutMultiBlockChange extends Packet {
     // Spigot start - protocol patch
     private short[] ashort;
     private int[] blocks;
-    private Chunk chunk;
     // Spigot end
 
     public PacketPlayOutMultiBlockChange() {}
@@ -27,7 +26,6 @@ public class PacketPlayOutMultiBlockChange extends Packet {
         this.ashort = new short[ashort.length];
         System.arraycopy(ashort, 0, this.ashort, 0, ashort.length);
         // PaperSpigot end
-        this.chunk = chunk;
         // Spigot end
         this.b = new ChunkCoordIntPair(chunk.locX, chunk.locZ);
         this.d = i;

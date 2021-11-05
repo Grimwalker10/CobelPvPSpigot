@@ -17,14 +17,14 @@ public class PacketPlayOutMapChunk extends Packet {
     private int h;
     private static byte[] i = new byte[196864];
 
-    private Chunk chunk; // Spigot
+    private World world; // MineHQ - use world instead of chunk
     private int mask; // Spigot
 
     public PacketPlayOutMapChunk() {}
 
     // Spigot start - protocol patch
     public PacketPlayOutMapChunk(Chunk chunk, boolean flag, int i, int version) {
-        this.chunk = chunk;
+        this.world = chunk.world;
         this.mask = i;
         this.a = chunk.locX;
         this.b = chunk.locZ;
@@ -88,7 +88,7 @@ public class PacketPlayOutMapChunk extends Packet {
         // Spigot start - protocol patch
         if ( packetdataserializer.version < 27 )
         {
-            chunk.world.spigotConfig.antiXrayInstance.obfuscate(chunk.locX, chunk.locZ, mask, this.f, chunk.world, false); // Spigot
+            this.world.spigotConfig.antiXrayInstance.obfuscate(this.a, this.b, mask, this.f, this.world, false); // Spigot
             Deflater deflater = new Deflater(4); // Spigot
             try {
                 deflater.setInput(this.f, 0, this.f.length);
@@ -103,7 +103,7 @@ public class PacketPlayOutMapChunk extends Packet {
             packetdataserializer.writeBytes( this.e, 0, this.h );
         } else
         {
-            chunk.world.spigotConfig.antiXrayInstance.obfuscate(chunk.locX, chunk.locZ, mask, this.f, chunk.world, true); // Spigot
+            this.world.spigotConfig.antiXrayInstance.obfuscate(this.a, this.b, mask, this.f, this.world, true); // Spigot
             a( packetdataserializer, this.f );
         }
         // Spigot end - protocol patch
