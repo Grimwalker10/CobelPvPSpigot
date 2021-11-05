@@ -467,7 +467,7 @@ public class SpigotConfig
 
     public static int smeltingMultiplier;
     private static void smeltingMultiplier() {
-        brewingMultiplier = getInt("settings.smeltingMultiplier", 1);
+        smeltingMultiplier = getInt("settings.smeltingMultiplier", 1);
     }
     // Griffin end
 }
