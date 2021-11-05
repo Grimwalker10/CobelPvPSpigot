@@ -1323,7 +1323,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void setRealHealth(double health) {
+        double previous = this.health;
+
         this.health = health;
+
+        Bukkit.getPluginManager().callEvent(new PlayerHealthChangeEvent(this, previous, health));
     }
 
     public void updateScaledHealth() {
