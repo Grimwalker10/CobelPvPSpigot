@@ -1,9 +1,10 @@
 package net.minecraft.server;
 
 import net.minecraft.util.io.netty.channel.ChannelFutureListener;
+import net.minecraft.util.io.netty.channel.ChannelPromise; // Poweruser
 import net.minecraft.util.io.netty.util.concurrent.GenericFutureListener;
 
-class QueuedProtocolSwitch implements Runnable {
+public class QueuedProtocolSwitch implements Runnable { // Poweruser - public
 
     final EnumProtocol a;
     final EnumProtocol b;
@@ -20,10 +21,20 @@ class QueuedProtocolSwitch implements Runnable {
     }
 
     public void run() {
-        if (this.a != this.b) {
-            this.e.a(this.a);
+    // Poweruser start
+        execute(this.e, this.a, this.b, this.c, this.d);
+    }
+
+    public static void execute(NetworkManager networkmanager, EnumProtocol enumprotocol, EnumProtocol enumprotocol1, Packet packet, GenericFutureListener[] agenericfuturelistener) {
+        if (enumprotocol != enumprotocol1) {
+            networkmanager.a(enumprotocol);
         }
 
-        NetworkManager.a(this.e).writeAndFlush(this.c).addListeners(this.d).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        if(agenericfuturelistener == null || agenericfuturelistener.length == 0) {
+            NetworkManager.a(networkmanager).writeAndFlush(packet, NetworkManager.a(networkmanager).voidPromise());
+        } else {
+            NetworkManager.a(networkmanager).writeAndFlush(packet).addListeners(agenericfuturelistener).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        }
     }
+    // Poweruser end
 }
