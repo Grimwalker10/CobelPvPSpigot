@@ -97,7 +97,7 @@ public class BiomeMesa extends BiomeBase {
                 ablock[i2] = Blocks.STONE;
             }
 
-            if (l1 <= 0 + random.nextInt(5)) {
+            if (l1 <= (world.paperSpigotConfig.generateFlatBedrock ? 0 : random.nextInt(5))) { // PaperSpigot - Configurable flat bedrock worldgen
                 ablock[i2] = Blocks.BEDROCK;
             } else {
                 Block block2 = ablock[i2];
