@@ -73,7 +73,7 @@ public class BlockFlowing extends BlockFluids {
                 }
             }
 
-            if (this.material == Material.LAVA && l < 8 && j1 < 8 && j1 > l && random.nextInt(4) != 0) {
+            if (!world.paperSpigotConfig.fastDrainLava && this.material == Material.LAVA && l < 8 && j1 < 8 && j1 > l && random.nextInt(4) != 0) { // PaperSpigot
                 i1 *= 4;
             }
 
@@ -83,7 +83,7 @@ public class BlockFlowing extends BlockFluids {
                 }
             } else {
                 l = j1;
-                if (j1 < 0) {
+                if (j1 < 0 || canFastDrain(world, i, j, k)) { // PaperSpigot - Fast draining
                     world.setAir(i, j, k);
                 } else {
                     world.setData(i, j, k, j1, 2);
@@ -318,5 +318,53 @@ public class BlockFlowing extends BlockFluids {
             return world.paperSpigotConfig.waterOverLavaFlowSpeed;
         }
         return super.a(world);
+    }
+
+    /**
+     * PaperSpigot - Data check method for fast draining
+     */
+    public int getData(World world, int x, int y, int z) {
+        int data = this.e(world, x, y, z);
+        return data < 8 ? data : 0;
+    }
+
+    /**
+     * PaperSpigot - Checks surrounding blocks to determine if block can be fast drained
+     */
+    public boolean canFastDrain(World world, int x, int y, int z) {
+        boolean result = false;
+        int data = getData(world, x, y, z);
+        if (this.material == Material.WATER) {
+            if (world.paperSpigotConfig.fastDrainWater) {
+                result = true;
+                if (getData(world, x, y - 1, z) < 0) {
+                    result = false;
+                } else if (world.getType(x, y, z - 1).getMaterial() == Material.WATER && getData(world, x, y, z - 1) < data) {
+                    result = false;
+                } else if (world.getType(x, y, z + 1).getMaterial() == Material.WATER && getData(world, x, y, z + 1) < data) {
+                    result = false;
+                } else if (world.getType(x - 1, y, z).getMaterial() == Material.WATER && getData(world, x - 1, y, z) < data) {
+                    result = false;
+                } else if (world.getType(x + 1, y, z).getMaterial() == Material.WATER && getData(world, x + 1, y, z) < data) {
+                    result = false;
+                }
+            }
+        } else if (this.material == Material.LAVA) {
+            if (world.paperSpigotConfig.fastDrainLava) {
+                result = true;
+                if (getData(world, x, y - 1, z) < 0 || world.getType(x, y + 1, z).getMaterial() != Material.AIR) {
+                    result = false;
+                } else if (world.getType(x, y, z - 1).getMaterial() == Material.LAVA && getData(world, x, y, z - 1) < data) {
+                    result = false;
+                } else if (world.getType(x, y, z + 1).getMaterial() == Material.LAVA && getData(world, x, y, z + 1) < data) {
+                    result = false;
+                } else if (world.getType(x - 1, y, z).getMaterial() == Material.LAVA && getData(world, x - 1, y, z) < data) {
+                    result = false;
+                } else if (world.getType(x + 1, y, z).getMaterial() == Material.LAVA && getData(world, x + 1, y, z) < data) {
+                    result = false;
+                }
+            }
+        }
+        return result;
     }
 }
