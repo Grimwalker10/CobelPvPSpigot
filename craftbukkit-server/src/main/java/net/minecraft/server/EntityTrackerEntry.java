@@ -128,7 +128,7 @@ public class EntityTrackerEntry {
                 // CraftBukkit end
 
                 if (this.m > 0 || this.tracker instanceof EntityArrow) {
-                    if (j1 >= -128 && j1 < 128 && k1 >= -128 && k1 < 128 && l1 >= -128 && l1 < 128 && this.v <= 400 && !this.x) {
+                    if (j1 >= -128 && j1 < 128 && k1 >= -128 && k1 < 128 && l1 >= -128 && l1 < 128 && this.v <= 50 && !this.x) { // Kohi - greatly reduce forced teleport interval
                         if (flag && flag1) {
                             object = new PacketPlayOutRelEntityMoveLook(this.tracker.getId(), (byte) j1, (byte) k1, (byte) l1, (byte) l, (byte) i1, tracker.onGround); // Spigot - protocol patch
                         } else if (flag) {
