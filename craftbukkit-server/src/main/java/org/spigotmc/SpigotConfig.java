@@ -427,5 +427,10 @@ public class SpigotConfig
     private static void setviewdistanceCommand() {
         commands.put( "setviewdistance", new SetViewDistanceCommand( "setviewdistance" ) );
     }
+
+    public static int playersPerChunkIOThread;
+    private static void playersPerChunkIOThread() {
+        playersPerChunkIOThread = Math.max(1, getInt( "settings.chunkio.players-per-thread", 150) );
+    }
     // Poweruser end
 }
