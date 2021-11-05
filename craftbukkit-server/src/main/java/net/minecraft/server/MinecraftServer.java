@@ -735,6 +735,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 worldserver.timings.tracker.stopTiming(); // Spigot
                 this.methodProfiler.b();
                 this.methodProfiler.b();
+                worldserver.explosionDensityCache.clear(); // PaperSpigot - Optimize explosions
             // } // CraftBukkit
 
             // this.h[i][this.ticks % 100] = System.nanoTime() - j; // CraftBukkit

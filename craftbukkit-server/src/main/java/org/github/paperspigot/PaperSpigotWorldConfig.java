@@ -259,4 +259,10 @@ public class PaperSpigotWorldConfig
     {
         disableEndCredits = getBoolean( "game-mechanics.disable-end-credits", true );
     }
+
+    public boolean optimizeExplosions;
+    private void optimizeExplosions()
+    {
+        optimizeExplosions = getBoolean( "optimize-explosions", true );
+    }
 }

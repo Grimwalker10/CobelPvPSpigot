@@ -13,6 +13,8 @@ import java.util.concurrent.Callable;
 // PaperSpigot start
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
 // PaperSpigot end
 
@@ -133,6 +135,7 @@ public abstract class World implements IBlockAccess {
         return lightingExecutor;
     }
     // Poweruser end
+    public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<Explosion.CacheKey, Float>(); // PaperSpigot - Optimize explosions
 
     public static long chunkToKey(int x, int z)
     {
