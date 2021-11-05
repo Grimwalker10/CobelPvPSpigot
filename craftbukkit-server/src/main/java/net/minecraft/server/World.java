@@ -36,6 +36,7 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 
 // Poweruser start
 import com.cobelpvp.LightingUpdater;
+import com.cobelpvp.WeakChunkCache;
 // Poweruser end
 
 public abstract class World implements IBlockAccess {
@@ -1905,6 +1906,12 @@ public abstract class World implements IBlockAccess {
     }
 
     public boolean a(AxisAlignedBB axisalignedbb, Material material) {
+    // Poweruser start
+        return this.a(axisalignedbb, material, this);
+    }
+
+    public boolean a(AxisAlignedBB axisalignedbb, Material material, IBlockAccess iblockaccess) {
+    // Poweruser end
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
         int k = MathHelper.floor(axisalignedbb.b);
@@ -1915,7 +1922,7 @@ public abstract class World implements IBlockAccess {
         for (int k1 = i; k1 < j; ++k1) {
             for (int l1 = k; l1 < l; ++l1) {
                 for (int i2 = i1; i2 < j1; ++i2) {
-                    if (this.getType(k1, l1, i2).getMaterial() == material) {
+                    if (iblockaccess.getType(k1, l1, i2).getMaterial() == material) { // Poweruser
                         return true;
                     }
                 }
@@ -2813,7 +2820,7 @@ public abstract class World implements IBlockAccess {
         int l1 = i + l;
         int i2 = j + l;
         int j2 = k + l;
-        ChunkCache chunkcache = new ChunkCache(this, i1, j1, k1, l1, i2, j2, 0);
+        WeakChunkCache chunkcache = new WeakChunkCache(this, i1, j1, k1, l1, i2, j2, 0); // Poweruser
         PathEntity pathentity = (new Pathfinder(chunkcache, flag, flag1, flag2, flag3)).a(entity, entity1, f);
 
         this.methodProfiler.b();
@@ -2832,7 +2839,7 @@ public abstract class World implements IBlockAccess {
         int k2 = l + k1;
         int l2 = i1 + k1;
         int i3 = j1 + k1;
-        ChunkCache chunkcache = new ChunkCache(this, l1, i2, j2, k2, l2, i3, 0);
+        WeakChunkCache chunkcache = new WeakChunkCache(this, l1, i2, j2, k2, l2, i3, 0); // Poweruser
         PathEntity pathentity = (new Pathfinder(chunkcache, flag, flag1, flag2, flag3)).a(entity, i, j, k, f);
 
         this.methodProfiler.b();

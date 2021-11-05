@@ -32,7 +32,7 @@ public class PathfinderGoalPanic extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a(this.c, this.d, this.e, this.b);
+        this.a.getNavigation().a(com.cobelpvp.pathsearch.PositionPathSearchType.PANIC, this.c, this.d, this.e, this.b); // Poweruser
     }
 
     public boolean b() {

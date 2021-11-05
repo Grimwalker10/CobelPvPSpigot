@@ -1,5 +1,7 @@
 package com.cobelpvp;
 
+import com.cobelpvp.pathsearch.PathSearchThrottlerThread;
+import com.cobelpvp.pathsearch.jobs.PathSearchJob;
 import net.minecraft.server.NBTCompressedStreamTools;
 import net.minecraft.server.NBTTagCompound;
 import org.apache.logging.log4j.LogManager;
@@ -18,12 +20,15 @@ public class ThreadingManager {
     private final Logger log = LogManager.getLogger();
     private ExecutorService nbtFileService = Executors.newSingleThreadExecutor(new NamePriorityThreadFactory(Thread.NORM_PRIORITY - 2, "mSpigot_NBTFileSaver"));
     private static ThreadingManager instance;
+    private PathSearchThrottlerThread pathSearchThrottler;
 
     public ThreadingManager() {
         instance = this;
+        this.pathSearchThrottler = new PathSearchThrottlerThread(2);
     }
 
     public void shutdown() {
+        this.pathSearchThrottler.shutdown();
         this.nbtFileService.shutdown();
         while(!this.nbtFileService.isTerminated()) {
             try {
@@ -69,5 +74,9 @@ public class ThreadingManager {
             this.compound = null;
             this.file = null;
         }
+    }
+
+    public static boolean queuePathSearch(PathSearchJob pathSearchJob) {
+        return instance.pathSearchThrottler.queuePathSearch(pathSearchJob);
     }
 }

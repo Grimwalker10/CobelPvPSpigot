@@ -51,7 +51,7 @@ public class PathfinderGoalAvoidPlayer extends PathfinderGoal {
         } else if (this.e.e(vec3d.a, vec3d.b, vec3d.c) < this.e.f((Entity) this.b)) {
             return false;
         } else {
-            this.g = this.h.a(vec3d.a, vec3d.b, vec3d.c);
+            this.g = this.h.a(com.cobelpvp.pathsearch.PositionPathSearchType.AVOIDPLAYER, vec3d.a, vec3d.b, vec3d.c); // Poweruser
             return this.g == null ? false : this.g.b(vec3d);
         }
     }

@@ -200,12 +200,22 @@ public class Pathfinder {
     }
 
     public static int a(Entity entity, int i, int j, int k, PathPoint pathpoint, boolean flag, boolean flag1, boolean flag2) {
+    // Poweruser start
+        return a(entity.world, entity, i, j, k, pathpoint, flag, flag1, flag2);
+    }
+
+    public int a(IBlockAccess blockaccess, Entity entity, int i, int j, int k, PathPoint pathpoint) {
+        return a(blockaccess, entity, i, j, k, pathpoint, this.g, this.f, this.e);
+    }
+
+    public static int a(IBlockAccess blockaccess, Entity entity, int i, int j, int k, PathPoint pathpoint, boolean flag, boolean flag1, boolean flag2) {
+    // Poweruser end
         boolean flag3 = false;
 
         for (int l = i; l < i + pathpoint.a; ++l) {
             for (int i1 = j; i1 < j + pathpoint.b; ++i1) {
                 for (int j1 = k; j1 < k + pathpoint.c; ++j1) {
-                    Block block = entity.world.getType(l, i1, j1);
+                    Block block = blockaccess.getType(l, i1, j1); // Poweruser - entity.world -> blockaccess
 
                     if (block.getMaterial() != Material.AIR) {
                         if (block == Blocks.TRAP_DOOR) {
@@ -224,12 +234,12 @@ public class Pathfinder {
 
                         int k1 = block.b();
 
-                        if (entity.world.getType(l, i1, j1).b() == 9) {
+                        if (k1 == 9) { // Poweruser
                             int l1 = MathHelper.floor(entity.locX);
                             int i2 = MathHelper.floor(entity.locY);
                             int j2 = MathHelper.floor(entity.locZ);
 
-                            if (entity.world.getType(l1, i2, j2).b() != 9 && entity.world.getType(l1, i2 - 1, j2).b() != 9) {
+                            if (blockaccess.getType(l1, i2, j2).b() != 9 && blockaccess.getType(l1, i2 - 1, j2).b() != 9) { // Poweruser - entity.world -> blockaccess
                                 return -3;
                             }
                         } else if (!block.b(entity.world, l, i1, j1) && (!flag1 || block != Blocks.WOODEN_DOOR)) {
@@ -247,7 +257,7 @@ public class Pathfinder {
                                 return 0;
                             }
 
-                            if (!entity.P()) {
+                            if (!entity.P(blockaccess)) { // Poweruser
                                 return -2;
                             }
                         }

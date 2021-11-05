@@ -32,7 +32,7 @@ public class PathfinderGoalTame extends PathfinderGoal {
     }
 
     public void c() {
-        this.entity.getNavigation().a(this.c, this.d, this.e, this.b);
+        this.entity.getNavigation().a(com.cobelpvp.pathsearch.PositionPathSearchType.TAME, this.c, this.d, this.e, this.b); // Poweruser
     }
 
     public boolean b() {

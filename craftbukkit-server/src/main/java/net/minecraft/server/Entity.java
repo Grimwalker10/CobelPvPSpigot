@@ -920,8 +920,14 @@ public abstract class Entity {
     }
 
     public boolean P() {
-        return this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA);
+    // Poweruser start
+        return this.P(this.world);
     }
+
+    public boolean P(IBlockAccess iblockaccess) {
+        return this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA, iblockaccess);
+    }
+    // Poweruser end
 
     public void a(float f, float f1, float f2) {
         float f3 = f * f + f1 * f1;

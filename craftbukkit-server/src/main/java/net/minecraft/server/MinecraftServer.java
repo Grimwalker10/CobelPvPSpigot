@@ -44,7 +44,7 @@ import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
 
 // Poweruser start
-import net.frozenorb.ThreadingManager;
+import com.cobelpvp.ThreadingManager;
 // Poweruser end
 
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {

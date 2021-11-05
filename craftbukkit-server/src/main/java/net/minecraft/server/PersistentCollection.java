@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.frozenorb.ThreadingManager; // Poweruser
+import com.cobelpvp.ThreadingManager; // Poweruser
 
 public class PersistentCollection {
 

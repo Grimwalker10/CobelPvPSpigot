@@ -1,9 +1,16 @@
 package net.minecraft.server;
 
+// Poweruser start
+import com.cobelpvp.pathsearch.PositionPathSearchType;
+import com.cobelpvp.pathsearch.jobs.PathSearchJob;
+import com.cobelpvp.pathsearch.jobs.PathSearchJobNavigationEntity;
+import com.cobelpvp.pathsearch.jobs.PathSearchJobNavigationPosition;
+//Poweruser end
+
 public class Navigation {
 
-    private EntityInsentient a;
-    private World b;
+    protected EntityInsentient a; // Poweruser - private -> protected
+    protected World b; // Poweruser - private -> protected
     private PathEntity c;
     private double d;
     private AttributeInstance e;
@@ -11,10 +18,28 @@ public class Navigation {
     private int g;
     private int h;
     private Vec3D i = Vec3D.a(0.0D, 0.0D, 0.0D);
-    private boolean j = true;
-    private boolean k;
-    private boolean l;
-    private boolean m;
+    protected boolean j = true; // Poweruser - private -> protected
+    protected boolean k; // Poweruser - private -> protected
+    protected boolean l; // Poweruser - private -> protected
+    protected boolean m; // Poweruser - private -> protected
+
+    // Poweruser start
+    public void setSearchResult(PathSearchJobNavigationEntity pathSearch) { }
+
+    public void setSearchResult(PathSearchJobNavigationPosition pathSearch) { }
+
+    public PathEntity a(PositionPathSearchType type, double d0, double d1, double d2) {
+        return this.a(d0, d1, d2);
+    }
+
+    public boolean a(PositionPathSearchType type, double d0, double d1, double d2, double d3) {
+        return this.a(d0, d1, d2, d3);
+    }
+
+    public void cleanUpExpiredSearches() { }
+
+    public void cancelSearch(PathSearchJob pathSearch) { }
+    // Poweruser end
 
     public Navigation(EntityInsentient entityinsentient, World world) {
         this.a = entityinsentient;
@@ -205,7 +230,7 @@ public class Navigation {
         }
     }
 
-    private boolean l() {
+    protected boolean l() { // Poweruser - private -> protected
         return this.a.onGround || this.m && this.m() || this.a.am() && this.a instanceof EntityZombie && this.a.vehicle instanceof EntityChicken;
     }
 

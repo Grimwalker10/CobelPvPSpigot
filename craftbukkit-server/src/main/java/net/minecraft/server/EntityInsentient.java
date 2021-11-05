@@ -11,6 +11,10 @@ import org.bukkit.event.entity.EntityUnleashEvent;
 import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
 // CraftBukkit end
 
+// Poweruser start
+import com.cobelpvp.pathsearch.AsyncNavigation;
+// Poweruser end
+
 public abstract class EntityInsentient extends EntityLiving {
 
     public int a_;
@@ -43,7 +47,7 @@ public abstract class EntityInsentient extends EntityLiving {
         this.moveController = new ControllerMove(this);
         this.bm = new ControllerJump(this);
         this.bn = new EntityAIBodyControl(this);
-        this.navigation = new Navigation(this, world);
+        this.navigation = new AsyncNavigation(this, world); // Poweruser
         this.bq = new EntitySenses(this);
 
         for (int i = 0; i < this.dropChances.length; ++i) {
@@ -417,6 +421,7 @@ public abstract class EntityInsentient extends EntityLiving {
 
     protected void bn() {
         ++this.aU;
+        this.navigation.cleanUpExpiredSearches(); // Poweruser
         this.world.methodProfiler.a("checkDespawn");
         this.w();
         this.world.methodProfiler.b();
