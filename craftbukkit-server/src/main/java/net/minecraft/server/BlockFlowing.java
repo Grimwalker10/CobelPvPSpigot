@@ -88,7 +88,14 @@ public class BlockFlowing extends BlockFluids {
                 } else {
                     world.setData(i, j, k, j1, 2);
                     world.a(i, j, k, this, i1);
-                    world.applyPhysics(i, j, k, this);
+                    // PaperSpigot start - Optimize draining
+                    world.e(i - 1, j, k, this);
+                    world.e(i + 1, j, k, this);
+                    world.e(i, j + 1, k, this);
+                    world.e(i, j, k - 1, this);
+                    world.e(i, j, k + 1, this);
+                    world.spigotConfig.antiXrayInstance.updateNearbyBlocks(world, i, j, k); // Spigot
+                    // PaperSpigot end
                 }
             }
         } else {
