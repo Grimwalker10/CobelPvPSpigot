@@ -75,7 +75,7 @@ class PlayerChunk {
                     ChunkIOExecutor.dropQueuedChunkLoad(this.playerChunkMap.a(), this.location.x, this.location.z, this.loadedRunnable);
                     long i = (long) this.location.x + 2147483647L | (long) this.location.z + 2147483647L << 32;
                     PlayerChunkMap.b(this.playerChunkMap).remove(i);
-                    PlayerChunkMap.c(this.playerChunkMap).remove(this);
+                    // PlayerChunkMap.c(this.playerChunkMap).remove(this); Kohi
                 }
 
                 return;
@@ -96,7 +96,7 @@ class PlayerChunk {
 
                 this.a(chunk);
                 PlayerChunkMap.b(this.playerChunkMap).remove(i);
-                PlayerChunkMap.c(this.playerChunkMap).remove(this);
+                // PlayerChunkMap.c(this.playerChunkMap).remove(this); Kohi
                 if (this.dirtyCount > 0) {
                     PlayerChunkMap.d(this.playerChunkMap).remove(this);
                 }

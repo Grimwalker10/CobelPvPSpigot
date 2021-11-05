@@ -19,8 +19,8 @@ public class PlayerChunkMap {
     private final WorldServer world;
     private final List managedPlayers = new ArrayList();
     private final LongHashMap d = new LongHashMap();
-    private final Queue e = new java.util.concurrent.ConcurrentLinkedQueue(); // CraftBukkit ArrayList -> ConcurrentLinkedQueue
-    private final Queue f = new java.util.concurrent.ConcurrentLinkedQueue(); // CraftBukkit ArrayList -> ConcurrentLinkedQueue
+    private final List e = new ArrayList(); // Kohi - use arraylist as in vanilla
+    // private final Queue f = new java.util.concurrent.ConcurrentLinkedQueue(); // Kohi - this is pointless
     private int g;
     private long h;
     private final int[][] i = new int[][] { { 1, 0}, { 0, 1}, { -1, 0}, { 0, -1}};
@@ -38,8 +38,8 @@ public class PlayerChunkMap {
     public void flush() {
         long i = this.world.getTime();
         int j;
-        PlayerChunk playerchunk;
 
+        /* Kohi - removed PlayerChunkMap.f
         if (i - this.h > 8000L) {
             this.h = i;
 
@@ -60,8 +60,15 @@ public class PlayerChunkMap {
                 // CraftBukkit end
             }
         }
+        */
 
-        // this.e.clear(); // CraftBukkit - Removals are already covered
+        // Kohi - we changed this back to arraylist
+        for (Object o : this.e) {
+            PlayerChunk playerchunk = (PlayerChunk) o;
+            playerchunk.b();
+        }
+
+        this.e.clear();
         if (this.managedPlayers.isEmpty()) {
             if (!wasNotEmpty) return; // CraftBukkit - Only do unload when we go from non-empty to empty
             WorldProvider worldprovider = this.world.worldProvider;
@@ -90,7 +97,7 @@ public class PlayerChunkMap {
         if (playerchunk == null && flag) {
             playerchunk = new PlayerChunk(this, i, j);
             this.d.put(k, playerchunk);
-            this.f.add(playerchunk);
+            // this.f.add(playerchunk); Kohi
         }
 
         return playerchunk;
@@ -106,6 +113,7 @@ public class PlayerChunkMap {
     // CraftBukkit end
 
     public void flagDirty(int i, int j, int k) {
+        org.spigotmc.AsyncCatcher.catchOp("PlayerChunkMap.flagDirty");
         int l = i >> 4;
         int i1 = k >> 4;
         PlayerChunk playerchunk = this.a(l, i1, false);
@@ -328,11 +336,13 @@ public class PlayerChunkMap {
         return playerchunkmap.d;
     }
 
+    /* Kohi
     static Queue c(PlayerChunkMap playermanager) { // CraftBukkit List -> Queue
         return playermanager.f;
     }
+    */
 
-    static Queue d(PlayerChunkMap playermanager) { // CraftBukkit List -> Queue
+    static List d(PlayerChunkMap playermanager) { // Kohi - List
         return playermanager.e;
     }
 
