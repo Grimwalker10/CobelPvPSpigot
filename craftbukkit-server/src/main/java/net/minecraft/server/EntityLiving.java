@@ -18,6 +18,7 @@ import org.bukkit.event.entity.EntityRegainHealthEvent;
 
 import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.spigotmc.ActivationRange;
+import org.spigotmc.SpigotConfig;
 
 public abstract class EntityLiving extends Entity {
 
