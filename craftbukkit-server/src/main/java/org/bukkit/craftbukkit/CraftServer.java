@@ -1867,6 +1867,13 @@ public final class CraftServer implements Server {
                 player.spigot().sendMessage( components );
             }
         }
+
+        // PaperSpigot start - Add getTPS
+        @Override
+        public double[] getTPS() {
+            return MinecraftServer.getServer().recentTps;
+        }
+        // PaperSpigot end
     };
 
     public Spigot spigot()
