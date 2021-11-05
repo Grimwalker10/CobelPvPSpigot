@@ -102,6 +102,8 @@ public class BlockFlowing extends BlockFluids {
             this.n(world, i, j, k);
         }
 
+        if (world.getType(i, j, k).getMaterial() != material) return; // PaperSpigot - Stop updating flowing block if material has changed
+
         if (this.q(world, i, j - 1, k)) {
             // CraftBukkit start - Send "down" to the server
             BlockFromToEvent event = new BlockFromToEvent(source, BlockFace.DOWN);
