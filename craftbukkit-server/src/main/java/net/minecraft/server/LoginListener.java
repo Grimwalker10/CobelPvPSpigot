@@ -47,7 +47,29 @@ public class LoginListener implements PacketLoginInListener {
         random.nextBytes(this.e);
     }
 
+    // Poweruser start
+    private IllegalStateException authenticationException;
+
+    protected void caughtAuthenticationException(Exception e) {
+        this.authenticationException = new IllegalStateException(e.getMessage(), e);
+    }
+
+    protected boolean compareRandomConnectionKey(byte[] array) {
+        return Arrays.equals(this.e, array);
+    }
+
+    protected void setLoginKey(SecretKey loginKey) {
+        this.loginKey = loginKey;
+    }
+
     public void a() {
+        if(this.authenticationException != null) {
+            IllegalStateException exception = this.authenticationException;
+            this.authenticationException = null;
+            throw exception;
+        }
+    // Poweruser end
+
         if (this.g == EnumProtocolState.READY_TO_ACCEPT) {
             this.c();
         }
@@ -154,6 +176,8 @@ public class LoginListener implements PacketLoginInListener {
 
     public void a(PacketLoginInEncryptionBegin packetlogininencryptionbegin) {
         Validate.validState(this.g == EnumProtocolState.KEY, "Unexpected key packet", new Object[0]);
+
+        /*
         PrivateKey privatekey = this.server.K().getPrivate();
 
         if (!Arrays.equals(this.e, packetlogininencryptionbegin.b(privatekey))) {
@@ -164,6 +188,8 @@ public class LoginListener implements PacketLoginInListener {
             this.networkManager.a(this.loginKey);
             ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // Poweruser
         }
+        */
+        ThreadingManager.execute(new ThreadPlayerLookupUUID(this, packetlogininencryptionbegin)); // Poweruser
     }
 
     protected GameProfile a(GameProfile gameprofile) {
