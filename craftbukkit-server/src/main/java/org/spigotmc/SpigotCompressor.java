@@ -1,6 +1,6 @@
 package org.spigotmc;
 
-import net.minecraft.server.PacketDataSerializer;
+import com.cobelpvp.utils.ReusableByteArray;
 import net.minecraft.util.io.netty.buffer.ByteBuf;
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
 import net.minecraft.util.io.netty.handler.codec.MessageToByteEncoder;
@@ -12,32 +12,42 @@ public class SpigotCompressor extends MessageToByteEncoder
 
     private final byte[] buffer = new byte[8192];
     private final Deflater deflater = new Deflater();
+    private static final ReusableByteArray reusableData = new ReusableByteArray(0x70000); // rough size estimate from a quick play test
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception
     {
         ByteBuf in = (ByteBuf) msg;
         int origSize = in.readableBytes();
-        PacketDataSerializer serializer = new PacketDataSerializer( out );
 
         if ( origSize < 256 )
         {
-            serializer.b( 0 );
-            serializer.writeBytes( in );
+            writeVarInt( 0, out );
+            out.writeBytes( in );
         } else
         {
-            byte[] data = new byte[ origSize ];
-            in.readBytes( data );
+            byte[] data = reusableData.get(origSize);
+            in.readBytes( data, 0, origSize );
 
-            serializer.b( data.length );
+            writeVarInt( origSize, out );
 
-            deflater.setInput( data );
+            deflater.setInput( data, 0, origSize );
             deflater.finish();
             while (!deflater.finished()) {
                 int count = deflater.deflate( buffer );
-                serializer.writeBytes( buffer, 0, count );
+                out.writeBytes( buffer, 0, count );
             }
             deflater.reset();
         }
     }
+
+    public static void writeVarInt(int val, ByteBuf out) {
+        while ((val & -128) != 0) {
+            out.writeByte(val & 127 | 128);
+            val >>>= 7;
+        }
+
+        out.writeByte(val);
+    }
+
 }

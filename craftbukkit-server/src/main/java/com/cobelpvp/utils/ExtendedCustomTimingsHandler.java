@@ -1,4 +1,4 @@
-package net.frozenorb.timings;
+package com.cobelpvp.utils;
 
 import java.io.BufferedWriter;
 import java.io.File;

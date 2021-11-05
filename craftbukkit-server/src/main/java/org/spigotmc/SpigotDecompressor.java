@@ -1,5 +1,6 @@
 package org.spigotmc;
 
+import com.cobelpvp.utils.ReusableByteArray;
 import net.minecraft.server.PacketDataSerializer;
 import net.minecraft.util.io.netty.buffer.ByteBuf;
 import net.minecraft.util.io.netty.buffer.Unpooled;
@@ -13,6 +14,7 @@ public class SpigotDecompressor extends ByteToMessageDecoder
 {
 
     private final Inflater inflater = new Inflater();
+    private static final ReusableByteArray reusableCompressedData = new ReusableByteArray(8192);
 
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> objects) throws Exception
@@ -29,9 +31,10 @@ public class SpigotDecompressor extends ByteToMessageDecoder
             objects.add( serializer.readBytes( serializer.readableBytes() ) );
         } else
         {
-            byte[] compressedData = new byte[ serializer.readableBytes() ];
-            serializer.readBytes( compressedData );
-            inflater.setInput( compressedData );
+            int compressedSize = serializer.readableBytes();
+            byte[] compressedData = reusableCompressedData.get(compressedSize);
+            serializer.readBytes( compressedData, 0, compressedSize );
+            inflater.setInput( compressedData, 0, compressedSize );
 
             byte[] data = new byte[ size ];
             inflater.inflate( data );

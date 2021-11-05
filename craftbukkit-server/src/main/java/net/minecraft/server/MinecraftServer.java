@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import javax.imageio.ImageIO;
 
+import com.cobelpvp.utils.ExtendedCustomTimingsHandler;
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 import net.minecraft.util.com.mojang.authlib.GameProfileRepository;
@@ -675,7 +676,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         SpigotTimings.serverTickTimer.stopTiming(); // Spigot
         this.lastTickTime = (System.nanoTime() - i) / 1000000F;
         ThreadingManager.cancelTimerTask(this.lastTickTime); // Poweruser
-        net.frozenorb.timings.ExtendedCustomTimingsHandler.tick(); // Poweruser
+        ExtendedCustomTimingsHandler.tick(); // Poweruser
     }
 
     public void v() {
