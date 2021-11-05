@@ -3,7 +3,6 @@ package net.minecraft.server;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -11,11 +10,16 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+// PaperSpigot start
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
+// PaperSpigot end
+
 // CraftBukkit start
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.util.LongHashSet;
 import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.craftbukkit.CraftServer;
@@ -27,6 +31,10 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 // CraftBukkit end
+
+// Poweruser start
+import com.cobelpvp.LightingUpdater;
+// Poweruser end
 
 public abstract class World implements IBlockAccess {
 
@@ -114,6 +122,17 @@ public abstract class World implements IBlockAccess {
     public static boolean haveWeSilencedAPhysicsCrash;
     public static String blockLocation;
     public List<TileEntity> triggerHoppersList = new ArrayList<TileEntity>(); // Spigot, When altHopperTicking, tile entities being added go through here.
+    // Poweruser start - only one thread, and with lower priority. Instead of one for each world
+    private static ExecutorService lightingExecutor; // PaperSpigot - Asynchronous lighting updates
+    private LightingUpdater lightingUpdater = new LightingUpdater();
+
+    public static ExecutorService getLightingExecutor() {
+        if(lightingExecutor == null) {
+            lightingExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setPriority(Thread.NORM_PRIORITY - 1).setNameFormat("PaperSpigot - Lighting Thread").build());
+        }
+        return lightingExecutor;
+    }
+    // Poweruser end
 
     public static long chunkToKey(int x, int z)
     {
@@ -614,7 +633,7 @@ public abstract class World implements IBlockAccess {
 
         if (!this.worldProvider.g) {
             for (i1 = k; i1 <= l; ++i1) {
-                this.c(EnumSkyBlock.SKY, i, i1, j);
+                this.updateLight(EnumSkyBlock.SKY, i, i1, j); // PaperSpigot - Asynchronous lighting updates
             }
         }
 
@@ -2383,10 +2402,10 @@ public abstract class World implements IBlockAccess {
         boolean flag = false;
 
         if (!this.worldProvider.g) {
-            flag |= this.c(EnumSkyBlock.SKY, i, j, k);
+            flag |= this.updateLight(EnumSkyBlock.SKY, i, j, k); // PaperSpigot - Asynchronous lighting updates
         }
 
-        flag |= this.c(EnumSkyBlock.BLOCK, i, j, k);
+        flag |= this.updateLight(EnumSkyBlock.BLOCK, i, j, k); // PaperSpigot - Asynchronous lighting updates
         return flag;
     }
 
@@ -2431,10 +2450,10 @@ public abstract class World implements IBlockAccess {
         }
     }
 
-    public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k) {
+    public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k, Chunk chunk, List<Chunk> neighbors) { // PaperSpigot
         // CraftBukkit start - Use neighbor cache instead of looking up
-        Chunk chunk = this.getChunkIfLoaded(i >> 4, k >> 4);
-        if (chunk == null || !chunk.areNeighborsLoaded(1) /* !this.areChunksLoaded(i, j, k, 17)*/) {
+        //Chunk chunk = this.getChunkIfLoaded(i >> 4, k >> 4);
+        if (chunk == null /*|| !chunk.areNeighborsLoaded(1)*/ /* !this.areChunksLoaded(i, j, k, 17)*/) {
             // CraftBukkit end
             return false;
         } else {
@@ -2539,10 +2558,73 @@ public abstract class World implements IBlockAccess {
                 }
             }
 
+            // PaperSpigot start - Asynchronous light updates
+            if (chunk.world.paperSpigotConfig.useAsyncLighting) {
+                chunk.pendingLightUpdates.decrementAndGet();
+                if (neighbors != null) {
+                    for (Chunk neighbor : neighbors) {
+                        neighbor.pendingLightUpdates.decrementAndGet();
+                    }
+                }
+            }
+            // PaperSpigot end
             this.methodProfiler.b();
             return true;
         }
     }
+
+    // PaperSpigot start - Asynchronous lighting updates
+    public boolean updateLight(final EnumSkyBlock enumskyblock, final int x, final int y, final int z) {
+        final Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
+        if (chunk == null || !chunk.areNeighborsLoaded(2)) { // Poweruser - radius 2
+            return false;
+        }
+
+        if (!chunk.world.paperSpigotConfig.useAsyncLighting) {
+            return this.c(enumskyblock, x, y, z, chunk, null);
+        }
+
+        chunk.pendingLightUpdates.incrementAndGet();
+        chunk.lightUpdateTime = chunk.world.getTime();
+
+        final List<Chunk> neighbors = new ArrayList<Chunk>();
+        // Poweruser start
+        int chunkx = chunk.locX;
+        int chunkz = chunk.locZ;
+        int radius = 2;
+        for (int cx = chunkx - radius; cx <= chunkx + radius; ++cx) {
+            for (int cz = chunkz - radius; cz <= chunkz + radius; ++cz) {
+                if(cx != chunkx || cz != chunkz) {
+        // Poweruser end
+                    Chunk neighbor = this.getChunkIfLoaded(cx, cz);
+                    if (neighbor != null) {
+                        neighbor.pendingLightUpdates.incrementAndGet();
+                        neighbor.lightUpdateTime = chunk.world.getTime();
+                        neighbors.add(neighbor);
+                    }
+                }
+            }
+        }
+
+        if (!Bukkit.isPrimaryThread()) {
+            return this.c(enumskyblock, x, y, z, chunk, neighbors);
+        }
+
+        // Poweruser start
+        getLightingExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    World.this.lightingUpdater.c(enumskyblock, x, y, z, chunk, neighbors);
+                } catch (Exception e) {
+                    MinecraftServer.getLogger().error("Thread " + Thread.currentThread().getName() + " encountered an exception: " + e.getMessage(), e);
+                }
+            }
+        });
+        // Poweruser end
+        return true;
+    }
+    // PaperSpigot end
 
     public boolean a(boolean flag) {
         return false;

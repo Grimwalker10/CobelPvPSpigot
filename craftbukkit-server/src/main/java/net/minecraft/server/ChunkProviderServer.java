@@ -55,6 +55,12 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     public void queueUnload(int i, int j) {
+        // PaperSpigot start - Asynchronous lighting updates
+        Chunk chunk = this.chunks.get(LongHash.toLong(i, j));
+        if (chunk != null && chunk.world.paperSpigotConfig.useAsyncLighting && (chunk.pendingLightUpdates.get() > 0 || chunk.world.getTime() - chunk.lightUpdateTime < 20)) {
+            return;
+        }
+        // PaperSpigot end
         if (this.world.worldProvider.e()) {
             ChunkCoordinates chunkcoordinates = this.world.getSpawn();
             int k = i * 16 + 8 - chunkcoordinates.x;

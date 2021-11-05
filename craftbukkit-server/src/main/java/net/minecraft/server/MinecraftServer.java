@@ -119,7 +119,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public int activeEntities;
     // Kohi end
 
-    public float lastTickTime = 0F; // MineHQ
+    public float lastTickTime = 0F; // CobelPvP
 
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
         net.minecraft.util.io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable

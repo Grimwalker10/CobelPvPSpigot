@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.cobelpvp</groupId>
-    <artifactId>spigot-parent</artifactId>
+    <artifactId>craftbukkit-parent</artifactId>
     <version>dev-SNAPSHOT</version>
     <dependencies>
         <dependency>
