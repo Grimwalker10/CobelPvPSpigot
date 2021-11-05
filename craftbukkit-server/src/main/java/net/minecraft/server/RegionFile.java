@@ -87,16 +87,16 @@ public class RegionFile {
 
             int k;
 
-            // MineHQ start
+            // CobelPvP start
             ByteBuffer header = ByteBuffer.allocate(8192);
             while (header.hasRemaining())  {
                 if (this.c.getChannel().read(header) == -1) throw new EOFException();
             }
             header.clear();
             IntBuffer headerAsInts = header.asIntBuffer();
-            // MineHQ end
+            // CobelPvP end
             for (j = 0; j < 1024; ++j) {
-                k = headerAsInts.get(); // MineHQ
+                k = headerAsInts.get(); // CobelPvP
                 this.d[j] = k;
                 if (k != 0 && (k >> 8) + (k & 255) <= this.f.size()) {
                     for (int l = 0; l < (k & 255); ++l) {
@@ -106,7 +106,7 @@ public class RegionFile {
             }
 
             for (j = 0; j < 1024; ++j) {
-                k = headerAsInts.get(); // MineHQ
+                k = headerAsInts.get(); // CobelPvP
                 this.e[j] = k;
             }
         } catch (IOException ioexception) {

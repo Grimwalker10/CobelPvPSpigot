@@ -40,7 +40,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public double e;
     public final List chunkCoordIntPairQueue = new LinkedList();
     public final Set<ChunkCoordIntPair> paddingChunks = new HashSet<ChunkCoordIntPair>(); // CobelPvP
-    // public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public // MineHQ
+    // public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public // CobelPvP
     private final ServerStatisticManager bO;
     private float bP = Float.MIN_VALUE;
     private float bQ = -1.0E8F;
@@ -204,7 +204,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.activeContainer = this.defaultContainer;
         }
 
-        // MineHQ start - nope
+        // CobelPvP start - nope
         /*
         while (!this.removeQueue.isEmpty()) {
             int i = Math.min(this.removeQueue.size(), 127);
@@ -220,7 +220,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
         }
         */
-        // MineHQ end
+        // CobelPvP end
 
         if (!this.chunkCoordIntPairQueue.isEmpty()) {
             ArrayList arraylist = new ArrayList();
@@ -268,7 +268,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                     this.b(tileentity);
                 }
 
-                // MineHQ start - nope
+                // CobelPvP start - nope
                 /*
                 iterator2 = arraylist.iterator();
 
@@ -277,7 +277,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                     this.r().getTracker().a(this, chunk);
                 }
                 */
-                // MineHQ end
+                // CobelPvP end
             }
         }
         this.world.timings.entityPlayerTickNormal.stopTiming(); // Poweruser
@@ -969,7 +969,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.lastSentExp = -1;
         this.bQ = -1.0F;
         this.bR = -1;
-        // this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue); // MineHQ
+        // this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue); // CobelPvP
     }
 
     protected void a(MobEffect mobeffect) {
@@ -1103,7 +1103,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void d(Entity entity) {
-        this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[] { entity.getId() })); // MineHQ
+        this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[] { entity.getId() })); // CobelPvP
     }
 
     public long x() {

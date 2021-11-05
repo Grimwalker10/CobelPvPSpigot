@@ -153,17 +153,18 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
         if (this.world.b(EnumSkyBlock.SKY, i, j, k) > this.random.nextInt(32)) {
             return false;
         } else {
-            int l = this.world.getLightLevel(i, j, k);
-
+            // int l = this.world.getLightLevel(i, j, k); // CobelPvP
+            boolean passes; // CobelPvP
             if (this.world.P()) {
                 int i1 = this.world.j;
 
                 this.world.j = 10;
-                l = this.world.getLightLevel(i, j, k);
+                // l = this.world.getLightLevel(i, j, k); // CobelPvP
+                passes = !this.world.isLightLevel(i, j, k, this.random.nextInt(9)); // CobelPvP
                 this.world.j = i1;
-            }
+            } else { passes = !this.world.isLightLevel(i, j, k, this.random.nextInt(9)); } // CobelPvP
 
-            return l <= this.random.nextInt(8);
+            return passes; // CobelPvP
         }
     }
 

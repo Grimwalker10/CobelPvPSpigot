@@ -162,13 +162,13 @@ public class WorldServer extends World {
     // CraftBukkit end
 
     public void doTick() {
-        if (!SpigotConfig.disableWeatherTicking) super.doTick(); // MineHQ
+        if (!SpigotConfig.disableWeatherTicking) super.doTick(); // CobelPvP
         if (this.getWorldData().isHardcore() && this.difficulty != EnumDifficulty.HARD) {
             this.difficulty = EnumDifficulty.HARD;
         }
 
         this.worldProvider.e.b();
-        if (!SpigotConfig.disableSleepCheck && this.everyoneDeeplySleeping()) { // MineHQ
+        if (!SpigotConfig.disableSleepCheck && this.everyoneDeeplySleeping()) { // CobelPvP
             if (this.getGameRules().getBoolean("doDaylightCycle")) {
                 long i = this.worldData.getDayTime() + 24000L;
 
@@ -209,7 +209,7 @@ public class WorldServer extends World {
         timings.doTickPending.stopTiming(); // Spigot
         this.methodProfiler.c("tickBlocks");
         timings.doTickTiles.startTiming(); // Spigot
-        if (!SpigotConfig.disableBlockTicking) this.g(); // MineHQ
+        if (!SpigotConfig.disableBlockTicking) this.g(); // CobelPvP
         timings.doTickTiles.stopTiming(); // Spigot
         this.methodProfiler.c("chunkMap");
         timings.doChunkMap.startTiming(); // Spigot
@@ -217,12 +217,12 @@ public class WorldServer extends World {
         timings.doChunkMap.stopTiming(); // Spigot
         this.methodProfiler.c("village");
         timings.doVillages.startTiming(); // Spigot
-        // MineHQ start
+        // CobelPvP start
         if (!SpigotConfig.disableVillageTicking) {
             this.villages.tick();
             this.siegeManager.a();
         }
-        // MineHQ end
+        // CobelPvP end
         timings.doVillages.stopTiming(); // Spigot
         this.methodProfiler.c("portalForcer");
         timings.doPortalForcer.startTiming(); // Spigot

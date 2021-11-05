@@ -1602,7 +1602,7 @@ public abstract class EntityLiving extends Entity {
 
     protected void bo() {
         // Kohi - skip checks if not activated
-        if (SpigotConfig.disableEntityCollisions || !ActivationRange.checkIfActive(this)) { // MineHQ
+        if (SpigotConfig.disableEntityCollisions || !ActivationRange.checkIfActive(this)) { // CobelPvP
             return;
         }
 

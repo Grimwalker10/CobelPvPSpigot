@@ -177,7 +177,7 @@ public class ChunkSection {
             this.blockData = expandCompactNibble(this.compactData);
         }
         // CraftBukkit end
-        isDirty = true; // MineHQ
+        isDirty = true; // CobelPvP
         this.blockData.a(i, j, k, l);
     }
 
@@ -202,7 +202,7 @@ public class ChunkSection {
             this.skyLight = expandCompactNibble(this.compactSky);
         }
         // CraftBukkit end
-        isDirty = true; // MineHQ
+        isDirty = true; // CobelPvP
         this.skyLight.a(i, j, k, l);
     }
 
@@ -224,7 +224,7 @@ public class ChunkSection {
             this.emittedLight = expandCompactNibble(this.compactEmitted);
         }
         // CraftBukkit end
-        isDirty = true; // MineHQ
+        isDirty = true; // CobelPvP
         this.emittedLight.a(i, j, k, l);
     }
 

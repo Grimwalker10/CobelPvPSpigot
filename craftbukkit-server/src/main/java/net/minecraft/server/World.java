@@ -816,6 +816,43 @@ public abstract class World implements IBlockAccess {
         }
     }
 
+    // CobelPvP start
+    public boolean isLightLevel(int i, int j, int k, int level) {
+        if (i >= -30000000 && k >= -30000000 && i < 30000000 && k < 30000000) {
+            if (this.getType(i, j, k).n()) {
+                if (this.b(i, j + 1, k, false) >= level) {
+                    return true;
+                }
+                if (this.b(i + 1, j, k, false) >= level) {
+                    return true;
+                }
+                if (this.b(i - 1, j, k, false) >= level) {
+                    return true;
+                }
+                if (this.b(i, j, k + 1, false) >= level) {
+                    return true;
+                }
+                if (this.b(i, j, k - 1, false) >= level) {
+                    return true;
+                }
+                return false;
+            } else {
+                if (j >= 256) {
+                    j = 255;
+                }
+
+                Chunk chunk = this.getChunkAt(i >> 4, k >> 4);
+
+                i &= 15;
+                k &= 15;
+                return chunk.b(i, j, k, this.j) >= level;
+            }
+        } else {
+            return true;
+        }
+    }
+    // CobelPvP end
+
     public int getHighestBlockYAt(int i, int j) {
     // Poweruser start
         return this.getHighestBlockYAt(i, j, false);

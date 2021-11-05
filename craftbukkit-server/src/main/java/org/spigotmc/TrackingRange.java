@@ -28,7 +28,7 @@ public class TrackingRange
         if ( entity instanceof EntityPlayer )
         {
             return config.playerTrackingRange;
-        // MineHQ start
+        // CobelPvP start
         } else if ( entity instanceof EntityArrow )
         {
             return config.playerTrackingRange;
@@ -39,7 +39,7 @@ public class TrackingRange
         {
             return config.playerTrackingRange;
         }
-        // MineHQ end
+        // CobelPvP end
         else if ( entity.activationType == 1 )
         {
             return config.monsterTrackingRange;

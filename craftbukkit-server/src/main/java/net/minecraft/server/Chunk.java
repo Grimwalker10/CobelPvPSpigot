@@ -75,7 +75,7 @@ public class Chunk {
     }
     // CraftBukkit end
 
-    // MineHQ start
+    // CobelPvP start
     private ChunkMap chunkMap17;
     private ChunkMap chunkMap18;
     private int emptySectionBits;
@@ -130,7 +130,7 @@ public class Chunk {
             return chunkMap18;
         }
     }
-    // MineHQ end
+    // CobelPvP end
 
     public Chunk(World world, int i, int j) {
         this.sections = new ChunkSection[16];

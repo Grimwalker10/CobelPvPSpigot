@@ -11,7 +11,7 @@ import net.frozenorb.util.IndexedLinkedHashSet;
 
 public class EntityTracker {
 
-    // MineHQ start
+    // CobelPvP start
     private IndexedLinkedHashSet<EntityTrackerEntry> c = new IndexedLinkedHashSet<EntityTrackerEntry>();
     public IntHashMap trackedEntities = new IntHashMap(); // CraftBukkit - private -> public
 
@@ -24,18 +24,18 @@ public class EntityTracker {
     public void setNoTrackDistance(int noTrackDistance) {
         this.noTrackDistance = noTrackDistance;
     }
-    // MineHQ end
+    // CobelPvP end
     private int e;
 
 
     public EntityTracker(WorldServer worldserver) {
-        this.e = 128; // MineHQ
+        this.e = 128; // CobelPvP
     }
 
     public void track(Entity entity) {
         if (entity instanceof EntityPlayer) {
             this.addEntity(entity, 512, 2);
-            // MineHQ start
+            // CobelPvP start
             /*
             EntityPlayer entityplayer = (EntityPlayer) entity;
             Iterator iterator = this.c.iterator();
@@ -48,7 +48,7 @@ public class EntityTracker {
                 }
             }
             */
-            // MineHQ end
+            // CobelPvP end
         } else if (entity instanceof EntityFishingHook) {
             this.addEntity(entity, 64, 5, true);
         } else if (entity instanceof EntityArrow) {
@@ -116,11 +116,11 @@ public class EntityTracker {
                 throw new IllegalStateException("Entity is already tracked!");
             }
 
-            EntityTrackerEntry entitytrackerentry = new EntityTrackerEntry(this, entity, i, j, flag); // MineHQ
+            EntityTrackerEntry entitytrackerentry = new EntityTrackerEntry(this, entity, i, j, flag); // CobelPvP
 
             this.c.add(entitytrackerentry);
             this.trackedEntities.a(entity.getId(), entitytrackerentry);
-            // entitytrackerentry.scanPlayers(this.world.players); // MineHQ
+            // entitytrackerentry.scanPlayers(this.world.players); // CobelPvP
             entitytrackerentry.addNearPlayers();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -148,7 +148,7 @@ public class EntityTracker {
         }
     }
 
-    // MineHQ start - parallel tracking
+    // CobelPvP start - parallel tracking
     private static int trackerThreads = 4; // <-- 3 non-this threads, one this
     private static ExecutorService pool = Executors.newFixedThreadPool(trackerThreads - 1, new ThreadFactoryBuilder().setNameFormat("entity-tracker-%d").build());
     public void updatePlayers() {
@@ -173,7 +173,7 @@ public class EntityTracker {
             e.printStackTrace();
         }
     }
-    // MineHQ end
+    // CobelPvP end
 
     public void a(Entity entity, Packet packet) {
         EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) this.trackedEntities.get(entity.getId());
@@ -201,7 +201,7 @@ public class EntityTracker {
         }
     }
 
-    // MineHQ start - nope
+    // CobelPvP start - nope
     /*
     public void a(EntityPlayer entityplayer, Chunk chunk) {
         // Kohi start - Optimized EntityTracker

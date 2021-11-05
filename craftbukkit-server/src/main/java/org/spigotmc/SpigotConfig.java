@@ -459,7 +459,7 @@ public class SpigotConfig
     }
     // Poweruser end
 
-    // MineHQ start
+    // CobelPvP start
     private static void noTrackCommand() {
         commands.put( "notrack", new net.frozenorb.command.NoTrackCommand( "notrack" ) );
     }
@@ -498,7 +498,7 @@ public class SpigotConfig
     private static void cacheChunkMaps() {
         cacheChunkMaps = getBoolean("settings.cache-chunk-maps", false);
     }
-    // MineHQ end
+    // CobelPvP end
 
     public static boolean reduceArmorDamage;
     private static void reduceArmorDamage() {
