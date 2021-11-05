@@ -355,6 +355,7 @@ public class WorldServer extends World {
             this.timings.doTickTiles_tickingChunks_tickChunk.startTiming(); // Poweruser
             chunk.b(false);
             this.timings.doTickTiles_tickingChunks_tickChunk.stopTiming(); // Poweruser
+            if (!chunk.areNeighborsLoaded(1)) continue; // CobelPvP
             this.methodProfiler.c("thunder");
             int i1;
             int j1;
