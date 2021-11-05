@@ -1123,6 +1123,28 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
         {
             throw new UnsupportedOperationException( "Not supported yet." );
         }
+
+        /**
+         * Get whether the player affects mob spawning
+         *
+         * @return whether or not the player affects
+         * mob spawning.
+         */
+        public boolean getAffectsSpawning()
+        {
+            throw new  UnsupportedOperationException( "Not supported yet." );
+        }
+
+        /**
+         * Set whether or not the player affects mob spawning
+         *
+         * @param affects whether or not the player should affect
+         * spawning or not.
+         */
+        public void setAffectsSpawning(boolean affects)
+        {
+            throw new UnsupportedOperationException( "Not supported yet" );
+        }
     }
 
     Spigot spigot();
