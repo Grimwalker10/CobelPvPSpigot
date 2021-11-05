@@ -163,4 +163,12 @@ public class PaperSpigotConfig
             Bukkit.getLogger().log( Level.INFO, "Disabling player interaction limiter, your server may be more vulnerable to malicious users" );
         }
     }
+
+    public static double strengthEffectModifier;
+    public static double weaknessEffectModifier;
+    private static void effectModifiers()
+    {
+        strengthEffectModifier = getDouble( "effect-modifiers.strength", 0.46D );
+        weaknessEffectModifier = getDouble( "effect-modifiers.weakness", -0.5D );
+    }
 }
