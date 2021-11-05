@@ -1,10 +1,6 @@
 package net.minecraft.server;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -244,7 +240,19 @@ public class EntityTrackerEntry {
         DataWatcher datawatcher = this.tracker.getDataWatcher();
 
         if (datawatcher.a()) {
-            this.broadcastIncludingSelf(new PacketPlayOutEntityMetadata(this.tracker.getId(), datawatcher, false));
+            // CobelPvP start
+            List changedMetadata = datawatcher.b();
+            if (this.doHealthObfuscation()) {
+                PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(this.tracker.getId(), new ArrayList(changedMetadata), false).obfuscateHealth();
+                if (!metadataPacket.didFindHealth() || 1 < metadataPacket.getMetadata().size()) this.broadcast(metadataPacket);
+            } else {
+                this.broadcast(new PacketPlayOutEntityMetadata(this.tracker.getId(), changedMetadata, false));
+            }
+
+            if (this.tracker instanceof EntityPlayer) {
+                ((EntityPlayer) this.tracker).playerConnection.sendPacket(new PacketPlayOutEntityMetadata(this.tracker.getId(), changedMetadata, false));
+            }
+            // CobelPvP end
         }
 
         if (this.tracker instanceof EntityLiving) {
@@ -332,9 +340,19 @@ public class EntityTrackerEntry {
                     // Spigot end
 
                     entityplayer.playerConnection.sendPacket(packet);
+
                     if (!this.tracker.getDataWatcher().d()) {
-                        entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityMetadata(this.tracker.getId(), this.tracker.getDataWatcher(), true));
+                        // CobelPvP start
+                        PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(this.tracker.getId(), this.tracker.getDataWatcher(), true);
+
+                        if (this.doHealthObfuscation()) {
+                            metadataPacket.obfuscateHealth();
+                        }
+
+                        entityplayer.playerConnection.sendPacket(metadataPacket);
+                        // CobelPvP end
                     }
+                    // CobelPvP end
 
                     if (this.tracker instanceof EntityLiving) {
                         AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).getAttributeMap();
@@ -533,4 +551,9 @@ public class EntityTrackerEntry {
             entityplayer.d(this.tracker);
         }
     }
+
+    public boolean doHealthObfuscation() {
+        return this.tracker.isAlive() && (this.tracker instanceof EntityPlayer);
+    }
+
 }
