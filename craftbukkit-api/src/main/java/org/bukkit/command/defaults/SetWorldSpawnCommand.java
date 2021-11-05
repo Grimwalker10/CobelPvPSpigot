@@ -35,6 +35,7 @@ public class SetWorldSpawnCommand extends VanillaCommand {
         }
 
         final int x, y, z;
+        Float yaw = null, pitch = null; // Poweruser
 
         if (args.length == 0) {
             if (player == null) {
@@ -47,6 +48,10 @@ public class SetWorldSpawnCommand extends VanillaCommand {
             x = location.getBlockX();
             y = location.getBlockY();
             z = location.getBlockZ();
+            // Poweruser start
+            yaw = new Float(location.getYaw());
+            pitch = new Float(location.getPitch());
+            // Poweruser end
         } else if (args.length == 3) {
             try {
                 x = getInteger(sender, args[0], MIN_COORD, MAX_COORD, true);
@@ -61,9 +66,16 @@ public class SetWorldSpawnCommand extends VanillaCommand {
             return false;
         }
 
-        world.setSpawnLocation(x, y, z);
+        // Poweruser start
+        if(yaw != null && pitch != null) {
+            world.setSpawnLocation(x, y, z, yaw.floatValue(), pitch.floatValue());
+            Command.broadcastCommandMessage(sender, "Set world " + world.getName() + "'s spawnpoint to (" + x + ", " + y + ", " + z + ", yaw=" + yaw.floatValue() + ", pitch=" + pitch.floatValue());
+        } else {
+            world.setSpawnLocation(x, y, z);
+            Command.broadcastCommandMessage(sender, "Set world " + world.getName() + "'s spawnpoint to (" + x + ", " + y + ", " + z + ")");
+        }
+        // Poweruser end
 
-        Command.broadcastCommandMessage(sender, "Set world " + world.getName() + "'s spawnpoint to (" + x + ", " + y + ", " + z + ")");
         return true;
 
     }

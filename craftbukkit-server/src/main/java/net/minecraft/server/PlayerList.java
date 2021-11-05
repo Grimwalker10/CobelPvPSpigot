@@ -557,7 +557,8 @@ public abstract class PlayerList {
             if (location == null) {
                 cworld = (CraftWorld) this.server.server.getWorlds().get(0);
                 chunkcoordinates = cworld.getHandle().getSpawn();
-                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5);
+
+                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5, cworld.getHandle().getWorldData().getSpawnYaw(), cworld.getHandle().getWorldData().getSpawnPitch()); // Poweruser
             }
 
             Player respawnPlayer = this.cserver.getPlayer(entityplayer1);
@@ -753,8 +754,10 @@ public abstract class PlayerList {
             d0 = (double) chunkcoordinates.x;
             y = (double) chunkcoordinates.y;
             d1 = (double) chunkcoordinates.z;
-            yaw = 90.0F;
-            pitch = 0.0F;
+            // Poweruser start
+            yaw = worldserver1.getWorldData().getSpawnYaw();
+            pitch = worldserver1.getWorldData().getSpawnPitch();
+            // Poweruser end
             /*
             entity.setPositionRotation(d0, entity.locY, d1, 90.0F, 0.0F);
             if (entity.isAlive()) {
