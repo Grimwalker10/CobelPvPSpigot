@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.cobelpvp.utils.ReusableByteArray;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.zip.DataFormatException;
@@ -13,10 +15,12 @@ public class PacketPlayOutMapChunkBulk extends Packet {
     private int[] c;
     private int[] d;
     private byte[] buffer;
+    private static final ReusableByteArray bufferCache = new ReusableByteArray(820480); // MineHQ
     private byte[][] inflatedBuffers;
     private int size;
     private boolean h;
-    private byte[] buildBuffer = new byte[0]; // CraftBukkit - remove static
+    private byte[] buildBuffer; // MineHQ
+    private static final ReusableByteArray buildBufferCache = new ReusableByteArray(820480); // MineHQ
     // CraftBukkit start
     static final ThreadLocal<Deflater> localDeflater = new ThreadLocal<Deflater>() {
         @Override
@@ -94,7 +98,7 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         }
 
         // Now it's time to efficiently copy the chunk to the build buffer
-        buildBuffer = new byte[finalBufferSize];
+        buildBuffer = buildBufferCache.get(finalBufferSize); // MineHQ
         int bufferLocation = 0;
         for (int i = 0; i < a.length; i++) {
             System.arraycopy(inflatedBuffers[i], 0, buildBuffer, bufferLocation, inflatedBuffers[i].length);
@@ -104,10 +108,10 @@ public class PacketPlayOutMapChunkBulk extends Packet {
 
         Deflater deflater = localDeflater.get();
         deflater.reset();
-        deflater.setInput(this.buildBuffer);
+        deflater.setInput(this.buildBuffer, 0, finalBufferSize); // MineHQ
         deflater.finish();
 
-        this.buffer = new byte[this.buildBuffer.length + 100];
+        this.buffer = bufferCache.get(finalBufferSize + 100); // MineHQ
         this.size = deflater.deflate(this.buffer);
     }
     // CraftBukkit end
@@ -117,6 +121,8 @@ public class PacketPlayOutMapChunkBulk extends Packet {
     }
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException { // CraftBukkit - throws IOException
+        // MineHQ start - this is client code
+        /*
         short short1 = packetdataserializer.readShort();
 
         this.size = packetdataserializer.readInt();
@@ -171,6 +177,8 @@ public class PacketPlayOutMapChunkBulk extends Packet {
             System.arraycopy(abyte, i, this.inflatedBuffers[j], 0, i1);
             i += i1;
         }
+        */
+        // MineHQ end
     }
 
     public void b(PacketDataSerializer packetdataserializer) throws IOException { // CraftBukkit - throws IOException

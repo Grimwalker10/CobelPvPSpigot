@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.cobelpvp.utils.ReusableByteArray;
+
 import java.io.IOException;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
@@ -11,7 +13,7 @@ public class PacketPlayOutMapChunk extends Packet {
     private int b;
     private int c;
     private int d;
-    private byte[] e;
+    private static final ReusableByteArray bufferCache = new ReusableByteArray(164196); // MineHQ
     private byte[] f;
     private boolean g;
     private int h;
@@ -42,6 +44,8 @@ public class PacketPlayOutMapChunk extends Packet {
     }
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
+        // MineHQ start - this is client code
+        /*
         this.a = packetdataserializer.readInt();
         this.b = packetdataserializer.readInt();
         this.g = packetdataserializer.readBoolean();
@@ -78,6 +82,8 @@ public class PacketPlayOutMapChunk extends Packet {
         } finally {
             inflater.end();
         }
+        */
+        // MineHQ end
     }
 
     public void b(PacketDataSerializer packetdataserializer) {
@@ -90,17 +96,18 @@ public class PacketPlayOutMapChunk extends Packet {
         {
             this.world.spigotConfig.antiXrayInstance.obfuscate(this.a, this.b, mask, this.f, this.world, false); // Spigot
             Deflater deflater = new Deflater(4); // Spigot
+            byte[] buffer;
             try {
                 deflater.setInput(this.f, 0, this.f.length);
                 deflater.finish();
-                this.e = new byte[this.f.length];
-                this.h = deflater.deflate(this.e);
+                buffer = bufferCache.get(this.f.length + 100);
+                this.h = deflater.deflate(buffer);
             } finally {
                 deflater.end();
             }
             packetdataserializer.writeShort( (short) ( this.d & '\uffff' ) );
             packetdataserializer.writeInt( this.h );
-            packetdataserializer.writeBytes( this.e, 0, this.h );
+            packetdataserializer.writeBytes( buffer, 0, this.h );
         } else
         {
             this.world.spigotConfig.antiXrayInstance.obfuscate(this.a, this.b, mask, this.f, this.world, true); // Spigot
