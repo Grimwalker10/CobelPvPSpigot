@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger; // PaperSpigot
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.bukkit.Bukkit; // CraftBukkit
+import org.spigotmc.SpigotConfig;
 
 public class Chunk {
 
@@ -74,6 +74,63 @@ public class Chunk {
         this.neighbors &= ~(0x1 << (x * 5 + 12 + z));
     }
     // CraftBukkit end
+
+    // MineHQ start
+    private ChunkMap chunkMap17;
+    private ChunkMap chunkMap18;
+    private int emptySectionBits;
+
+    public ChunkMap getChunkMap(boolean groundUpContinuous, int primaryBitMask, int version) {
+        if (!SpigotConfig.cacheChunkMaps || !groundUpContinuous || (primaryBitMask != 0 && primaryBitMask != '\uffff')) {
+            return PacketPlayOutMapChunk.a(this, groundUpContinuous, primaryBitMask, version);
+        }
+
+        if (primaryBitMask == 0) {
+            ChunkMap chunkMap = new ChunkMap();
+            chunkMap.a = new byte[0];
+            return chunkMap;
+        }
+
+        boolean isDirty = false;
+        for (int i = 0; i < sections.length; ++i) {
+            ChunkSection section = sections[i];
+            if (section == null) {
+                if ((emptySectionBits & (1 << i)) == 0) {
+                    isDirty = true;
+                    emptySectionBits |= (1 << i);
+                }
+            } else {
+                if ((emptySectionBits & (1 << i)) == 1) {
+                    isDirty = true;
+                    emptySectionBits &= ~(1 << i);
+                    section.isDirty = false;
+                } else if (section.isDirty) {
+                    isDirty = true;
+                    section.isDirty = false;
+                }
+            }
+        }
+
+        if (isDirty) {
+            chunkMap17 = null;
+            chunkMap18 = null;
+        }
+
+        if (version < 24) {
+            if (chunkMap17 == null) {
+                chunkMap17 = PacketPlayOutMapChunk.a(this, true, '\uffff', version);
+            }
+
+            return chunkMap17;
+        } else {
+            if (chunkMap18 == null) {
+                chunkMap18 = PacketPlayOutMapChunk.a(this, true, '\uffff', version);
+            }
+
+            return chunkMap18;
+        }
+    }
+    // MineHQ end
 
     public Chunk(World world, int i, int j) {
         this.sections = new ChunkSection[16];

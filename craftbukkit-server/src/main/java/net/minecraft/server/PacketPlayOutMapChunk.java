@@ -36,7 +36,7 @@ public class PacketPlayOutMapChunk extends Packet {
             return;
         }
         // CobelPvP end
-        ChunkMap chunkmap = a(chunk, flag, i, version);
+        ChunkMap chunkmap = chunk.getChunkMap(flag, i, version); // MineHQ
 
         this.d = chunkmap.c;
         this.c = chunkmap.b;

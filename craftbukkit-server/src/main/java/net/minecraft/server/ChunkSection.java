@@ -18,6 +18,7 @@ public class ChunkSection {
     private byte compactData;
     private byte compactEmitted;
     private byte compactSky;
+    public boolean isDirty = false;
 
     // Pre-generated (read-only!) NibbleArrays for every possible value, used for chunk saving
     private static NibbleArray[] compactPregen = new NibbleArray[16];
@@ -143,6 +144,7 @@ public class ChunkSection {
 
         this.blockIds[j << 8 | k << 4 | i] = (byte) (i1 & 255);
         // CobelPvP start
+        isDirty = true;
         /*
         if (i1 > 255) {
             if (this.extBlockIds == null) {
@@ -175,6 +177,7 @@ public class ChunkSection {
             this.blockData = expandCompactNibble(this.compactData);
         }
         // CraftBukkit end
+        isDirty = true; // MineHQ
         this.blockData.a(i, j, k, l);
     }
 
@@ -199,6 +202,7 @@ public class ChunkSection {
             this.skyLight = expandCompactNibble(this.compactSky);
         }
         // CraftBukkit end
+        isDirty = true; // MineHQ
         this.skyLight.a(i, j, k, l);
     }
 
@@ -220,6 +224,7 @@ public class ChunkSection {
             this.emittedLight = expandCompactNibble(this.compactEmitted);
         }
         // CraftBukkit end
+        isDirty = true; // MineHQ
         this.emittedLight.a(i, j, k, l);
     }
 

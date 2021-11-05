@@ -493,6 +493,11 @@ public class SpigotConfig
     private static void disableEntityCollisions() {
         disableEntityCollisions = getBoolean("settings.disable.general.entity-collisions", false);
     }
+
+    public static boolean cacheChunkMaps;
+    private static void cacheChunkMaps() {
+        cacheChunkMaps = getBoolean("settings.cache-chunk-maps", false);
+    }
     // MineHQ end
 
     public static boolean reduceArmorDamage;

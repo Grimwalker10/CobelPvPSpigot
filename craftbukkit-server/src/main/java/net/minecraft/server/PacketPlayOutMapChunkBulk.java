@@ -47,7 +47,7 @@ public class PacketPlayOutMapChunkBulk extends Packet {
 
         for (int k = 0; k < i; ++k) {
             Chunk chunk = (Chunk) list.get(k);
-            ChunkMap chunkmap = PacketPlayOutMapChunk.a(chunk, true, '\uffff', version);
+            ChunkMap chunkmap = chunk.getChunkMap(true, '\uffff', version); // MineHQ
 
             // Spigot start
             world = chunk.world;
