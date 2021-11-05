@@ -804,7 +804,7 @@ public class PlayerConnection implements PacketPlayInListener {
         // CraftBukkit end
 
         try {
-            this.networkManager.handle(packet, new GenericFutureListener[0]);
+            this.networkManager.handle(packet, NetworkManager.emptyListenerArray); // Poweruser
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");

@@ -68,6 +68,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
     // Spigot End
 
+    public static final GenericFutureListener[] emptyListenerArray = new GenericFutureListener[0]; // Poweruser
+
     public NetworkManager(boolean flag) {
         this.j = flag;
     }

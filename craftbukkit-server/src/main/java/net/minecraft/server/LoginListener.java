@@ -62,7 +62,7 @@ public class LoginListener implements PacketLoginInListener {
             c.info("Disconnecting " + this.i.getName() + ": " + s);
             ChatComponentText chatcomponenttext = new ChatComponentText(s);
 
-            this.networkManager.handle(new PacketLoginOutDisconnect(chatcomponenttext), new GenericFutureListener[0]);
+            this.networkManager.handle(new PacketLoginOutDisconnect(chatcomponenttext), NetworkManager.emptyListenerArray); // Poweruser
             this.networkManager.close(chatcomponenttext);
         } catch (Exception exception) {
             c.error("Error whilst disconnecting player", exception);
@@ -123,7 +123,7 @@ public class LoginListener implements PacketLoginInListener {
                 } );
             }
             // Spigot end
-            this.networkManager.handle(new PacketLoginOutSuccess(this.i), new GenericFutureListener[0]);
+            this.networkManager.handle(new PacketLoginOutSuccess(this.i), NetworkManager.emptyListenerArray); // Poweruser
             this.server.getPlayerList().a(this.networkManager, this.server.getPlayerList().processLogin(this.i, s)); // CraftBukkit - add player reference
         }
     }
@@ -146,7 +146,7 @@ public class LoginListener implements PacketLoginInListener {
         this.i = packetlogininstart.c();
         if (this.server.getOnlineMode() && !this.networkManager.c()) {
             this.g = EnumProtocolState.KEY;
-            this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.K().getPublic(), this.e), new GenericFutureListener[0]);
+            this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.K().getPublic(), this.e), NetworkManager.emptyListenerArray); // Poweruser
         } else {
             ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // Poweruser
         }
