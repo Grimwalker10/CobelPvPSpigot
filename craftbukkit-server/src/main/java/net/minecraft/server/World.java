@@ -800,8 +800,14 @@ public abstract class World implements IBlockAccess {
     }
 
     public int getHighestBlockYAt(int i, int j) {
+    // Poweruser start
+        return this.getHighestBlockYAt(i, j, false);
+    }
+
+    public int getHighestBlockYAt(int i, int j, boolean chunksHaveAlreadyBeenChecked) {
+    // Poweruser end
         if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
-            if (!this.isChunkLoaded(i >> 4, j >> 4)) {
+            if (!chunksHaveAlreadyBeenChecked && !this.isChunkLoaded(i >> 4, j >> 4)) { // Poweruser
                 return 0;
             } else {
                 Chunk chunk = this.getChunkAt(i >> 4, j >> 4);
@@ -814,8 +820,14 @@ public abstract class World implements IBlockAccess {
     }
 
     public int g(int i, int j) {
+    // Poweruser start
+        return this.g(i, j, false);
+    }
+
+    public int g(int i, int j, boolean chunksHaveAlreadyBeenChecked) {
+    // Poweruser end
         if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
-            if (!this.isChunkLoaded(i >> 4, j >> 4)) {
+            if (!chunksHaveAlreadyBeenChecked && !this.isChunkLoaded(i >> 4, j >> 4)) { // Poweruser
                 return 0;
             } else {
                 Chunk chunk = this.getChunkAt(i >> 4, j >> 4);
@@ -2293,6 +2305,9 @@ public abstract class World implements IBlockAccess {
         // odds of growth happening vs growth happening in vanilla
         this.growthOdds = this.modifiedOdds = Math.max( 35, Math.min( 100, ( ( chunksPerPlayer + 1 ) * 100F ) / 15F ) );
         // Spigot end
+
+        Chunk chunkObj = null; // Poweruser
+
         for (i = 0; i < this.players.size(); ++i) {
             entityhuman = (EntityHuman) this.players.get(i);
             j = MathHelper.floor(entityhuman.locX / 16.0D);
@@ -2310,7 +2325,7 @@ public abstract class World implements IBlockAccess {
                 int dx = ( random.nextBoolean() ? 1 : -1 ) * random.nextInt( randRange );
                 int dz = ( random.nextBoolean() ? 1 : -1 ) * random.nextInt( randRange );
                 long hash = chunkToKey( dx + j, dz + k );
-                if ( !chunkTickList.contains( hash ) && this.isChunkLoaded( dx + j, dz + k ) )
+                if ( !chunkTickList.contains( hash ) && ((chunkObj = this.getChunkIfLoaded(dx + j, dz + k)) != null) && chunkObj.areNeighborsLoaded(1) ) // Poweruser
                 {
                     chunkTickList.put( hash, (short) -1 ); // no players
                 }

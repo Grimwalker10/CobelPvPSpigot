@@ -328,12 +328,6 @@ public class WorldServer extends World {
             long chunkCoord = iter.key();
             int chunkX = World.keyToX(chunkCoord);
             int chunkZ = World.keyToZ(chunkCoord);
-            // If unloaded, or in procedd of being unloaded, drop it
-            if ( ( !this.isChunkLoaded( chunkX, chunkZ ) ) || ( this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ ) ) )
-            {
-                iter.remove();
-                continue;
-            }
             // Spigot end
             // ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator.next();
             int k = chunkX * 16;
@@ -341,7 +335,13 @@ public class WorldServer extends World {
 
             this.methodProfiler.a("getChunk");
             this.timings.doTickTiles_tickingChunks_getChunk.startTiming(); // Poweruser
-            Chunk chunk = this.getChunkAt(chunkX, chunkZ);
+            // Poweruser start
+            Chunk chunk = this.getChunkIfLoaded(chunkX, chunkZ);
+            if(chunk == null || chunk.wasUnloaded() || !chunk.areNeighborsLoaded(1) || this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ )) {
+                iter.remove();
+                continue;
+            }
+            // Poweruser end
             // CraftBukkit end
 
             this.a(k, l, chunk);
