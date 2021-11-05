@@ -376,5 +376,10 @@ public class SpigotWorldConfig
         enderPearlsCanPassNonSolidBlocks = getBoolean("enderPearlsCanPassNonSolidBlocks", false);
         log("Enderpearls can pass non-solid blocks: " + enderPearlsCanPassNonSolidBlocks);
     }
+
+    public boolean updateMapItemsInPlayerInventory;
+    private void dontUpdateMapItemsInPlayerInventory() {
+        updateMapItemsInPlayerInventory = getBoolean( "updateMapItemsInPlayerInventory" , false);
+    }
     // Poweruser end
 }

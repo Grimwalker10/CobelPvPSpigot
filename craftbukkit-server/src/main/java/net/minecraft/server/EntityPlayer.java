@@ -261,14 +261,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         try {
             super.h();
 
-            for (int i = 0; i < this.inventory.getSize(); ++i) {
-                ItemStack itemstack = this.inventory.getItem(i);
+            if(this.world.spigotConfig.updateMapItemsInPlayerInventory) { // Poweruser
+                for (int i = 0; i < this.inventory.getSize(); ++i) {
+                    ItemStack itemstack = this.inventory.getItem(i);
 
-                if (itemstack != null && itemstack.getItem().h()) {
-                    Packet packet = ((ItemWorldMapBase) itemstack.getItem()).c(itemstack, this.world, this);
+                    if (itemstack != null && itemstack.getItem().h()) {
+                        Packet packet = ((ItemWorldMapBase) itemstack.getItem()).c(itemstack, this.world, this);
 
-                    if (packet != null) {
-                        this.playerConnection.sendPacket(packet);
+                        if (packet != null) {
+                            this.playerConnection.sendPacket(packet);
+                        }
                     }
                 }
             }
