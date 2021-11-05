@@ -43,6 +43,10 @@ import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
 
+// Poweruser start
+import net.frozenorb.ThreadingManager;
+// Poweruser end
+
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
 
     private static final Logger i = LogManager.getLogger();
@@ -119,6 +123,10 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public int activeEntities;
     // Kohi end
 
+    // Poweruser start
+    private ThreadingManager threadingManager;
+    // Poweruser end
+
     public float lastTickTime = 0F; // CobelPvP
 
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
@@ -126,6 +134,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.X = new UserCache(this, a);
         j = this;
         this.d = proxy;
+        this.threadingManager = new ThreadingManager(); // Poweruser
         // this.universe = file1; // CraftBukkit
         // this.p = new ServerConnection(this); // Spigot
         this.o = new CommandDispatcher();
@@ -434,6 +443,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.X.c();
             }
             //Spigot end
+
+            this.threadingManager.shutdown(); // Poweruser
         }
     }
 
