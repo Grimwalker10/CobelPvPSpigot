@@ -104,7 +104,7 @@ public class EntityExperienceOrb extends Entity {
 
         ++this.a;
         ++this.b;
-        if (this.b >= 6000) {
+        if (this.b >= this.world.spigotConfig.expDespawnRate) {
             this.die();
         }
     }
