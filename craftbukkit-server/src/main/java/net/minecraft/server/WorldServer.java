@@ -24,6 +24,7 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 // CraftBukkit end
+import org.spigotmc.SpigotConfig;
 
 public class WorldServer extends World {
 
@@ -161,13 +162,13 @@ public class WorldServer extends World {
     // CraftBukkit end
 
     public void doTick() {
-        super.doTick();
+        if (!SpigotConfig.disableWeatherTicking) super.doTick(); // MineHQ
         if (this.getWorldData().isHardcore() && this.difficulty != EnumDifficulty.HARD) {
             this.difficulty = EnumDifficulty.HARD;
         }
 
         this.worldProvider.e.b();
-        if (this.everyoneDeeplySleeping()) {
+        if (!SpigotConfig.disableSleepCheck && this.everyoneDeeplySleeping()) { // MineHQ
             if (this.getGameRules().getBoolean("doDaylightCycle")) {
                 long i = this.worldData.getDayTime() + 24000L;
 
@@ -208,7 +209,7 @@ public class WorldServer extends World {
         timings.doTickPending.stopTiming(); // Spigot
         this.methodProfiler.c("tickBlocks");
         timings.doTickTiles.startTiming(); // Spigot
-        this.g();
+        if (!SpigotConfig.disableBlockTicking) this.g(); // MineHQ
         timings.doTickTiles.stopTiming(); // Spigot
         this.methodProfiler.c("chunkMap");
         timings.doChunkMap.startTiming(); // Spigot
@@ -216,8 +217,12 @@ public class WorldServer extends World {
         timings.doChunkMap.stopTiming(); // Spigot
         this.methodProfiler.c("village");
         timings.doVillages.startTiming(); // Spigot
-        this.villages.tick();
-        this.siegeManager.a();
+        // MineHQ start
+        if (!SpigotConfig.disableVillageTicking) {
+            this.villages.tick();
+            this.siegeManager.a();
+        }
+        // MineHQ end
         timings.doVillages.stopTiming(); // Spigot
         this.methodProfiler.c("portalForcer");
         timings.doPortalForcer.startTiming(); // Spigot

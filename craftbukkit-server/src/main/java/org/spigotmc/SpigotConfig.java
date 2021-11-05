@@ -468,6 +468,31 @@ public class SpigotConfig
     private static void disableTracking() {
         disableTracking = getBoolean("settings.disable.entityTracking", false);
     }
+
+    public static boolean disableBlockTicking;
+    private static void disableBlockTicking() {
+        disableBlockTicking = getBoolean("settings.disable.ticking.blocks", false);
+    }
+
+    public static boolean disableVillageTicking;
+    private static void disableVillageTicking() {
+        disableVillageTicking = getBoolean("settings.disable.ticking.villages", false);
+    }
+
+    public static boolean disableWeatherTicking;
+    private static void disableWeatherTicking() {
+        disableWeatherTicking = getBoolean("settings.disable.ticking.weather", false);
+    }
+
+    public static boolean disableSleepCheck;
+    private static void disableSleepCheck() {
+        disableSleepCheck = getBoolean("settings.disable.general.sleepcheck", false);
+    }
+
+    public static boolean disableEntityCollisions;
+    private static void disableEntityCollisions() {
+        disableEntityCollisions = getBoolean("settings.disable.general.entity-collisions", false);
+    }
     // MineHQ end
 
     public static boolean reduceArmorDamage;

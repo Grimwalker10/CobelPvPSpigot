@@ -1602,7 +1602,7 @@ public abstract class EntityLiving extends Entity {
 
     protected void bo() {
         // Kohi - skip checks if not activated
-        if (!ActivationRange.checkIfActive(this)) {
+        if (SpigotConfig.disableEntityCollisions || !ActivationRange.checkIfActive(this)) { // MineHQ
             return;
         }
 
