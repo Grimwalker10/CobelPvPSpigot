@@ -16,6 +16,14 @@ import net.minecraft.util.org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+// Pweruser start
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import com.cobelpvp.NamePriorityThreadFactory;
+import com.cobelpvp.ThreadingManager;
+// Poweruser end
+
 public class LoginListener implements PacketLoginInListener {
 
     private static final AtomicInteger b = new AtomicInteger(0);
@@ -140,7 +148,7 @@ public class LoginListener implements PacketLoginInListener {
             this.g = EnumProtocolState.KEY;
             this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.K().getPublic(), this.e), new GenericFutureListener[0]);
         } else {
-            (new ThreadPlayerLookupUUID(this, "User Authenticator #" + b.incrementAndGet())).start(); // Spigot
+            ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // Poweruser
         }
     }
 
@@ -154,7 +162,7 @@ public class LoginListener implements PacketLoginInListener {
             this.loginKey = packetlogininencryptionbegin.a(privatekey);
             this.g = EnumProtocolState.AUTHENTICATING;
             this.networkManager.a(this.loginKey);
-            (new ThreadPlayerLookupUUID(this, "User Authenticator #" + b.incrementAndGet())).start();
+            ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // Poweruser
         }
     }
 

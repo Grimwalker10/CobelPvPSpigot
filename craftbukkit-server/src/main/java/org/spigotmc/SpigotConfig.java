@@ -410,6 +410,11 @@ public class SpigotConfig
         }
     }
 
+    public static boolean logRemainingAsyncThreadsDuringShutdown;
+    private static void logRemainingAsyncThreadsDuringShutdown() {
+        logRemainingAsyncThreadsDuringShutdown = getBoolean( "settings.logRemainingAsyncThreadsDuringShutdown" , true);
+    }
+
     private static void powertpsCommand()
     {
         commands.put( "tps2", new com.cobelpvp.commands.TPSCommand( "tps2" ) );

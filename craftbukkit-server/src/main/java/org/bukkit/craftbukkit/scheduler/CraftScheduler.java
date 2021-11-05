@@ -14,6 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
+import com.cobelpvp.ThreadingManager; // Poweruser
+
 import org.apache.commons.lang.Validate;
 import org.bukkit.plugin.IllegalPluginAccessException;
 import org.bukkit.plugin.Plugin;
@@ -72,7 +74,7 @@ public class CraftScheduler implements BukkitScheduler {
      */
     private final ConcurrentHashMap<Integer, CraftTask> runners = new ConcurrentHashMap<Integer, CraftTask>();
     private volatile int currentTick = -1;
-    private final Executor executor = Executors.newCachedThreadPool(new com.google.common.util.concurrent.ThreadFactoryBuilder().setNameFormat("Craft Scheduler Thread - %1$d").build()); // Spigot
+    private final Executor executor = ThreadingManager.getCommonThreadPool(); // Poweruser
     private CraftAsyncDebugger debugHead = new CraftAsyncDebugger(-1, null, null) {@Override StringBuilder debugTo(StringBuilder string) {return string;}};
     private CraftAsyncDebugger debugTail = debugHead;
     private static final int RECENT_TICKS;

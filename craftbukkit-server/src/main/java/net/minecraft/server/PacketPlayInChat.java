@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import java.io.IOException; // CraftBukkit
 
+import com.cobelpvp.ThreadingManager; // Poweruser
+
 public class PacketPlayInChat extends Packet {
 
     private String message;
@@ -44,13 +46,11 @@ public class PacketPlayInChat extends Packet {
     // CraftBukkit end
 
     // Spigot Start
-    private static final java.util.concurrent.ExecutorService executors = java.util.concurrent.Executors.newCachedThreadPool(
-            new com.google.common.util.concurrent.ThreadFactoryBuilder().setDaemon( true ).setNameFormat( "Async Chat Thread - #%d" ).build() );
     public void handle(final PacketListener packetlistener)
     {
         if ( a() )
         {
-            executors.submit( new Runnable()
+            ThreadingManager.submit( new Runnable() // Poweruser
             {
 
                 @Override

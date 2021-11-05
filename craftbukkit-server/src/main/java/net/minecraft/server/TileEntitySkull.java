@@ -18,17 +18,14 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.util.com.mojang.authlib.Agent;
 // Spigot end
 
+import com.cobelpvp.ThreadingManager; // Poweruser
+
 public class TileEntitySkull extends TileEntity {
 
     private int a;
     private int i;
     private GameProfile j = null;
     // Spigot start
-    public static final Executor executor = Executors.newFixedThreadPool(3,
-            new ThreadFactoryBuilder()
-                    .setNameFormat("Head Conversion Thread - %1$d")
-                    .build()
-    );
     public static final Cache<String, GameProfile> skinCache = CacheBuilder.newBuilder()
             .maximumSize( 5000 )
             .expireAfterAccess( 60, TimeUnit.MINUTES )
@@ -122,7 +119,7 @@ public class TileEntitySkull extends TileEntity {
                 // Spigot start - Handle async
                 final String name = this.j.getName();
                 setSkullType( 0 ); // Work around a client bug
-                executor.execute(new Runnable() {
+                ThreadingManager.queueHeadConversion(new Runnable() { // Poweruser
                     @Override
                     public void run() {
 

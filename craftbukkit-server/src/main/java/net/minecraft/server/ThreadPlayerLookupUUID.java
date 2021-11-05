@@ -12,12 +12,11 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
 // CraftBukkit end
 
-class ThreadPlayerLookupUUID extends Thread {
+class ThreadPlayerLookupUUID implements Runnable { // Poweruser
 
     final LoginListener a;
 
-    ThreadPlayerLookupUUID(LoginListener loginlistener, String s) {
-        super(s);
+    ThreadPlayerLookupUUID(LoginListener loginlistener) { // Poweruser
         this.a = loginlistener;
     }
 

@@ -18,6 +18,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.world.StructureGrowEvent;
 // CraftBukkit end
 
+import com.cobelpvp.ThreadingManager; // Poweruser
+
 public final class ItemStack {
 
     public static final DecimalFormat a = new DecimalFormat("#.###");
@@ -246,7 +248,7 @@ public final class ItemStack {
             }
 
             final String finalOwner = owner;
-            TileEntitySkull.executor.execute( new Runnable()
+            ThreadingManager.queueHeadConversion(new Runnable() // Poweruser
             {
                 @Override
                 public void run()

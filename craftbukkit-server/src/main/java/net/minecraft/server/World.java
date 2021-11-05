@@ -37,6 +37,8 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 // Poweruser start
 import com.cobelpvp.LightingUpdater;
 import com.cobelpvp.WeakChunkCache;
+import com.cobelpvp.ThreadingManager;
+import com.cobelpvp.ThreadingManager.TaskQueueWorker;
 // Poweruser end
 
 public abstract class World implements IBlockAccess {
@@ -125,16 +127,9 @@ public abstract class World implements IBlockAccess {
     public static boolean haveWeSilencedAPhysicsCrash;
     public static String blockLocation;
     public List<TileEntity> triggerHoppersList = new ArrayList<TileEntity>(); // Spigot, When altHopperTicking, tile entities being added go through here.
-    // Poweruser start - only one thread, and with lower priority. Instead of one for each world
-    private static ExecutorService lightingExecutor; // PaperSpigot - Asynchronous lighting updates
+    // Poweruser start
     private LightingUpdater lightingUpdater = new LightingUpdater();
-
-    public static ExecutorService getLightingExecutor() {
-        if(lightingExecutor == null) {
-            lightingExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setPriority(Thread.NORM_PRIORITY - 1).setNameFormat("PaperSpigot - Lighting Thread").build());
-        }
-        return lightingExecutor;
-    }
+    private TaskQueueWorker lightingQueue = ThreadingManager.createTaskQueue();
     // Poweruser end
     public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<Explosion.CacheKey, Float>(); // PaperSpigot - Optimize explosions
 
@@ -2669,7 +2664,7 @@ public abstract class World implements IBlockAccess {
         }
 
         // Poweruser start
-        getLightingExecutor().submit(new Runnable() {
+        this.lightingQueue.queueTask(new Runnable() {
             @Override
             public void run() {
                 try {
