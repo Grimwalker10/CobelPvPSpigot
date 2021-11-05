@@ -33,6 +33,8 @@ public class MobEffectList {
     public static final MobEffectList HEAL = (new InstantMobEffect(6, false, 16262179)).b("potion.heal").setAmount(4);
     public static final MobEffectList HARM = (new InstantMobEffect(7, true, 4393481)).b("potion.harm").setAmount(6);
     public static final MobEffectList JUMP = (new MobEffectList(8, false, 7889559)).b("potion.jump").b(2, 1);
+
+
     public static final MobEffectList CONFUSION = (new MobEffectList(9, true, 5578058)).b("potion.confusion").b(3, 1).a(0.25D);
     public static final MobEffectList REGENERATION = (new MobEffectList(10, false, 13458603)).b("potion.regeneration").b(7, 0).a(0.25D).setTickRate(50);
     public static final MobEffectList RESISTANCE = (new MobEffectList(11, false, 10044730)).b("potion.resistance").b(6, 1);
