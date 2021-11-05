@@ -25,6 +25,16 @@ public class EntityEnderman extends EntityMonster {
         this.W = 1.0F;
     }
 
+    @Override
+    public void h() {
+        super.h();
+
+        // CobelPvP - Add mobsEnabled check.
+        if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
+            this.die();
+        }
+    }
+
     protected void aD() {
         super.aD();
         this.getAttributeInstance(GenericAttributes.maxHealth).setValue(40.0D);

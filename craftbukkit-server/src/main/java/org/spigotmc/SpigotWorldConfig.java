@@ -363,4 +363,11 @@ public class SpigotWorldConfig
         log( "Experience Orb Despawn Rate: " + expDespawnRate );
     }
 
+    public boolean mobsEnabled;
+
+    private void mobsEnabled() {
+        mobsEnabled = getBoolean("mobs-enabled", true);
+        log("Mobs enabled: " + mobsEnabled);
+    }
+
 }

@@ -399,7 +399,7 @@ public abstract class EntityInsentient extends EntityLiving {
                 }
 
                 // Kohi - decrease random check to account for decreased interval
-                // MineHQ - decrease random check even more for performance
+                // CobelPvP - decrease random check even more for performance
                 if (this.aU > 600 && this.random.nextInt(10) == 0 && d3 > this.world.paperSpigotConfig.softDespawnDistance) { // CraftBukkit - remove isTypeNotPersistent() check // PaperSpigot - custom despawn distances
                     this.die();
                 } else if (d3 < this.world.paperSpigotConfig.softDespawnDistance) { // PaperSpigot - custom despawn distances

@@ -32,6 +32,16 @@ public class EntitySheep extends EntityAnimal {
         this.bq.resultInventory = new InventoryCraftResult(); // CraftBukkit - add result slot for event
     }
 
+    @Override
+    public void h() {
+        super.h();
+
+        // CobelPvP - Add mobsEnabled check.
+        if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
+            this.die();
+        }
+    }
+
     protected boolean bk() {
         return true;
     }

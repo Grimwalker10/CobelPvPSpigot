@@ -309,6 +309,11 @@ public abstract class World implements IBlockAccess {
         this.a();
 
         this.getServer().addWorld(this.world); // CraftBukkit
+
+        // CobelPvP - Set spawn flags based on mobsEnabled.
+        if (!spigotConfig.mobsEnabled) {
+            this.world.setSpawnFlags(false, false);
+        }
     }
 
     protected abstract IChunkProvider j();
