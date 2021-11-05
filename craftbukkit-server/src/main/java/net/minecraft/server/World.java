@@ -1309,7 +1309,7 @@ public abstract class World implements IBlockAccess {
         }
         // Spigot end
 
-        double d0 = 0.25D;
+        /*double d0 = 0.25D;
         List list = this.getEntities(entity, axisalignedbb.grow(d0, d0, d0));
 
         for (int j2 = 0; j2 < list.size(); ++j2) {
@@ -1323,7 +1323,7 @@ public abstract class World implements IBlockAccess {
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
                 this.L.add(axisalignedbb1);
             }
-        }
+        }*/
 
         return this.L;
     }
