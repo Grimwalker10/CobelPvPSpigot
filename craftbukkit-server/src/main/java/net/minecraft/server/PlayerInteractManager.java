@@ -395,7 +395,18 @@ public class PlayerInteractManager {
                 int j1 = itemstack.getData();
                 int k1 = itemstack.count;
 
-                result = itemstack.placeItem(entityhuman, world, i, j, k, l, f, f1, f2);
+                // MineHQ start - hack to silence sounds from cancelled block place
+                try {
+                    world.interceptSounds();
+                    result = itemstack.placeItem(entityhuman, world, i, j, k, l, f, f1, f2);
+                } finally {
+                    if (result) {
+                        world.sendInterceptedSounds();
+                    } else {
+                        world.clearInterceptedSounds();
+                    }
+                }
+                // MineHQ end
 
                 // The item count should not decrement in Creative mode.
                 if (this.isCreative()) {

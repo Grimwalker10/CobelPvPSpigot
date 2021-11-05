@@ -1088,7 +1088,36 @@ public abstract class World implements IBlockAccess {
         }
     }
 
-    public void makeSound(double d0, double d1, double d2, String s, float f, float f1) {
+    // MineHQ start - hack to silence sounds from cancelled block place
+    private boolean interceptSounds = false;
+    private final List<Runnable> interceptedSounds = new ArrayList<Runnable>();
+    public void interceptSounds() {
+        interceptSounds = true;
+    }
+    public void sendInterceptedSounds() {
+        for (Runnable r : interceptedSounds) {
+            r.run();
+        }
+        interceptedSounds.clear();
+        interceptSounds = false;
+    }
+    public void clearInterceptedSounds() {
+        interceptedSounds.clear();
+        interceptSounds = false;
+    }
+    public void makeSound(final double d0, final double d1, final double d2, final String s, final float f, final float f1) {
+        if (interceptSounds && org.bukkit.Bukkit.isPrimaryThread()) {
+            interceptedSounds.add(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < World.this.u.size(); ++i) {
+                        ((IWorldAccess) World.this.u.get(i)).a(s, d0, d1, d2, f, f1);
+                    }
+                }
+            });
+            return;
+        }
+        // MineHQ end
         for (int i = 0; i < this.u.size(); ++i) {
             ((IWorldAccess) this.u.get(i)).a(s, d0, d1, d2, f, f1);
         }
