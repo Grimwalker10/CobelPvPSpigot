@@ -748,7 +748,13 @@ public abstract class PlayerList {
                 worldserver1 = this.server.worlds.get(0);
                 chunkcoordinates = worldserver1.getSpawn();
             } else {
-                chunkcoordinates = worldserver1.getDimensionSpawn();
+                // Poweruser start
+                if(worldserver1.spigotConfig.useAlternateEndSpawn) {
+                    chunkcoordinates = worldserver1.getSpawn();
+                } else {
+                    chunkcoordinates = worldserver1.getDimensionSpawn();
+                }
+                // Poweruser end
             }
 
             d0 = (double) chunkcoordinates.x;

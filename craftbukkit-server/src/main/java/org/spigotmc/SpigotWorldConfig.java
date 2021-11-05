@@ -381,5 +381,10 @@ public class SpigotWorldConfig
     private void dontUpdateMapItemsInPlayerInventory() {
         updateMapItemsInPlayerInventory = getBoolean( "updateMapItemsInPlayerInventory" , false);
     }
+
+    public boolean useAlternateEndSpawn;
+    private void useAlternateEndSpawn() {
+        useAlternateEndSpawn = getBoolean( "useAlternateEndSpawn", false);
+    }
     // Poweruser end
 }

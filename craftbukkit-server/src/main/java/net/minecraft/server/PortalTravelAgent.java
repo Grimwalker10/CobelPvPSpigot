@@ -32,13 +32,22 @@ public class PortalTravelAgent {
         } else {
             // CraftBukkit start - Modularize end portal creation
             ChunkCoordinates created = this.createEndPortal(d0, d1, d2);
-            entity.setPositionRotation((double) created.x, (double) created.y, (double) created.z, entity.yaw, 0.0F);
+            // Poweruser start
+            float yaw = entity.yaw;
+            float pitch = 0.0F;
+            if(this.a.spigotConfig.useAlternateEndSpawn) {
+                yaw = this.a.getWorldData().getSpawnYaw();
+                pitch = this.a.getWorldData().getSpawnPitch();
+            }
+            entity.setPositionRotation((double) created.x, (double) created.y, (double) created.z, yaw, pitch);
+            // Poweruser end
             entity.motX = entity.motY = entity.motZ = 0.0D;
         }
     }
 
     // Split out from original a(Entity, double, double, double, float) method in order to enable being called from createPortal
     private ChunkCoordinates createEndPortal(double x, double y, double z) {
+        if(this.a.spigotConfig.useAlternateEndSpawn) { return this.a.getSpawn(); } // Poweruser
             int i = MathHelper.floor(x);
             int j = MathHelper.floor(y) - 1;
             int k = MathHelper.floor(z);
@@ -65,6 +74,7 @@ public class PortalTravelAgent {
 
     // use logic based on creation to verify end portal
     private ChunkCoordinates findEndPortal(ChunkCoordinates portal) {
+        if(this.a.spigotConfig.useAlternateEndSpawn) { return this.a.getSpawn(); } // Poweruser
         int i = portal.x;
         int j = portal.y - 1;
         int k = portal.z;
@@ -196,7 +206,14 @@ public class PortalTravelAgent {
         if (this.a.getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END) {
             // entity.setPositionRotation((double) i, (double) j, (double) k, entity.yaw, 0.0F);
             // entity.motX = entity.motY = entity.motZ = 0.0D;
-            position.setPitch(0.0F);
+            // Poweruser start
+            float pitch = 0.0F;
+            if(this.a.spigotConfig.useAlternateEndSpawn) {
+                pitch = this.a.getWorldData().getSpawnPitch();
+                position.setYaw(this.a.getWorldData().getSpawnYaw());
+            }
+            position.setPitch(pitch);
+            // Poweruser end
             velocity.setX(0);
             velocity.setY(0);
             velocity.setZ(0);
