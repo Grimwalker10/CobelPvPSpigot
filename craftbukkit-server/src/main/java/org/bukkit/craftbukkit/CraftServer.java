@@ -197,6 +197,7 @@ import jline.console.ConsoleReader;
 public final class CraftServer implements Server {
     private static final Player[] EMPTY_PLAYER_ARRAY = new Player[0];
     private final String serverName = "CraftBukkit";
+    private String serverGroup = "Dev"; // PowerSpigot
     private final String serverVersion;
     private final String bukkitVersion = Versioning.getBukkitVersion();
     private final Logger logger = Logger.getLogger("Minecraft");
@@ -641,6 +642,15 @@ public final class CraftServer implements Server {
     @Override
     public String getServerName() {
         return this.getConfigString("server-name", "Unknown Server");
+    }
+
+    @Override
+    public String getServerGroup() {
+        return serverGroup;
+    }
+
+    public void setServerGroup(String serverGroup) {
+        this.serverGroup = serverGroup;
     }
 
     @Override
