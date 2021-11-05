@@ -2284,6 +2284,7 @@ public abstract class World implements IBlockAccess {
         {
             return;
         }
+        this.timings.doTickTiles_buildList.startTiming(); // Poweruser
         // Keep chunks with growth inside of the optimal chunk range
         int chunksPerPlayer = Math.min( 200, Math.max( 1, (int) ( ( ( optimalChunks - players.size() ) / (double) players.size() ) + 0.5 ) ) );
         int randRange = 3 + chunksPerPlayer / 30;
@@ -2333,6 +2334,7 @@ public abstract class World implements IBlockAccess {
         }
 
         this.methodProfiler.b();
+        this.timings.doTickTiles_buildList.stopTiming(); // Poweruser
     }
 
     protected abstract int p();

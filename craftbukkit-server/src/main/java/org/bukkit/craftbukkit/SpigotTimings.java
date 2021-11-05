@@ -121,6 +121,12 @@ public class SpigotTimings {
         public final CustomTimingsHandler doPortalForcer;
         public final CustomTimingsHandler doTickPending;
         public final CustomTimingsHandler doTickTiles;
+        public final CustomTimingsHandler doTickTiles_buildList;
+        public final CustomTimingsHandler doTickTiles_tickingChunks;
+        public final CustomTimingsHandler doTickTiles_tickingChunks_getChunk;
+        public final CustomTimingsHandler doTickTiles_tickingChunks_tickChunk;
+        public final CustomTimingsHandler doTickTiles_tickingChunks_iceAndSnow;
+        public final CustomTimingsHandler doTickTiles_tickingChunks_tickBlocks;
         public final CustomTimingsHandler doVillages;
         public final CustomTimingsHandler doChunkMap;
         public final CustomTimingsHandler doChunkGC;
@@ -151,6 +157,12 @@ public class SpigotTimings {
             doChunkUnload = new CustomTimingsHandler("** " + name + "doChunkUnload");
             doTickPending = new CustomTimingsHandler("** " + name + "doTickPending");
             doTickTiles = new CustomTimingsHandler("** " + name + "doTickTiles");
+            doTickTiles_buildList = new CustomTimingsHandler("** " + name + "doTickTiles_buildList");
+            doTickTiles_tickingChunks = new CustomTimingsHandler("** " + name + "doTickTiles_tickingChunks");
+            doTickTiles_tickingChunks_getChunk = new CustomTimingsHandler("** " + name + "doTickTiles_tickingChunks_getChunk");
+            doTickTiles_tickingChunks_tickChunk = new CustomTimingsHandler("** " + name + "doTickTiles_tickingChunks_tickChunk");
+            doTickTiles_tickingChunks_iceAndSnow = new CustomTimingsHandler("** " + name + "doTickTiles_tickingChunks_iceAndSnow");
+            doTickTiles_tickingChunks_tickBlocks = new CustomTimingsHandler("** " + name + "doTickTiles_tickingChunks_tickBlocks");
             doVillages = new CustomTimingsHandler("** " + name + "doVillages");
             doChunkMap = new CustomTimingsHandler("** " + name + "doChunkMap");
             doSounds = new CustomTimingsHandler("** " + name + "doSounds");

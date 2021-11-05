@@ -321,6 +321,7 @@ public class WorldServer extends World {
         // CraftBukkit start
         // Iterator iterator = this.chunkTickList.iterator();
 
+        this.timings.doTickTiles_tickingChunks.startTiming(); // Poweruser
         // Spigot start
         for (net.minecraft.util.gnu.trove.iterator.TLongShortIterator iter = chunkTickList.iterator(); iter.hasNext();) {
             iter.advance();
@@ -339,12 +340,16 @@ public class WorldServer extends World {
             int l = chunkZ * 16;
 
             this.methodProfiler.a("getChunk");
+            this.timings.doTickTiles_tickingChunks_getChunk.startTiming(); // Poweruser
             Chunk chunk = this.getChunkAt(chunkX, chunkZ);
             // CraftBukkit end
 
             this.a(k, l, chunk);
+            this.timings.doTickTiles_tickingChunks_getChunk.stopTiming(); // Poweruser
             this.methodProfiler.c("tickChunk");
+            this.timings.doTickTiles_tickingChunks_tickChunk.startTiming(); // Poweruser
             chunk.b(false);
+            this.timings.doTickTiles_tickingChunks_tickChunk.stopTiming(); // Poweruser
             this.methodProfiler.c("thunder");
             int i1;
             int j1;
@@ -364,6 +369,7 @@ public class WorldServer extends World {
 
             this.methodProfiler.c("iceandsnow");
             if (this.random.nextInt(16) == 0) {
+                this.timings.doTickTiles_tickingChunks_iceAndSnow.startTiming(); // Poweruser
                 this.k = this.k * 3 + 1013904223;
                 i1 = this.k >> 2;
                 j1 = i1 & 15;
@@ -402,9 +408,11 @@ public class WorldServer extends World {
                         this.getType(j1 + k, l1 - 1, k1 + l).l(this, j1 + k, l1 - 1, k1 + l);
                     }
                 }
+                this.timings.doTickTiles_tickingChunks_iceAndSnow.stopTiming(); // Poweruser
             }
 
             this.methodProfiler.c("tickBlocks");
+            this.timings.doTickTiles_tickingChunks_tickBlocks.startTiming(); // Poweruser
             ChunkSection[] achunksection = chunk.getSections();
 
             j1 = achunksection.length;
@@ -431,6 +439,7 @@ public class WorldServer extends World {
                     }
                 }
             }
+            this.timings.doTickTiles_tickingChunks_tickBlocks.stopTiming(); // Poweruser
 
             this.methodProfiler.b();
         }
@@ -440,6 +449,7 @@ public class WorldServer extends World {
             chunkTickList.clear();
         }
         // Spigot End
+        this.timings.doTickTiles_tickingChunks.stopTiming(); // Poweruser
     }
 
     public boolean a(int i, int j, int k, Block block) {
