@@ -46,7 +46,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public static final NetworkStatistics h = new NetworkStatistics();
     private final boolean j;
     private final Queue k = Queues.newConcurrentLinkedQueue();
-    private final Queue l = Queues.newConcurrentLinkedQueue();
+    // private final Queue l = Queues.newConcurrentLinkedQueue(); // MineHQ
     private Channel m;
     // Spigot Start
     public SocketAddress n;
@@ -142,10 +142,10 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     public void handle(Packet packet, GenericFutureListener... agenericfuturelistener) {
         if (this.m != null && this.m.isOpen()) {
-            this.i();
+            // this.i(); // MineHQ
             this.b(packet, agenericfuturelistener);
         } else {
-            this.l.add(new QueuedPacket(packet, agenericfuturelistener));
+            // this.l.add(new QueuedPacket(packet, agenericfuturelistener)); // MineHQ
         }
     }
 
@@ -170,6 +170,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
             this.m.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener));
         }
     }
+// MineHQ start - remove unneeded packet queue
+    /*
 
     private void i() {
         if (this.m != null && this.m.isOpen()) {
@@ -181,9 +183,11 @@ public class NetworkManager extends SimpleChannelInboundHandler {
             // PaperSpigot end
         }
     }
+    */
+    // MineHQ end
 
     public void a() {
-        this.i();
+        // this.i(); // MineHQ
         EnumProtocol enumprotocol = (EnumProtocol) this.m.attr(d).get();
 
         if (this.p != enumprotocol) {
@@ -236,7 +240,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         // Spigot Start
         this.preparing = false;
         this.k.clear();
-        this.l.clear();
+        // this.l.clear(); // Spigot Update - 20140921a // MineHQ
         // Spigot End
         if (this.m.isOpen()) {
             this.m.close();
