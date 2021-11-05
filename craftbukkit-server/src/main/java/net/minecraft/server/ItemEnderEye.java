@@ -31,7 +31,7 @@ public class ItemEnderEye extends Item {
                     world.addParticle("smoke", d0, d1, d2, d3, d4, d5);
                 }
 
-                j1 = i1 & 3;
+                for (j1 = 0; j1 < 4; j1++) { // CobelPvP - Light end portal in any direction
                 int k1 = 0;
                 int l1 = 0;
                 boolean flag = false;
@@ -98,6 +98,7 @@ public class ItemEnderEye extends Item {
                         }
                     }
                 }
+                } // CobelPvP
 
                 return true;
             }
