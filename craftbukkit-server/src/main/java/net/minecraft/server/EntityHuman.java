@@ -282,6 +282,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                     ((EntityPlayer) this).getBukkitEntity().updateScaledHealth();
                     // Spigot End
                 }
+                this.g = this.f.n(); // Poweruser
                 return;
             }
 
