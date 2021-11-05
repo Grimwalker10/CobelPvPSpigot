@@ -121,6 +121,7 @@ public abstract class Entity {
     public boolean valid; // CraftBukkit
     public org.bukkit.projectiles.ProjectileSource projectileSource; // CraftBukkit - For projectiles only
     public boolean inUnloadedChunk = false; // PaperSpigot - Remove entities in unloaded chunks
+    public boolean loadChunks = false; // PaperSpigot - Entities can load chunks they move through and keep them loaded
 
     // Spigot start
     public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getEntityTimings(this); // Spigot
@@ -422,7 +423,19 @@ public abstract class Entity {
         return !list.isEmpty() ? false : !this.world.containsLiquid(axisalignedbb);
     }
 
+    /**
+     * PaperSpigot - Load surrounding chunks the entity is moving through
+     */
+    public void loadChunks() {
+        for (int cx = (int) locX >> 4; cx <= (int) (locX + motX) >> 4; ++cx) {
+            for (int cz = (int) locZ >> 4; cz <= (int) (locZ + motZ) >> 4; ++cz) {
+                world.chunkProvider.getChunkAt(cx, cz);
+            }
+        }
+    }
+
     public void move(double d0, double d1, double d2) {
+        if (this.loadChunks) loadChunks(); // PaperSpigot - Load chunks
         // CraftBukkit start - Don't do anything if we aren't moving
         // We need to do this regardless of whether or not we are moving thanks to portals
         try {

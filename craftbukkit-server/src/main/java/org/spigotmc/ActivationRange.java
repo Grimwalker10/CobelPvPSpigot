@@ -12,6 +12,7 @@ import net.minecraft.server.EntityComplexPart;
 import net.minecraft.server.EntityCreature;
 import net.minecraft.server.EntityEnderCrystal;
 import net.minecraft.server.EntityEnderDragon;
+import net.minecraft.server.EntityEnderPearl; // PaperSpigot
 import net.minecraft.server.EntityFallingBlock; // PaperSpigot
 import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityFireworks;
@@ -266,7 +267,7 @@ public class ActivationRange
 
         // PaperSpigot start - EAR backport
         // Never safe to skip fireworks or entities not yet added to chunk and we don't skip falling blocks
-        if ( !entity.isAddedToChunk() || entity instanceof EntityFireworks || entity instanceof EntityFallingBlock ) {
+        if ( !entity.isAddedToChunk() || entity instanceof EntityFireworks || entity instanceof EntityFallingBlock || entity.loadChunks ) {
             SpigotTimings.checkIfActiveTimer.stopTiming();
             return true;
         }

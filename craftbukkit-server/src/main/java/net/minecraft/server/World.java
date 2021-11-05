@@ -1698,6 +1698,7 @@ public abstract class World implements IBlockAccess {
             int i1 = MathHelper.floor(entity.locZ / 16.0D);
 
             if (!entity.ag || entity.ah != k || entity.ai != l || entity.aj != i1) {
+                if (entity.loadChunks) entity.loadChunks(); // PaperSpigot - Force load chunks
                 if (entity.ag && this.isChunkLoaded(entity.ah, entity.aj)) {
                     this.getChunkAt(entity.ah, entity.aj).a(entity, entity.ai);
                 }

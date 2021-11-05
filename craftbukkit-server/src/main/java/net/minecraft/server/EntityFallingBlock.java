@@ -30,6 +30,7 @@ public class EntityFallingBlock extends Entity {
         this.dropItem = true;
         this.fallHurtMax = 40;
         this.fallHurtAmount = 2.0F;
+        this.loadChunks = world.paperSpigotConfig.loadUnloadedFallingBlocks; // PaperSpigot
     }
 
     // PaperSpigot start - Add FallingBlock and TNT source location API
@@ -56,6 +57,7 @@ public class EntityFallingBlock extends Entity {
         this.lastX = d0;
         this.lastY = d1;
         this.lastZ = d2;
+        this.loadChunks = world.paperSpigotConfig.loadUnloadedFallingBlocks; // PaperSpigot
     }
 
     protected boolean g_() {

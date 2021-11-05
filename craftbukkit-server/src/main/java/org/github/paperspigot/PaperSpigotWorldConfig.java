@@ -235,4 +235,14 @@ public class PaperSpigotWorldConfig
         generateTemple = getBoolean( "generator-settings.temple", true );
         generateVillage = getBoolean( "generator-settings.village", true );
     }
+
+    public boolean loadUnloadedEnderPearls;
+    public boolean loadUnloadedTNTEntities;
+    public boolean loadUnloadedFallingBlocks;
+    private void loadUnloaded()
+    {
+        loadUnloadedEnderPearls = getBoolean( "load-chunks.enderpearls", true );
+        loadUnloadedTNTEntities = getBoolean( "load-chunks.tnt-entities", false );
+        loadUnloadedFallingBlocks = getBoolean( "load-chunks.falling-blocks", false );
+    }
 }
