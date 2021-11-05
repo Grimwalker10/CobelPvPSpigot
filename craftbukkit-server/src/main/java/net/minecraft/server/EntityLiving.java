@@ -806,8 +806,10 @@ public abstract class EntityLiving extends Entity {
                     }
                 }
 
+                int exp = this.getExpReward() * (1 + this.random.nextInt(1 + i)); // Kohi - Caculate xp here and not in the event factory
+
                 // CraftBukkit start - Call death event
-                CraftEventFactory.callEntityDeathEvent(this, this.drops);
+                CraftEventFactory.callEntityDeathEvent(this, this.drops, exp); // Kohi - Specify the exp to drop
                 this.drops = null;
             } else {
                 CraftEventFactory.callEntityDeathEvent(this);

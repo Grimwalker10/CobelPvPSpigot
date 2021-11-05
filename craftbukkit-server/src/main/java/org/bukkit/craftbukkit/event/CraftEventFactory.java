@@ -373,8 +373,12 @@ public class CraftEventFactory {
     }
 
     public static EntityDeathEvent callEntityDeathEvent(EntityLiving victim, List<org.bukkit.inventory.ItemStack> drops) {
+        return callEntityDeathEvent(victim, drops, victim.getExpReward());
+    }
+
+    public static EntityDeathEvent callEntityDeathEvent(EntityLiving victim, List<org.bukkit.inventory.ItemStack> drops, int exp) {
         CraftLivingEntity entity = (CraftLivingEntity) victim.getBukkitEntity();
-        EntityDeathEvent event = new EntityDeathEvent(entity, drops, victim.getExpReward());
+        EntityDeathEvent event = new EntityDeathEvent(entity, drops, exp);
         CraftWorld world = (CraftWorld) entity.getWorld();
         Bukkit.getServer().getPluginManager().callEvent(event);
 
