@@ -900,23 +900,21 @@ public class PlayerConnection implements PacketPlayInListener {
                 if (!SharedConstants.isAllowedChatCharacter(s.charAt(i))) {
                     // CraftBukkit start - threadsafety
                     if (packetplayinchat.a()) {
-                        Waitable waitable = new Waitable() {
-                            @Override
-                            protected Object evaluate() {
-                                PlayerConnection.this.disconnect("Illegal characters in chat");
-                                return null;
-                            }
-                        };
-
-                        this.minecraftServer.processQueue.add(waitable);
-
-                        try {
-                            waitable.get();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        } catch (ExecutionException e) {
-                            throw new RuntimeException(e);
+                        // Poweruser start
+                        if(!this.networkManager.lockDownIncomingTraffic()) {
+                            Runnable runnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        PlayerConnection.this.disconnect("Illegal characters in chat");
+                                    } catch (Exception e) {
+                                        c.warn(e.toString());
+                                    }
+                                }
+                            };
+                            this.minecraftServer.processQueue.add(runnable);
                         }
+                        // Poweruser end
                     } else {
                         this.disconnect("Illegal characters in chat");
                     }
@@ -976,23 +974,21 @@ public class PlayerConnection implements PacketPlayInListener {
             // this.chatThrottle += 20;
             if (counted && chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
                 if (packetplayinchat.a()) {
-                    Waitable waitable = new Waitable() {
-                        @Override
-                        protected Object evaluate() {
-                            PlayerConnection.this.disconnect("disconnect.spam");
-                            return null;
-                        }
-                    };
-
-                    this.minecraftServer.processQueue.add(waitable);
-
-                    try {
-                        waitable.get();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    } catch (ExecutionException e) {
-                        throw new RuntimeException(e);
+                    // Poweruser start
+                    if(!this.networkManager.lockDownIncomingTraffic()) {
+                        Runnable runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    PlayerConnection.this.disconnect("disconnect.spam");
+                                } catch (Exception e) {
+                                    c.warn(e.toString());
+                                }
+                            }
+                        };
+                        this.minecraftServer.processQueue.add(runnable);
                     }
+                    // Poweruser end
                 } else {
                     this.disconnect("disconnect.spam");
                 }
@@ -1020,40 +1016,38 @@ public class PlayerConnection implements PacketPlayInListener {
                 // Evil plugins still listening to deprecated event
                 final PlayerChatEvent queueEvent = new PlayerChatEvent(player, event.getMessage(), event.getFormat(), event.getRecipients());
                 queueEvent.setCancelled(event.isCancelled());
-                Waitable waitable = new Waitable() {
+                // Poweruser start
+                Runnable runnable = new Runnable() {
                     @Override
-                    protected Object evaluate() {
-                        org.bukkit.Bukkit.getPluginManager().callEvent(queueEvent);
+                    public void run() {
+                        try {
+                            org.bukkit.Bukkit.getPluginManager().callEvent(queueEvent);
 
-                        if (queueEvent.isCancelled()) {
-                            return null;
-                        }
+                            if (queueEvent.isCancelled()) {
+                                return;
+                            }
 
-                        String message = String.format(queueEvent.getFormat(), queueEvent.getPlayer().getDisplayName(), queueEvent.getMessage());
-                        PlayerConnection.this.minecraftServer.console.sendMessage(message);
-                        if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
-                            for (Object player : PlayerConnection.this.minecraftServer.getPlayerList().players) {
-                                ((EntityPlayer) player).sendMessage(CraftChatMessage.fromString(message));
+                            String message = String.format(queueEvent.getFormat(), queueEvent.getPlayer().getDisplayName(), queueEvent.getMessage());
+                            PlayerConnection.this.minecraftServer.console.sendMessage(message);
+                            if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
+                                for (Object player : PlayerConnection.this.minecraftServer.getPlayerList().players) {
+                                    ((EntityPlayer) player).sendMessage(CraftChatMessage.fromString(message));
+                                }
+                            } else {
+                                for (Player player : queueEvent.getRecipients()) {
+                                    player.sendMessage(message);
+                                }
                             }
-                        } else {
-                            for (Player player : queueEvent.getRecipients()) {
-                                player.sendMessage(message);
-                            }
+                        } catch (Exception e) {
+                            c.warn(e.toString());
                         }
-                        return null;
                     }};
                 if (async) {
-                    minecraftServer.processQueue.add(waitable);
+                    minecraftServer.processQueue.add(runnable);
                 } else {
-                    waitable.run();
+                    runnable.run();
                 }
-                try {
-                    waitable.get();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // This is proper habit for java. If we aren't handling it, pass it on!
-                } catch (ExecutionException e) {
-                    throw new RuntimeException("Exception processing chat event", e.getCause());
-                }
+                // Poweruser end
             } else {
                 if (event.isCancelled()) {
                     return;

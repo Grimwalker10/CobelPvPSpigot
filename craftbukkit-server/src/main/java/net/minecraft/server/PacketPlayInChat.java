@@ -2,7 +2,8 @@ package net.minecraft.server;
 
 import java.io.IOException; // CraftBukkit
 
-import com.cobelpvp.ThreadingManager; // Poweruser
+import com.cobelpvp.ThreadingManager;// Poweruser
+import com.cobelpvp.ThreadingManager.TaskQueueWorker;
 
 public class PacketPlayInChat extends Packet {
 
@@ -45,12 +46,20 @@ public class PacketPlayInChat extends Packet {
     }
     // CraftBukkit end
 
+    private static TaskQueueWorker taskQueue; // Poweruser
     // Spigot Start
     public void handle(final PacketListener packetlistener)
     {
         if ( a() )
         {
-            ThreadingManager.submit( new Runnable() // Poweruser
+            // Poweruser start
+            TaskQueueWorker worker = taskQueue;
+            if(worker == null) {
+                taskQueue = worker = ThreadingManager.createTaskQueue();
+            }
+
+            worker.queueTask(new Runnable() // Poweruser
+            // Poweruser end
             {
 
                 @Override

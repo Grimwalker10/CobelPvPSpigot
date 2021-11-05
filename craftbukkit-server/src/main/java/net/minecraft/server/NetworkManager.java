@@ -73,6 +73,16 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
     // Spigot End
 
+    // Poweruser start
+    private boolean lockDownIncomingTraffic = false;
+
+    protected boolean lockDownIncomingTraffic() {
+        boolean oldValue = this.lockDownIncomingTraffic;
+        this.lockDownIncomingTraffic = true;
+        return oldValue;
+    }
+    // Poweruser end
+
     public static final GenericFutureListener[] emptyListenerArray = new GenericFutureListener[0]; // Poweruser
 
     public NetworkManager(boolean flag) {
@@ -115,7 +125,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     protected void a(ChannelHandlerContext channelhandlercontext, Packet packet) {
-        if (this.m.isOpen()) {
+        if (this.m.isOpen() && !this.lockDownIncomingTraffic) { // Poweruser
             if (packet.a()) {
                 packet.handle(this.o);
             } else {
@@ -197,6 +207,11 @@ public class NetworkManager extends SimpleChannelInboundHandler {
                 // CraftBukkit end
 
                 // Poweruser start
+                if(this.lockDownIncomingTraffic) {
+                    this.k.clear();
+                    break;
+                }
+
                 CustomTimingsHandler packetHandlerTimer = SpigotTimings.getPacketHandlerTimings(packet);
                 packetHandlerTimer.startTiming();
                 try {
