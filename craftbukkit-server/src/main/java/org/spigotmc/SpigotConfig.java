@@ -398,4 +398,14 @@ public class SpigotConfig
             Bukkit.getLogger().info( "Debug logging is disabled" );
         }
     }
+
+    // Poweruser start
+    public static boolean disablePlayerFileSaving;
+    private static void playerFiles() {
+        disablePlayerFileSaving = getBoolean( "settings.disable-player-file-saving", false );
+        if (disablePlayerFileSaving) {
+            disableStatSaving = true;
+        }
+    }
+    // Poweruser end
 }

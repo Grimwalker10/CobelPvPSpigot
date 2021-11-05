@@ -279,6 +279,7 @@ public abstract class PlayerList {
     }
 
     protected void b(EntityPlayer entityplayer) {
+        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
         this.playerFileData.save(entityplayer);
         ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) this.n.get(entityplayer.getUniqueID());
 
@@ -1147,6 +1148,7 @@ public abstract class PlayerList {
     }
 
     public void savePlayers() {
+        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
         for (int i = 0; i < this.players.size(); ++i) {
             this.b((EntityPlayer) this.players.get(i));
         }
