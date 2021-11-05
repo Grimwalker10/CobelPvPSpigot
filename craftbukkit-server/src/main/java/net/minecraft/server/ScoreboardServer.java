@@ -149,12 +149,12 @@ public class ScoreboardServer extends Scoreboard {
 
     public void e(ScoreboardObjective scoreboardobjective) {
         List list = this.getScoreboardScorePacketsForObjective(scoreboardobjective);
-        // MineHQ start
+        // CobelPvP start
         Iterator<EntityPlayer> iterator = viewers.iterator();
 
         while (iterator.hasNext()) {
             EntityPlayer entityplayer = iterator.next();
-        // MineHQ end
+        // CobelPvP end
             Iterator iterator1 = list.iterator();
 
             while (iterator1.hasNext()) {
@@ -183,12 +183,12 @@ public class ScoreboardServer extends Scoreboard {
 
     public void g(ScoreboardObjective scoreboardobjective) {
         List list = this.f(scoreboardobjective);
-        // MineHQ start
+        // CobelPvP start
         Iterator<EntityPlayer> iterator = viewers.iterator();
 
         while (iterator.hasNext()) {
             EntityPlayer entityplayer = iterator.next();
-        // MineHQ end
+        // CobelPvP end
             Iterator iterator1 = list.iterator();
 
             while (iterator1.hasNext()) {
@@ -215,7 +215,7 @@ public class ScoreboardServer extends Scoreboard {
 
     // CraftBukkit start - Send to players
     private void sendAll(Packet packet) {
-        if (viewers != Collections.EMPTY_SET) for (EntityPlayer entityPlayer : viewers) entityPlayer.playerConnection.sendPacket(packet); // MineHQ
+        if (viewers != Collections.EMPTY_SET) for (EntityPlayer entityPlayer : viewers) entityPlayer.playerConnection.sendPacket(packet); // CobelPvP
     }
     // CraftBukkit end
 }

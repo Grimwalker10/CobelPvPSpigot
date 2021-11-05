@@ -262,7 +262,7 @@ public abstract class PlayerList {
             }
         }
 
-        scoreboardserver.addViewer(entityplayer); // MineHQ
+        scoreboardserver.addViewer(entityplayer); // CobelPvP
     }
 
     public void setPlayerFileData(WorldServer[] aworldserver) {
