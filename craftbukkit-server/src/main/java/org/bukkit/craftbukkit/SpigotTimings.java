@@ -131,6 +131,10 @@ public class SpigotTimings {
         public final CustomTimingsHandler tracker;
         public final CustomTimingsHandler doTick;
         public final CustomTimingsHandler tickEntities;
+        // Poweruser start
+        public final CustomTimingsHandler entityPlayerTickNormal;
+        public final CustomTimingsHandler entityPlayerTickOnMove;
+        // Poweruser end
 
         public final CustomTimingsHandler syncChunkLoadTimer;
         public final CustomTimingsHandler syncChunkLoadDataTimer;
@@ -155,6 +159,10 @@ public class SpigotTimings {
             entityTick = new CustomTimingsHandler("** " + name + "entityTick");
             tileEntityTick = new CustomTimingsHandler("** " + name + "tileEntityTick");
             tileEntityPending = new CustomTimingsHandler("** " + name + "tileEntityPending");
+            // Poweruser start
+            entityPlayerTickNormal = new CustomTimingsHandler("** " + name + "entityPlayerTick_normal");
+            entityPlayerTickOnMove = new CustomTimingsHandler("** " + name + "entityPlayerTick_onMove");
+            // Poweruser end
 
             syncChunkLoadTimer = new CustomTimingsHandler("** " + name + "syncChunkLoad");
             syncChunkLoadDataTimer = new CustomTimingsHandler("** " + name + "syncChunkLoad - Data");

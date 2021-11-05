@@ -177,6 +177,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void h() {
+        this.world.timings.entityPlayerTickNormal.startTiming(); // Poweruser
+
         // CraftBukkit start
         if (this.joining) {
             this.joining = false;
@@ -251,9 +253,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                 }
             }
         }
+        this.world.timings.entityPlayerTickNormal.stopTiming(); // Poweruser
     }
 
     public void i() {
+        this.world.timings.entityPlayerTickOnMove.startTiming(); // Poweruser
         try {
             super.h();
 
@@ -315,6 +319,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.a(crashreportsystemdetails);
             throw new ReportedException(crashreport);
         }
+        this.world.timings.entityPlayerTickOnMove.stopTiming(); // Poweruser
     }
 
     protected void j() {

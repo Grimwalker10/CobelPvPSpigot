@@ -1,5 +1,6 @@
 package org.spigotmc;
 
+import com.cobelpvp.commands.WorldStatsCommand;
 import com.google.common.base.Throwables;
 import java.io.File;
 import java.io.IOException;
@@ -411,6 +412,10 @@ public class SpigotConfig
     private static void powertpsCommand()
     {
         commands.put( "tps2", new com.cobelpvp.commands.TPSCommand( "tps2" ) );
+    }
+
+    private static void worldstatsCommand() {
+        commands.put( "worldstats", new WorldStatsCommand( "worldstats" ) );
     }
     // Poweruser end
 }

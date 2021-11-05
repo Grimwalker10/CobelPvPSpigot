@@ -1,5 +1,6 @@
 package com.cobelpvp;
 
+import com.cobelpvp.commands.WorldStatsCommand.WorldStatsTask;
 import com.cobelpvp.pathsearch.PathSearchThrottlerThread;
 import com.cobelpvp.pathsearch.jobs.PathSearchJob;
 import com.cobelpvp.utils.PlayerDataSaveJob;
@@ -165,5 +166,9 @@ public class ThreadingManager {
 
         public void tickFinishedEarly() {
         }
+    }
+
+    public static void addWorldStatsTask(WorldStatsTask task) {
+        instance.timerService.schedule(task, 2, TimeUnit.SECONDS);
     }
 }
