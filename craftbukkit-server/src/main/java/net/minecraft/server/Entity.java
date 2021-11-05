@@ -132,6 +132,11 @@ public abstract class Entity {
     public void inactiveTick() { }
     // Spigot end
 
+    // Poweruser start
+    private boolean isInLava;
+    private int lastLavaCheck;
+    // Poweruser end
+
     public int getId() {
         return this.id;
     }
@@ -925,7 +930,12 @@ public abstract class Entity {
     }
 
     public boolean P(IBlockAccess iblockaccess) {
-        return this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA, iblockaccess);
+        int currentTick = MinecraftServer.getServer().al();
+        if(this.lastLavaCheck != currentTick) {
+            this.lastLavaCheck = currentTick;
+            this.isInLava = this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA, iblockaccess);
+        }
+        return this.isInLava;
     }
     // Poweruser end
 
