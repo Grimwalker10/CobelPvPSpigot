@@ -356,9 +356,14 @@ public class EntityTrackerEntry {
                 // CraftBukkit start - Send scaled max health
                 if (this.tracker instanceof EntityPlayer) {
                     ((EntityPlayer) this.tracker).getBukkitEntity().injectScaledMaxHealth(set, false);
+                    ((EntityPlayer) this.tracker).playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set)); // CobelPvP
                 }
-                // CraftBukkit end
-                this.broadcastIncludingSelf(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set));
+                // CobelPvP start
+                // this.broadcastIncludingSelf(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set)); // CraftBukkit
+                if (this.tracker.passenger instanceof EntityPlayer) {
+                    ((EntityPlayer) this.tracker.passenger).playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set));
+                }
+                // CobelPvP end
             }
 
             set.clear();
@@ -451,6 +456,8 @@ public class EntityTrackerEntry {
                     }
                     // CobelPvP end
 
+                    // CobelPvP start
+                    /*
                     if (this.tracker instanceof EntityLiving) {
                         AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).getAttributeMap();
                         Collection collection = attributemapserver.c();
@@ -464,6 +471,8 @@ public class EntityTrackerEntry {
                             entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.tracker.getId(), collection));
                         }
                     }
+                    */
+                    // CobelPvP end
 
                     this.j = this.tracker.motX;
                     this.k = this.tracker.motY;

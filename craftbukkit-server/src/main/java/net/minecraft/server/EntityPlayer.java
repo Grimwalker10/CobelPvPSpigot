@@ -607,6 +607,15 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         if (currentVehicle != this.vehicle) {
             this.playerConnection.sendPacket(new PacketPlayOutAttachEntity(0, this, this.vehicle));
             this.playerConnection.a(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
+            // CobelPvP start
+            if (this.vehicle instanceof EntityLiving) {
+                AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.vehicle).getAttributeMap();
+                Collection collection = attributemapserver.c();
+                if (!collection.isEmpty()) {
+                    this.playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.vehicle.getId(), collection));
+                }
+            }
+            // CobelPvP end
         }
         // CraftBukkit end
     }
