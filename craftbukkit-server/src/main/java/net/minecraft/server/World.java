@@ -3427,4 +3427,32 @@ public abstract class World implements IBlockAccess {
             iworldaccess.b();
         }
     }
+
+    // MineHQ start - chunk unload queue slowness
+    public long obtainLock, pendingSavesPut, fileIOThreadAddition, writeStartNBT, writeSections, writeBiomes, writeEntities, writeTileEntities, writeTileTicks;
+    public void printTimings() {
+        MinecraftServer.getLogger().warn("Obtain lock: " + obtainLock);
+        MinecraftServer.getLogger().warn("Pending saves put: " + pendingSavesPut);
+        MinecraftServer.getLogger().warn("File IO thread addition: " + fileIOThreadAddition);
+        MinecraftServer.getLogger().warn("Write start NBT: " + writeStartNBT);
+        MinecraftServer.getLogger().warn("Write sections: " + writeSections);
+        MinecraftServer.getLogger().warn("Write biomes: " + writeBiomes);
+        MinecraftServer.getLogger().warn("Write entities: " + writeEntities);
+        MinecraftServer.getLogger().warn("Write tile entities: " + writeTileEntities);
+        MinecraftServer.getLogger().warn("Write tile ticks: " + writeTileTicks);
+
+    }
+
+    public void clearTimings() {
+        this.obtainLock = 0;
+        this.pendingSavesPut = 0;
+        this.fileIOThreadAddition = 0;
+        this.writeStartNBT = 0;
+        this.writeSections = 0;
+        this.writeBiomes = 0;
+        this.writeEntities = 0;
+        this.writeTileEntities = 0;
+        this.writeTileTicks = 0;
+    }
+    // MineHQ end
 }

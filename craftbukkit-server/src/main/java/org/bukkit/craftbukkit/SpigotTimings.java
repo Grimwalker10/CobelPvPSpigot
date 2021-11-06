@@ -138,6 +138,7 @@ public class SpigotTimings {
     public static class WorldTimingsHandler {
         public final CustomTimingsHandler mobSpawn;
         public final CustomTimingsHandler doChunkUnload;
+        public final CustomTimingsHandler doChunkUnloadSave;
         public final CustomTimingsHandler doPortalForcer;
         public final CustomTimingsHandler doTickPending;
         public final CustomTimingsHandler doTickTiles;
@@ -175,6 +176,7 @@ public class SpigotTimings {
 
             mobSpawn = new CustomTimingsHandler("** " + name + "mobSpawn");
             doChunkUnload = new CustomTimingsHandler("** " + name + "doChunkUnload");
+            doChunkUnloadSave = new CustomTimingsHandler("** " + name + "doChunkUnload_save");
             doTickPending = new CustomTimingsHandler("** " + name + "doTickPending");
             doTickTiles = new CustomTimingsHandler("** " + name + "doTickTiles");
             doTickTiles_buildList = new CustomTimingsHandler("** " + name + "doTickTiles_buildList");

@@ -27,7 +27,7 @@ public class ChunkProviderServer implements IChunkProvider {
     private IChunkLoader f;
     public boolean forceChunkLoad = false; // true -> false
     //public LongObjectHashMap<Chunk> chunks = new LongObjectHashMap<Chunk>();
-    public CoordinateObjectHybridMap<Chunk> chunks = new CoordinateChunkHybridMap(); // CobelPvP
+    public CoordinateObjectHybridMap<Chunk> chunks = new CoordinateChunkHybridMap(); // MineHQ
     public WorldServer world;
     // CraftBukkit end
 
@@ -39,7 +39,7 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     public boolean isChunkLoaded(int i, int j) {
-        return this.chunks.contains(i, j); // CraftBukkit // CobelPvP
+        return this.chunks.contains(i, j); // CraftBukkit // MineHQ
     }
 
     // CraftBukkit start - Change return type to Collection and return the values of our chunk map
@@ -49,9 +49,16 @@ public class ChunkProviderServer implements IChunkProvider {
         // CraftBukkit end
     }
 
-    public void queueUnload(int i, int j) {
+    // MineHQ start
+    public void queueUnload(int x, int z) {
+        queueUnload(x, z, false);
+    }
+
+    public void queueUnload(int i, int j, boolean checked) {
+        if (!checked && this.world.getPlayerChunkMap().isChunkInUse(i, j)) return;
+        // MineHQ end
         // PaperSpigot start - Asynchronous lighting updates
-        Chunk chunk = this.chunks.get(i, j); // CobelPvP
+        Chunk chunk = this.chunks.get(i, j); // MineHQ
         if (chunk != null && chunk.world.paperSpigotConfig.useAsyncLighting && (chunk.pendingLightUpdates.get() > 0 || chunk.world.getTime() - chunk.lightUpdateTime < 20)) {
             return;
         }
@@ -77,22 +84,22 @@ public class ChunkProviderServer implements IChunkProvider {
             if (k < -short1 || k > short1 || l < -short1 || l > short1 || !(this.world.keepSpawnInMemory)) { // Added 'this.world.keepSpawnInMemory'
                 this.unloadQueue.add(i, j);
 
-                // CobelPvP start - don't lookup twice
+                // MineHQ start - don't lookup twice
                 if (chunk != null) {
                     chunk.mustSave = true;
                 }
-                // CobelPvP end
+                // MineHQ end
             }
             // CraftBukkit end
         } else {
             // CraftBukkit start
             this.unloadQueue.add(i, j);
 
-            // CobelPvP start - don't lookup twice
+            // MineHQ start - don't lookup twice
             if (chunk != null) {
                 chunk.mustSave = true;
             }
-            // CobelPvP end
+            // MineHQ end
             // CraftBukkit end
         }
     }
@@ -109,7 +116,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     // CraftBukkit start - Add async variant, provide compatibility
     public Chunk getChunkIfLoaded(int x, int z) {
-        return this.chunks.get(x, z); // CobelPvP
+        return this.chunks.get(x, z); // MineHQ
     }
 
     public Chunk getChunkAt(int i, int j) {
@@ -118,7 +125,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public Chunk getChunkAt(int i, int j, Runnable runnable) {
         this.unloadQueue.remove(i, j);
-        Chunk chunk = this.chunks.get(i, j); // CobelPvP
+        Chunk chunk = this.chunks.get(i, j); // MineHQ
         ChunkRegionLoader loader = null;
 
         if (this.f instanceof ChunkRegionLoader) {
@@ -147,7 +154,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public Chunk originalGetChunkAt(int i, int j) {
         this.unloadQueue.remove(i, j);
-        Chunk chunk = (Chunk) this.chunks.get(i, j); // CobelPvP
+        Chunk chunk = (Chunk) this.chunks.get(i, j); // MineHQ
         boolean newChunk = false;
 
         if (chunk == null) {
@@ -172,7 +179,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 newChunk = true; // CraftBukkit
             }
 
-            this.chunks.put(i, j, chunk); // CraftBukkit // CobelPvP
+            this.chunks.put(i, j, chunk); // CraftBukkit // MineHQ
             chunk.addEntities();
 
             // CraftBukkit start
@@ -210,7 +217,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public Chunk getOrCreateChunk(int i, int j) {
         // CraftBukkit start
-        Chunk chunk = (Chunk) this.chunks.get(i, j); // CobelPvP
+        Chunk chunk = (Chunk) this.chunks.get(i, j); // MineHQ
 
         chunk = chunk == null ? (!this.world.isLoading && !this.forceChunkLoad ? this.emptyChunk : this.getChunkAt(i, j)) : chunk;
         if (chunk == this.emptyChunk) return chunk;
@@ -331,7 +338,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 // Poweruser start
                 if (i >= org.spigotmc.SpigotConfig.autoSaveChunksPerTick && !flag) {
                     this.world.getAutoSaveWorldData().addAutoSaveChunkCount(i);
-                // Poweruser end
+                    // Poweruser end
                     return false;
                 }
             }
@@ -351,33 +358,58 @@ public class ChunkProviderServer implements IChunkProvider {
         }
     }
 
+
     public boolean unloadChunks() {
         if (!this.world.savingDisabled) {
+            int chunksSize = this.chunks.size();
+            int unloadSize = this.unloadQueue.size();
+            int unloaded = 0;
+            long start = System.currentTimeMillis();
+            long nanoStart = System.nanoTime();
+            long unloadQueuePopTotal = 0, chunksGet = 0, callEvent = 0, removeEntities = 0, saveChunk = 0, saveChunkNOP = 0, chunkRemove = 0, updateNeighbourCounts = 0;
             // CraftBukkit start
             Server server = this.world.getServer();
-            for (int i = 0; i < 100 && !this.unloadQueue.isEmpty(); i++) {
+            for (int i = 0; i < 100 && !this.unloadQueue.isEmpty() && (System.currentTimeMillis() - start) < 150; i++) {
+                nanoStart = System.nanoTime();
                 long chunkcoordinates = this.unloadQueue.popFirst();
-                // CobelPvP start
+                unloadQueuePopTotal += System.nanoTime() - nanoStart;
+                // MineHQ start
                 int locX = LongHash.msw(chunkcoordinates);
                 int locZ = LongHash.lsw(chunkcoordinates);
+                nanoStart = System.nanoTime();
                 Chunk chunk = this.chunks.get(locX, locZ);
-                // CobelPvP end
+                chunksGet += System.nanoTime() - nanoStart;
+                // MineHQ end
                 if (chunk == null) continue;
 
                 ChunkUnloadEvent event = new ChunkUnloadEvent(chunk.bukkitChunk);
+                nanoStart = System.nanoTime();
                 server.getPluginManager().callEvent(event);
+                callEvent += System.nanoTime() - nanoStart;
                 if (!event.isCancelled()) {
                     if (chunk != null) {
+                        this.world.timings.doChunkUnloadSave.startTiming();
+                        nanoStart = System.nanoTime();
                         chunk.removeEntities();
+                        removeEntities += System.nanoTime() - nanoStart;
+                        nanoStart = System.nanoTime();
                         this.saveChunk(chunk);
+                        saveChunk += System.nanoTime() - nanoStart;
+                        nanoStart = System.nanoTime();
                         this.saveChunkNOP(chunk);
-                        this.chunks.remove(locX, locZ); // CraftBukkit // CobelPvP
+                        saveChunkNOP += System.nanoTime() - nanoStart;
+                        nanoStart = System.nanoTime();
+                        this.chunks.remove(locX, locZ); // CraftBukkit // MineHQ
+                        chunkRemove += System.nanoTime() - nanoStart;
+                        unloaded++;
+                        this.world.timings.doChunkUnloadSave.stopTiming();
                     }
 
                     // this.unloadQueue.remove(olong);
                     // this.chunks.remove(olong.longValue());
 
                     // Update neighbor counts
+                    nanoStart = System.nanoTime();
                     for (int x = -2; x < 3; x++) {
                         for (int z = -2; z < 3; z++) {
                             if (x == 0 && z == 0) {
@@ -391,13 +423,35 @@ public class ChunkProviderServer implements IChunkProvider {
                             }
                         }
                     }
+                    updateNeighbourCounts += System.nanoTime() - nanoStart;
                 }
             }
             // CraftBukkit end
+            long timeTaken = System.currentTimeMillis() - start;
+            if (timeTaken > 75) {
+                MinecraftServer.getLogger().warn("ChunkProviderServer.unloadChunks took too long! " + timeTaken + "ms!");
+                MinecraftServer.getLogger().warn("World name: " + this.world.worldData.getName());
+                MinecraftServer.getLogger().warn("chunks.size() = " + chunksSize);
+                MinecraftServer.getLogger().warn("unloadQueue.size() = " + unloadSize);
+                MinecraftServer.getLogger().warn("chunks unloaded this run: " + unloaded);
+                MinecraftServer.getLogger().warn("unloadQueuePopTotal: " + unloadQueuePopTotal);
+                MinecraftServer.getLogger().warn("chunksGet: " + chunksGet);
+                MinecraftServer.getLogger().warn("callEvent: " + callEvent);
+                MinecraftServer.getLogger().warn("removeEntities: " + removeEntities);
+                MinecraftServer.getLogger().warn("saveChunk: " + saveChunk);
+                MinecraftServer.getLogger().warn("saveChunkNOP: " + saveChunkNOP);
+                MinecraftServer.getLogger().warn("chunkRemove: " + chunkRemove);
+                MinecraftServer.getLogger().warn("updateNeighbourCounts: " + updateNeighbourCounts);
+                this.world.printTimings();
+                MinecraftServer.getLogger().warn("world.N.size(): " + world.N.size());
+                MinecraftServer.getLogger().warn("world.V.size(): " + world.V.size());
+            }
 
             if (this.f != null) {
                 this.f.a();
             }
+
+            this.world.clearTimings();
         }
 
         return this.chunkProvider.unloadChunks();
