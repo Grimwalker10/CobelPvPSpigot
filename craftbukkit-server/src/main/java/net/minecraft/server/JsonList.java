@@ -128,7 +128,7 @@ public class JsonList {
     }
 
     public void save() throws IOException { // CraftBukkit - Added throws
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         Collection collection = this.d.values();
         String s = this.b.toJson(collection);
         BufferedWriter bufferedwriter = null;

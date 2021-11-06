@@ -213,7 +213,7 @@ public class UserCache {
     }
 
     public void c() {
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         String s = this.b.toJson(this.a(org.spigotmc.SpigotConfig.userCacheCap));
         BufferedWriter bufferedwriter = null;
 

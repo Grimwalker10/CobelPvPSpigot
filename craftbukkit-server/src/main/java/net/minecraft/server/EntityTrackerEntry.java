@@ -236,7 +236,7 @@ public class EntityTrackerEntry {
                         }
                     } else {
                         this.v = 0;
-                        object = new PacketPlayOutEntityTeleport(this.tracker.getId(), i, j, k, (byte) l, (byte) i1, tracker.onGround, tracker instanceof EntityFallingBlock || tracker instanceof EntityTNTPrimed); // Spigot - protocol patch
+                        object = new PacketPlayOutEntityTeleport(this.tracker.getId(), i, j, k, (byte) l, (byte) i1, tracker.onGround, tracker instanceof EntityFallingBlock || tracker instanceof EntityTNTPrimed); // Spigot - protocol patch // Spigot Update - 20140916a
                     }
                 }
 
@@ -266,7 +266,6 @@ public class EntityTrackerEntry {
                     this.yLoc = j;
                     this.zLoc = k;
                 }
-
                 if (flag1) {
                     this.yRot = l;
                     this.xRot = i1;
@@ -358,6 +357,8 @@ public class EntityTrackerEntry {
                     ((EntityPlayer) this.tracker).getBukkitEntity().injectScaledMaxHealth(set, false);
                     ((EntityPlayer) this.tracker).playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set)); // CobelPvP
                 }
+                // CraftBukkit end
+
                 // CobelPvP start
                 // this.broadcastIncludingSelf(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set)); // CraftBukkit
                 if (this.tracker.passenger instanceof EntityPlayer) {
@@ -434,9 +435,9 @@ public class EntityTrackerEntry {
                     if ( tracker instanceof EntityPlayer )
                     {
                         entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.addPlayer( (EntityPlayer) tracker ) );
-                        if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 )
-                        {
-                            entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.updateDisplayName( (EntityPlayer) tracker ) );
+
+                        if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 ) { // Spigot Update - 20140927a // Spigot Update - 20141001a
+                            entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.updateDisplayName( (EntityPlayer) this.tracker ) );
                         }
                     }
                     // Spigot end
@@ -461,7 +462,6 @@ public class EntityTrackerEntry {
                     if (this.tracker instanceof EntityLiving) {
                         AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).getAttributeMap();
                         Collection collection = attributemapserver.c();
-
                         // CraftBukkit start - If sending own attributes send scaled health instead of current maximum health
                         if (this.tracker.getId() == entityplayer.getId()) {
                             ((EntityPlayer) this.tracker).getBukkitEntity().injectScaledMaxHealth(collection, false);

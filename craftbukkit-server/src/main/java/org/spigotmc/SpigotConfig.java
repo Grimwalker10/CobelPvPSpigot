@@ -511,6 +511,16 @@ public class SpigotConfig
         disableSaving = getBoolean("settings.disableSaving", false);
     }
 
+    public static boolean playerListPackets;
+    public static boolean updatePingOnTablist;
+    public static boolean onlyCustomTab;
+    private static void packets() {
+        onlyCustomTab = getBoolean("settings.only-custom-tab", false);
+        playerListPackets = !onlyCustomTab && !getBoolean("settings.disable.player-list-packets", false);
+        updatePingOnTablist = !onlyCustomTab && !getBoolean("settings.disable.ping-update-packets", false);
+    }
+    // CobelPvP end
+
     // Griffin start
     public static int brewingMultiplier;
     private static void brewingMultiplier() {

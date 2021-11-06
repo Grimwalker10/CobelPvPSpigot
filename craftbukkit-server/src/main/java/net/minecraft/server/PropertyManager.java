@@ -67,7 +67,7 @@ public class PropertyManager {
     }
 
     public void savePropertiesFile() {
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         FileOutputStream fileoutputstream = null;
 
         try {

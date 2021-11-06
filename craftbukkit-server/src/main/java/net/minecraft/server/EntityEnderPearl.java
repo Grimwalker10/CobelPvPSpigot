@@ -21,7 +21,7 @@ public class EntityEnderPearl extends EntityProjectile {
         this.loadChunks = world.paperSpigotConfig.loadUnloadedEnderPearls; // PaperSpigot
     }
 
-    // MineHQ start
+    // CobelPvP start
     public void h() {
         if (this.world.getCubes(this, this.boundingBox.grow(0.25D, 0.25D, 0.25D)).isEmpty()) {
             this.lastValidTeleport = getBukkitEntity().getLocation();
@@ -29,7 +29,7 @@ public class EntityEnderPearl extends EntityProjectile {
 
         super.h();
     }
-    // MineHQ start
+    // CobelPvP start
 
     protected void a(MovingObjectPosition movingobjectposition) {
         if (movingobjectposition.entity != null) {
@@ -83,10 +83,10 @@ public class EntityEnderPearl extends EntityProjectile {
             if (this.getShooter() != null && this.getShooter() instanceof EntityPlayer) {
                 EntityPlayer entityplayer = (EntityPlayer) this.getShooter();
 
-                if (entityplayer.playerConnection.b().isConnected() && entityplayer.world == this.world && this.lastValidTeleport != null) { // MineHQ
+                if (entityplayer.playerConnection.b().isConnected() && entityplayer.world == this.world && this.lastValidTeleport != null) { // CobelPvP
                     // CraftBukkit start - Fire PlayerTeleportEvent
                     org.bukkit.craftbukkit.entity.CraftPlayer player = entityplayer.getBukkitEntity();
-                    org.bukkit.Location location = this.lastValidTeleport.clone(); // MineHQ
+                    org.bukkit.Location location = this.lastValidTeleport.clone(); // CobelPvP
                     location.setPitch(player.getLocation().getPitch());
                     location.setYaw(player.getLocation().getYaw());
 

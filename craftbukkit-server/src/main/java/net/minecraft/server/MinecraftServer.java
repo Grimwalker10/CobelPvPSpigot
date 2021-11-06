@@ -382,7 +382,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     protected void saveChunks(boolean flag) throws ExceptionWorldConflict { // CraftBukkit - added throws
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if (!this.M) {
             // CraftBukkit start - fire WorldSaveEvent
             // WorldServer[] aworldserver = this.worldServer;
@@ -729,6 +729,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
             // if (i == 0 || this.getAllowNether()) {
                 WorldServer worldserver = this.worlds.get(i);
+                if (!worldserver.checkTicking()) continue; // CobelPvP
 
                 this.methodProfiler.a(worldserver.getWorldData().getName());
                 this.methodProfiler.a("pools");

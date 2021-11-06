@@ -303,7 +303,7 @@ public abstract class PlayerList {
     }
 
     protected void b(EntityPlayer entityplayer) {
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
         this.playerFileData.save(entityplayer);
         ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) this.n.get(entityplayer.getUniqueID());
@@ -343,6 +343,8 @@ public abstract class PlayerList {
             this.a(entityplayer, (WorldServer) null);
         }
         // CraftBukkit end
+
+        if (!SpigotConfig.playerListPackets) return; // CobelPvP
 
         // CraftBukkit start - sendAll above replaced with this loop
         PacketPlayOutPlayerInfo packet = PacketPlayOutPlayerInfo.addPlayer( entityplayer ); // Spigot - protocol patch
@@ -425,6 +427,7 @@ public abstract class PlayerList {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
             if (entityplayer1.getBukkitEntity().canSee(entityplayer.getBukkitEntity())) {
+                if (!SpigotConfig.playerListPackets) continue; // CobelPvP
                 entityplayer1.playerConnection.sendPacket(packet);
             } else {
                 entityplayer1.getBukkitEntity().removeDisconnectingPlayer(entityplayer.getBukkitEntity());
@@ -491,7 +494,6 @@ public abstract class PlayerList {
 
     public EntityPlayer processLogin(GameProfile gameprofile, EntityPlayer player) { // CraftBukkit - added EntityPlayer
         UUID uuid = EntityHuman.a(gameprofile);
-        ArrayList arraylist = Lists.newArrayList();
 
         EntityPlayer entityplayer;
 
@@ -922,11 +924,13 @@ public abstract class PlayerList {
         // Spigot start
         try
         {
-            if ( !players.isEmpty() )
+            if ( !players.isEmpty() && SpigotConfig.updatePingOnTablist)
             {
                 currentPing = ( currentPing + 1 ) % this.players.size();
                 EntityPlayer player = (EntityPlayer) this.players.get( currentPing );
-                if ( player.lastPing == -1 || Math.abs( player.ping - player.lastPing ) > 20 )
+                int oldPingToBars = pingToBars(player.lastPing);
+                int newPingToBars = pingToBars(player.ping);
+                if ( player.lastPing == -1 || oldPingToBars != newPingToBars )
                 {
                     Packet packet = PacketPlayOutPlayerInfo.updatePing( player ); // Spigot - protocol patch
                     for ( EntityPlayer splayer : (List<EntityPlayer>) this.players )
@@ -944,6 +948,18 @@ public abstract class PlayerList {
         }
         // Spigot end
     }
+
+    // CobelPvP start
+    private int pingToBars(int ping) {
+        if (ping < 0) return 5;
+        else if (ping < 150) return 0;
+        else if (ping < 300) return 1;
+        else if (ping < 600) return 2;
+        else if (ping < 1_000) return 3;
+        else if (ping < Short.MAX_VALUE) return 4;
+        else return 5;
+    }
+    // CobelPvP end
 
     public void sendAll(Packet packet) {
         for (int i = 0; i < this.players.size(); ++i) {
@@ -1188,7 +1204,7 @@ public abstract class PlayerList {
     }
 
     public void savePlayers() {
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
         for (int i = 0; i < this.players.size(); ++i) {
             this.b((EntityPlayer) this.players.get(i));

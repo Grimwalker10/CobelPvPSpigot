@@ -57,6 +57,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
+import org.spigotmc.SpigotConfig;
 
 @DelegateDeserialization(CraftOfflinePlayer.class)
 public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -234,8 +235,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             EntityPlayer player = (EntityPlayer) playerObj;
 
             if (player.playerConnection != null) {
-                player.playerConnection.sendPacket(removeTabPacket);
-                player.playerConnection.sendPacket(addThisTabPacket);
+                if (SpigotConfig.playerListPackets) player.playerConnection.sendPacket(removeTabPacket);
+                if (SpigotConfig.playerListPackets || player.playerConnection.networkManager.getVersion() > 27) player.playerConnection.sendPacket(addThisTabPacket);
             }
         }
 
@@ -247,6 +248,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
             trackerEntry.broadcast(destroyPacket);
             trackerEntry.broadcast(spawnPacket);
+        }
+
+        PacketPlayOutPlayerInfo removeThisTabPacket = PacketPlayOutPlayerInfo.removePlayer(getHandle());
+        for (Object playerObj : MinecraftServer.getServer().getPlayerList().players) {
+            EntityPlayer player = (EntityPlayer) playerObj;
+
+            if (player.playerConnection != null) {
+                if (!SpigotConfig.playerListPackets && player.playerConnection.networkManager.getVersion() > 27) player.playerConnection.sendPacket(removeThisTabPacket);
+            }
         }
     }
 
@@ -289,6 +299,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             trackerEntry.broadcast(destroyPacket);
             trackerEntry.broadcast(spawnPacket);
         }
+
+        PacketPlayOutPlayerInfo removeThisTabPacket = PacketPlayOutPlayerInfo.removePlayer(getHandle());
+        for (Object playerObj : MinecraftServer.getServer().getPlayerList().players) {
+            EntityPlayer player = (EntityPlayer) playerObj;
+            if (!SpigotConfig.playerListPackets) {
+                player.playerConnection.sendPacket(removeThisTabPacket);
+            }
+        }
     }
     // CobelPvP end
 
@@ -321,6 +339,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
 
         getHandle().listName = name;
+
+        if (!SpigotConfig.playerListPackets) return; // CobelPvP
 
         // Change the name on the client side
         // Spigot start - protocol patch
@@ -1082,7 +1102,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             entry.updatePlayer(getHandle());
         }
 
-        getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch
+        // getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch // CobelPvP - unneeded
     }
 
     public void removeDisconnectingPlayer(Player player) {

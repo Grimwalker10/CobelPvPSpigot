@@ -12,7 +12,7 @@ import java.util.TreeSet;
 import net.minecraft.util.com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.bukkit.Bukkit;
 // CraftBukkit start
 import org.bukkit.WeatherType;
 import org.bukkit.block.BlockState;
@@ -45,6 +45,8 @@ public class WorldServer extends World {
     public List V = new ArrayList();
     private IntHashMap entitiesById;
 
+    private boolean ticking = false;
+
     // CraftBukkit start
     public final int dimension;
 
@@ -76,6 +78,20 @@ public class WorldServer extends World {
 
         persistentscoreboard.a(this.scoreboard);
         ((ScoreboardServer) this.scoreboard).a(persistentscoreboard);
+    }
+
+    public boolean checkTicking() {
+        if (this.ticking && this.players.isEmpty()) {
+            this.ticking = false;
+            Bukkit.getLogger().info("Not ticking world " + this.getWorld().getName() + ". Unloading spawn...");
+            this.keepSpawnInMemory = false;
+        } else if (!this.players.isEmpty() && !this.ticking) {
+            this.ticking = true;
+            Bukkit.getLogger().info("Ticking world " + this.getWorld().getName() + ". Loading spawn...");
+            this.keepSpawnInMemory = true;
+        }
+
+        return this.ticking;
     }
 
     // CraftBukkit start
@@ -819,7 +835,7 @@ public class WorldServer extends World {
 
     // Poweruser start
     public void saveOnlyLevel(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict {
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.a("Saving level");
@@ -830,7 +846,7 @@ public class WorldServer extends World {
     }
 
     public boolean saveOnlyChunks(boolean flag, IProgressUpdate iprogressupdate) {
-        if (SpigotConfig.disableSaving) return true; // MineHQ
+        if (SpigotConfig.disableSaving) return true; // CobelPvP
         if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.c("Saving chunks");
@@ -869,14 +885,14 @@ public class WorldServer extends World {
     }
 
     public void flushSave() {
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if (this.chunkProvider.canSave()) {
             this.chunkProvider.c();
         }
     }
 
     protected void a() throws ExceptionWorldConflict { // CraftBukkit - added throws
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         this.G();
         this.dataManager.saveWorldData(this.worldData, this.server.getPlayerList().t());
         // CraftBukkit start - save worldMaps once, rather than once per shared world

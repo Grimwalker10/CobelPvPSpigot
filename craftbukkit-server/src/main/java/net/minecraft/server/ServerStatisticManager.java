@@ -58,7 +58,7 @@ public class ServerStatisticManager extends StatisticManager {
     }
 
     public void b() {
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if ( org.spigotmc.SpigotConfig.disableStatSaving ) return; // Spigot
         try {
             FileUtils.writeStringToFile(this.d, a(this.a));
@@ -68,7 +68,7 @@ public class ServerStatisticManager extends StatisticManager {
     }
 
     public void setStatistic(EntityHuman entityhuman, Statistic statistic, int i) {
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if ( org.spigotmc.SpigotConfig.disableStatSaving ) return; // Spigot
         int j = statistic.d() ? this.getStatisticValue(statistic) : 0;
 
