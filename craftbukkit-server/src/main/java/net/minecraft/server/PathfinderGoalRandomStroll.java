@@ -15,22 +15,25 @@ public class PathfinderGoalRandomStroll extends PathfinderGoal {
     }
 
     public boolean a() {
-        if (this.a.aN() >= 100) {
-            return false;
-        } else if (this.a.aI().nextInt(120) != 0) {
-            return false;
-        } else {
-            Vec3D vec3d = RandomPositionGenerator.a(this.a, 10, 7);
-
-            if (vec3d == null) {
-                return false;
-            } else {
-                this.b = vec3d.a;
-                this.c = vec3d.b;
-                this.d = vec3d.c;
-                return true;
-            }
-        }
+        // MineHQ start - disable RandomStroll AI
+        //if (this.a.aN() >= 100) {
+        //    return false;
+        //} else if (this.a.aI().nextInt(120) != 0) {
+        //    return false;
+        //} else {
+        //    Vec3D vec3d = RandomPositionGenerator.a(this.a, 10, 7);
+        //
+        //    if (vec3d == null) {
+        //        return false;
+        //    } else {
+        //        this.b = vec3d.a;
+        //        this.c = vec3d.b;
+        //        this.d = vec3d.c;
+        //        return true;
+        //    }
+        //}
+        return false;
+        // MineHQ end
     }
 
     public boolean b() {
