@@ -69,6 +69,8 @@ public class PlayerChunkMap {
         }
 
         this.e.clear();
+        // MineHQ start - chunk GC handles this
+        /*
         if (this.managedPlayers.isEmpty()) {
             if (!wasNotEmpty) return; // CraftBukkit - Only do unload when we go from non-empty to empty
             WorldProvider worldprovider = this.world.worldProvider;
@@ -82,6 +84,9 @@ public class PlayerChunkMap {
             wasNotEmpty = true;
         }
         // CraftBukkit end
+        */
+        // MineHQ end
+
     }
 
     public boolean a(int i, int j) {
