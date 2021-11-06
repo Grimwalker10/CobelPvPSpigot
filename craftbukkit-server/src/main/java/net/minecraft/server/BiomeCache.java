@@ -12,7 +12,7 @@ public class BiomeCache {
 
     private final WorldChunkManager a;
     private long b;
-    private Long2ObjectMap c = new Long2ObjectOpenHashMap(); // MineHQ
+    private Long2ObjectMap c = new Long2ObjectOpenHashMap(); // CobelPvP
     private List d = new ArrayList();
 
     public BiomeCache(WorldChunkManager worldchunkmanager) {
@@ -22,10 +22,10 @@ public class BiomeCache {
     public BiomeCacheBlock a(int i, int j) {
         i >>= 4;
         j >>= 4;
-        // MineHQ start
+        // CobelPvP start
         long k = LongHash.toLong(i, j);
         BiomeCacheBlock biomecacheblock = (BiomeCacheBlock) this.c.get(k);
-        // MineHQ end
+        // CobelPvP end
 
         if (biomecacheblock == null) {
             biomecacheblock = new BiomeCacheBlock(this, i, j);
@@ -54,7 +54,7 @@ public class BiomeCache {
 
                 if (l > 30000L || l < 0L) {
                     this.d.remove(k--);
-                    long i1 = LongHash.toLong(biomecacheblock.c, biomecacheblock.d); // MineHQ
+                    long i1 = LongHash.toLong(biomecacheblock.c, biomecacheblock.d); // CobelPvP
 
                     this.c.remove(i1);
                 }

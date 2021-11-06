@@ -15,7 +15,7 @@ public class PathfinderGoalRandomStroll extends PathfinderGoal {
     }
 
     public boolean a() {
-        // MineHQ start - disable RandomStroll AI
+        // CobelPvP start - disable RandomStroll AI
         //if (this.a.aN() >= 100) {
         //    return false;
         //} else if (this.a.aI().nextInt(120) != 0) {
@@ -33,7 +33,7 @@ public class PathfinderGoalRandomStroll extends PathfinderGoal {
         //    }
         //}
         return false;
-        // MineHQ end
+        // CobelPvP end
     }
 
     public boolean b() {
