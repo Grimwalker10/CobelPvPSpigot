@@ -41,6 +41,7 @@ import org.bukkit.craftbukkit.CraftOfflinePlayer;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftStatistic;
+import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.map.RenderData;
@@ -83,15 +84,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         firstPlayed = System.currentTimeMillis();
     }
 
+    // Kohi start
     @Override
     public void setVelocity(Vector vel) {
-      // To be consistent with old behavior, set the velocity before firing the event
+        // To be consistent with old behavior, set the velocity before firing the event
         this.setVelocityDirect(vel);
 
         PlayerVelocityEvent event = new PlayerVelocityEvent(this, vel.clone());
         this.getServer().getPluginManager().callEvent(event);
 
-        if (!event.isCancelled()) {
+        if(!event.isCancelled()) {
             // Set the velocity again in case it was changed by event handlers
             this.setVelocityDirect(event.getVelocity());
 
@@ -109,7 +111,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         entity.motX = vel.getX();
         entity.motY = vel.getY();
         entity.motZ = vel.getZ();
+        if (entity.motY > 0) {
+            entity.fallDistance = 0.0f;
+        }
     }
+    // Kohi end
 
     public GameProfile getProfile() {
         return getHandle().getProfile();

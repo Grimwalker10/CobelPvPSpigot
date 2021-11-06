@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-
+import org.spigotmc.SpigotConfig;
 // CraftBukkit start
 import java.util.ArrayList;
 import com.google.common.base.Function;
@@ -831,17 +831,19 @@ public abstract class EntityLiving extends Entity {
     public void a(Entity entity, float f, double d0, double d1) {
         if (this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.c).getValue()) {
             this.al = true;
-            float f1 = MathHelper.sqrt(d0 * d0 + d1 * d1);
-            float f2 = 0.4F;
+            // Kohi start - configurable knockback
+            double magnitude = MathHelper.sqrt(d0 * d0 + d1 * d1);
 
-            this.motX /= 2.0D;
-            this.motY /= 2.0D;
-            this.motZ /= 2.0D;
-            this.motX -= d0 / (double) f1 * (double) f2;
-            this.motY += (double) f2;
-            this.motZ -= d1 / (double) f1 * (double) f2;
-            if (this.motY > 0.4000000059604645D) {
-                this.motY = 0.4000000059604645D;
+            this.motX /= SpigotConfig.knockbackFriction;
+            this.motY /= SpigotConfig.knockbackFriction;
+            this.motZ /= SpigotConfig.knockbackFriction;
+
+            this.motX -= d0 / magnitude * SpigotConfig.knockbackHorizontal;
+            this.motY += SpigotConfig.knockbackVertical;
+            this.motZ -= d1 / magnitude * SpigotConfig.knockbackHorizontal;
+
+            if (this.motY > SpigotConfig.knockbackVerticalLimit) {
+                this.motY = SpigotConfig.knockbackVerticalLimit;
             }
         }
     }

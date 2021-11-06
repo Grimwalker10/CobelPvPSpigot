@@ -19,6 +19,7 @@ import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.player.*;
 // CraftBukkit end
 import org.spigotmc.ProtocolData; // Spigot - protocol patch
+import org.spigotmc.SpigotConfig;
 
 public abstract class EntityHuman extends EntityLiving implements ICommandListener {
 
@@ -959,7 +960,12 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
 
                     if (flag2) {
                         if (i > 0) {
-                            entity.g((double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * 0.5F), 0.1D, (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * 0.5F));
+                            // Kohi start - configurable knockback
+                            entity.g(
+                                    (double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * SpigotConfig.knockbackExtraHorizontal),
+                                    SpigotConfig.knockbackExtraVertical,
+                                    (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * SpigotConfig.knockbackExtraHorizontal));
+                            // Kohi end
                             this.motX *= 0.6D;
                             this.motZ *= 0.6D;
                             this.setSprinting(false);
