@@ -1856,7 +1856,14 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (itemstack.getItem() == Items.BOOK_AND_QUILL && itemstack.getItem() == itemstack1.getItem()) {
-                        CraftEventFactory.handleEditBookEvent(player, itemstack); // CraftBukkit
+                        // CobelPvP start - handle book editting better
+                        ItemStack newBook = itemstack1.cloneItemStack();
+                        if (!newBook.hasTag()) {
+                            newBook.setTag(new NBTTagCompound());
+                        }
+                        newBook.tag.set("pages", itemstack.getTag().getList("pages", 8));
+                        CraftEventFactory.handleEditBookEvent(player, newBook); // CraftBukkit
+                        // CobelPvP end
                     }
 
                     return;
@@ -1888,7 +1895,17 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (itemstack.getItem() == Items.WRITTEN_BOOK && itemstack1.getItem() == Items.BOOK_AND_QUILL) {
-                        CraftEventFactory.handleEditBookEvent(player, itemstack); // CraftBukkit
+                        // CobelPvP start - handle book editting better
+                        ItemStack newBook = itemstack1.cloneItemStack();
+                        if (!newBook.hasTag()) {
+                            newBook.setTag(new NBTTagCompound());
+                        }
+                        newBook.tag.set("author", new NBTTagString(this.player.getName()));
+                        newBook.tag.set("title", new NBTTagString(itemstack.getTag().getString("title")));
+                        newBook.tag.set("pages", itemstack.getTag().getList("pages", 8));
+                        newBook.setItem(Items.WRITTEN_BOOK);
+                        CraftEventFactory.handleEditBookEvent(player, newBook); // CraftBukkit
+                        // CobelPvP end
                     }
 
                     return;
