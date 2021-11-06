@@ -1,8 +1,13 @@
 package net.minecraft.server;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+
+import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.entity.CraftItem;
+import org.bukkit.event.block.BlockDropItemsEvent;
 
 import com.cobelpvp.utils.BlockAccessCache; // Poweruser
 
@@ -53,6 +58,7 @@ public class Block {
     // CobelPvP start
     private int blockId = -1;
     private static final Block[] blocksArray = new Block[4096];
+    public List<org.bukkit.entity.Item> droppedItemsCatcher;
     // CobelPvP end
 
     public static int getId(Block block) {
@@ -466,7 +472,23 @@ public class Block {
     }
 
     public final void b(World world, int i, int j, int k, int l, int i1) {
-        this.dropNaturally(world, i, j, k, l, 1.0F, i1);
+        // CobelPvP start
+        if (this == Blocks.AIR) return;
+        if (this.droppedItemsCatcher == null) {
+            this.droppedItemsCatcher = new ArrayList<org.bukkit.entity.Item>(1);
+            this.dropNaturally(world, i, j, k, l, 1.0f, i1);
+            BlockDropItemsEvent dropItemsEvent = new BlockDropItemsEvent(world.getWorld().getBlockAt(i, j, k), null, this.droppedItemsCatcher);
+            Bukkit.getPluginManager().callEvent(dropItemsEvent);
+            if (!dropItemsEvent.isCancelled() && dropItemsEvent.getToDrop() != null) {
+                for (final org.bukkit.entity.Item item : dropItemsEvent.getToDrop()) {
+                    world.addEntity(((CraftItem) item).getHandle());
+                }
+            }
+            this.droppedItemsCatcher = null;
+        } else {
+            this.dropNaturally(world, i, j, k, l, 1.0F, i1);
+        }
+        // CobelPvP end
     }
 
     public void dropNaturally(World world, int i, int j, int k, int l, float f, int i1) {
@@ -495,7 +517,13 @@ public class Block {
             EntityItem entityitem = new EntityItem(world, (double) i + d0, (double) j + d1, (double) k + d2, itemstack);
 
             entityitem.pickupDelay = 10;
-            world.addEntity(entityitem);
+            // CobelPvP start
+            if (this.droppedItemsCatcher == null) {
+                world.addEntity(entityitem);
+            } else {
+                this.droppedItemsCatcher.add(new CraftItem(world.getServer(), entityitem));
+            }
+            // CobelPvP end
         }
     }
 

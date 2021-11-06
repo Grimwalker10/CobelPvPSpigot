@@ -2,6 +2,13 @@ package net.minecraft.server;
 
 // CraftBukkit start
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDropItemsEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
@@ -309,7 +316,19 @@ public class PlayerInteractManager {
                 }
 
                 if (flag && flag1) {
+                    // CobelPvP start
+                    List<org.bukkit.entity.Item> items = new ArrayList<org.bukkit.entity.Item>(1);
+                    block.droppedItemsCatcher = items;
                     block.a(this.world, this.player, i, j, k, l);
+                    block.droppedItemsCatcher = null;
+                    BlockDropItemsEvent dropItemsEvent = new BlockDropItemsEvent(this.world.getWorld().getBlockAt(i, j, k), this.player.getBukkitEntity(), items);
+                    Bukkit.getPluginManager().callEvent(dropItemsEvent);
+                    if (!dropItemsEvent.isCancelled() && dropItemsEvent.getToDrop() != null) {
+                        for (final org.bukkit.entity.Item item : dropItemsEvent.getToDrop()) {
+                            this.world.addEntity(((CraftItem) item).getHandle());
+                        }
+                    }
+                    // CobelPvP end
                 }
             }
 
