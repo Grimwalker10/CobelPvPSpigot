@@ -69,7 +69,7 @@ public class PlayerChunkMap {
         }
 
         this.e.clear();
-        // MineHQ start - chunk GC handles this
+        // CobelPvP start - chunk GC handles this
         /*
         if (this.managedPlayers.isEmpty()) {
             if (!wasNotEmpty) return; // CraftBukkit - Only do unload when we go from non-empty to empty
@@ -85,7 +85,7 @@ public class PlayerChunkMap {
         }
         // CraftBukkit end
         */
-        // MineHQ end
+        // CobelPvP end
 
     }
 

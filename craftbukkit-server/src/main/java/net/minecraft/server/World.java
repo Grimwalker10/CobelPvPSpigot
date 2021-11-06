@@ -3428,7 +3428,7 @@ public abstract class World implements IBlockAccess {
         }
     }
 
-    // MineHQ start - chunk unload queue slowness
+    // CobelPvP start - chunk unload queue slowness
     public long obtainLock, pendingSavesPut, fileIOThreadAddition, writeStartNBT, writeSections, writeBiomes, writeEntities, writeTileEntities, writeTileTicks;
     public void printTimings() {
         MinecraftServer.getLogger().warn("Obtain lock: " + obtainLock);
@@ -3454,5 +3454,5 @@ public abstract class World implements IBlockAccess {
         this.writeTileEntities = 0;
         this.writeTileTicks = 0;
     }
-    // MineHQ end
+    // CobelPvP end
 }
