@@ -3,11 +3,16 @@ package net.minecraft.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.craftbukkit.util.LongHash;
+
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+
 public class BiomeCache {
 
     private final WorldChunkManager a;
     private long b;
-    private LongHashMap c = new LongHashMap();
+    private Long2ObjectMap c = new Long2ObjectOpenHashMap(); // MineHQ
     private List d = new ArrayList();
 
     public BiomeCache(WorldChunkManager worldchunkmanager) {
@@ -17,8 +22,10 @@ public class BiomeCache {
     public BiomeCacheBlock a(int i, int j) {
         i >>= 4;
         j >>= 4;
-        long k = (long) i & 4294967295L | ((long) j & 4294967295L) << 32;
-        BiomeCacheBlock biomecacheblock = (BiomeCacheBlock) this.c.getEntry(k);
+        // MineHQ start
+        long k = LongHash.toLong(i, j);
+        BiomeCacheBlock biomecacheblock = (BiomeCacheBlock) this.c.get(k);
+        // MineHQ end
 
         if (biomecacheblock == null) {
             biomecacheblock = new BiomeCacheBlock(this, i, j);
@@ -47,7 +54,7 @@ public class BiomeCache {
 
                 if (l > 30000L || l < 0L) {
                     this.d.remove(k--);
-                    long i1 = (long) biomecacheblock.c & 4294967295L | ((long) biomecacheblock.d & 4294967295L) << 32;
+                    long i1 = LongHash.toLong(biomecacheblock.c, biomecacheblock.d); // MineHQ
 
                     this.c.remove(i1);
                 }
