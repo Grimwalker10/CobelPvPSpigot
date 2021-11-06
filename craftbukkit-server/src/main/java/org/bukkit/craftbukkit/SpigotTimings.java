@@ -52,7 +52,7 @@ public class SpigotTimings {
     public static final CustomTimingsHandler connectionTimer_PacketFlying_playerChunks = new CustomTimingsHandler("** Connection Handler_PacketFlying_airCheck");
 
     public static CustomTimingsHandler getPacketHandlerTimings(Packet packet) {
-        String packetType = packet.getClass().getSimpleName();
+        String packetType = packet.getClass().getName();
         CustomTimingsHandler result = packetHandlerTimingMap.get(packetType);
         if (result == null) {
             result = new CustomTimingsHandler("** Connection Handler - " + packetType, connectionTimer);
@@ -108,7 +108,7 @@ public class SpigotTimings {
      * @return
      */
     public static CustomTimingsHandler getEntityTimings(Entity entity) {
-        String entityType = entity.getClass().getSimpleName();
+        String entityType = entity.getClass().getName();
         CustomTimingsHandler result = entityTypeTimingMap.get(entityType);
         if (result == null) {
             result = new CustomTimingsHandler("** tickEntity - " + entityType, activatedEntityTimer);
@@ -123,7 +123,7 @@ public class SpigotTimings {
      * @return
      */
     public static CustomTimingsHandler getTileEntityTimings(TileEntity entity) {
-        String entityType = entity.getClass().getSimpleName();
+        String entityType = entity.getClass().getName();
         CustomTimingsHandler result = tileEntityTypeTimingMap.get(entityType);
         if (result == null) {
             result = new CustomTimingsHandler("** tickTileEntity - " + entityType, tickTileEntityTimer);
