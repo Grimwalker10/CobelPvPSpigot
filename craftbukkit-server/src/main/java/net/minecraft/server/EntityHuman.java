@@ -1319,6 +1319,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         double d0 = this.locX;
         double d1 = this.locY;
         double d2 = this.locZ;
+        World world = this.world;
 
         if (this.abilities.isFlying && this.vehicle == null) {
             double d3 = this.motY;
@@ -1332,7 +1333,10 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
             super.e(f, f1);
         }
 
-        this.checkMovement(this.locX - d0, this.locY - d1, this.locZ - d2);
+        // Kohi - don't check if world changed
+        if (this.world == world) {
+            this.checkMovement(this.locX - d0, this.locY - d1, this.locZ - d2);
+        }
     }
 
     public float bl() {
