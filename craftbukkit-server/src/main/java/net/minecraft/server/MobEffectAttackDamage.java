@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import org.github.paperspigot.PaperSpigotConfig;
+
 public class MobEffectAttackDamage extends MobEffectList {
 
     protected MobEffectAttackDamage(int i, boolean flag, int j) {
@@ -7,6 +9,6 @@ public class MobEffectAttackDamage extends MobEffectList {
     }
 
     public double a(int i, AttributeModifier attributemodifier) {
-        return amount * (double) (i + 1);
+        return this.id == MobEffectList.WEAKNESS.id ? (double) (PaperSpigotConfig.weaknessEffectModifier * (float) (i + 1)) : PaperSpigotConfig.strengthEffectModifier * (double) (i + 1);
     }
 }
