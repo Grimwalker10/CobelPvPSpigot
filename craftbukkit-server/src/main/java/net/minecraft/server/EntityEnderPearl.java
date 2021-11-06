@@ -2,11 +2,14 @@ package net.minecraft.server;
 
 // CraftBukkit start
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.player.PlayerTeleportEvent;
 // CraftBukkit end
 
 public class EntityEnderPearl extends EntityProjectile {
+
+    private Location lastValidTeleport = null;
 
     public EntityEnderPearl(World world) {
         super(world);
@@ -17,6 +20,16 @@ public class EntityEnderPearl extends EntityProjectile {
         super(world, entityliving);
         this.loadChunks = world.paperSpigotConfig.loadUnloadedEnderPearls; // PaperSpigot
     }
+
+    // MineHQ start
+    public void h() {
+        if (this.world.getCubes(this, this.boundingBox.grow(0.25D, 0.25D, 0.25D)).isEmpty()) {
+            this.lastValidTeleport = getBukkitEntity().getLocation();
+        }
+
+        super.h();
+    }
+    // MineHQ start
 
     protected void a(MovingObjectPosition movingobjectposition) {
         if (movingobjectposition.entity != null) {
@@ -70,10 +83,10 @@ public class EntityEnderPearl extends EntityProjectile {
             if (this.getShooter() != null && this.getShooter() instanceof EntityPlayer) {
                 EntityPlayer entityplayer = (EntityPlayer) this.getShooter();
 
-                if (entityplayer.playerConnection.b().isConnected() && entityplayer.world == this.world) {
+                if (entityplayer.playerConnection.b().isConnected() && entityplayer.world == this.world && this.lastValidTeleport != null) { // MineHQ
                     // CraftBukkit start - Fire PlayerTeleportEvent
                     org.bukkit.craftbukkit.entity.CraftPlayer player = entityplayer.getBukkitEntity();
-                    org.bukkit.Location location = getBukkitEntity().getLocation();
+                    org.bukkit.Location location = this.lastValidTeleport.clone(); // MineHQ
                     location.setPitch(player.getLocation().getPitch());
                     location.setYaw(player.getLocation().getYaw());
 

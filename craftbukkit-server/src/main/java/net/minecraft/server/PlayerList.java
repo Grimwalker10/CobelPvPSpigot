@@ -30,6 +30,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
+import org.spigotmc.SpigotConfig;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 // CraftBukkit end
 
@@ -302,6 +303,7 @@ public abstract class PlayerList {
     }
 
     protected void b(EntityPlayer entityplayer) {
+        if (SpigotConfig.disableSaving) return; // MineHQ
         if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
         this.playerFileData.save(entityplayer);
         ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) this.n.get(entityplayer.getUniqueID());
@@ -1186,6 +1188,7 @@ public abstract class PlayerList {
     }
 
     public void savePlayers() {
+        if (SpigotConfig.disableSaving) return; // MineHQ
         if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
         for (int i = 0; i < this.players.size(); ++i) {
             this.b((EntityPlayer) this.players.get(i));
@@ -1331,14 +1334,6 @@ public abstract class PlayerList {
         if (serverstatisticmanager == null) {
             File file1 = new File(this.server.getWorldServer(0).getDataManager().getDirectory(), "stats");
             File file2 = new File(file1, uuid.toString() + ".json");
-
-            if (!file2.exists()) {
-                File file3 = new File(file1, entityhuman.getName() + ".json");
-
-                if (file3.exists() && file3.isFile()) {
-                    file3.renameTo(file2);
-                }
-            }
 
             serverstatisticmanager = new ServerStatisticManager(this.server, file2);
             serverstatisticmanager.a();

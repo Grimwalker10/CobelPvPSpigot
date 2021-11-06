@@ -42,6 +42,7 @@ import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
+import org.spigotmc.SpigotConfig;
 
 // Poweruser start
 import com.cobelpvp.ThreadingManager;
@@ -381,6 +382,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     protected void saveChunks(boolean flag) throws ExceptionWorldConflict { // CraftBukkit - added throws
+        if (SpigotConfig.disableSaving) return; // MineHQ
         if (!this.M) {
             // CraftBukkit start - fire WorldSaveEvent
             // WorldServer[] aworldserver = this.worldServer;

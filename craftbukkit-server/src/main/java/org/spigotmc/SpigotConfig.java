@@ -506,6 +506,11 @@ public class SpigotConfig
         reduceArmorDamage = getBoolean("settings.reduce-armor-damage", false);
     }
 
+    public static boolean disableSaving;
+    private static void disableSaving() {
+        disableSaving = getBoolean("settings.disableSaving", false);
+    }
+
     // Griffin start
     public static int brewingMultiplier;
     private static void brewingMultiplier() {

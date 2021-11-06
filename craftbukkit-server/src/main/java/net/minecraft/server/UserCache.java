@@ -17,6 +17,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
+import org.spigotmc.SpigotConfig;
+
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.google.common.collect.Iterators;
 import net.minecraft.util.com.google.common.collect.Lists;
@@ -211,6 +213,7 @@ public class UserCache {
     }
 
     public void c() {
+        if (SpigotConfig.disableSaving) return; // MineHQ
         String s = this.b.toJson(this.a(org.spigotmc.SpigotConfig.userCacheCap));
         BufferedWriter bufferedwriter = null;
 
