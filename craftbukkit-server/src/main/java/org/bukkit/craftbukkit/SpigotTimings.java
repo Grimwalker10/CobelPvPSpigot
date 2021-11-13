@@ -42,7 +42,7 @@ public class SpigotTimings {
     public static final CustomTimingsHandler entityActivationCheckTimer = new CustomTimingsHandler("entityActivationCheck");
     public static final CustomTimingsHandler checkIfActiveTimer = new CustomTimingsHandler("** checkIfActive");
 
-    // Poweruser start
+    // CobelPvP start
     public static final HashMap<String, CustomTimingsHandler> packetHandlerTimingMap = new HashMap<String, CustomTimingsHandler>();
     public static final CustomTimingsHandler timerEntity_C = new CustomTimingsHandler("** livingEntityBaseTick_Entity_C()");
     public static final CustomTimingsHandler timerEntityInsentient_C = new CustomTimingsHandler("** livingEntityBaseTick_EntityInsentient_C()");
@@ -60,7 +60,7 @@ public class SpigotTimings {
         }
         return result;
     }
-    // Poweruser end
+    // CobelPvP end
 
     public static final HashMap<String, CustomTimingsHandler> entityTypeTimingMap = new HashMap<String, CustomTimingsHandler>();
     public static final HashMap<String, CustomTimingsHandler> tileEntityTypeTimingMap = new HashMap<String, CustomTimingsHandler>();
@@ -158,10 +158,10 @@ public class SpigotTimings {
         public final CustomTimingsHandler tracker;
         public final CustomTimingsHandler doTick;
         public final CustomTimingsHandler tickEntities;
-        // Poweruser start
+        // CobelPvP start
         public final CustomTimingsHandler entityPlayerTickNormal;
         public final CustomTimingsHandler entityPlayerTickOnMove;
-        // Poweruser end
+        // CobelPvP end
 
         public final CustomTimingsHandler syncChunkLoadTimer;
         public final CustomTimingsHandler syncChunkLoadDataTimer;
@@ -193,10 +193,10 @@ public class SpigotTimings {
             entityTick = new CustomTimingsHandler("** " + name + "entityTick");
             tileEntityTick = new CustomTimingsHandler("** " + name + "tileEntityTick");
             tileEntityPending = new CustomTimingsHandler("** " + name + "tileEntityPending");
-            // Poweruser start
+            // CobelPvP start
             entityPlayerTickNormal = new CustomTimingsHandler("** " + name + "entityPlayerTick_normal");
             entityPlayerTickOnMove = new CustomTimingsHandler("** " + name + "entityPlayerTick_onMove");
-            // Poweruser end
+            // CobelPvP end
 
             syncChunkLoadTimer = new CustomTimingsHandler("** " + name + "syncChunkLoad");
             syncChunkLoadDataTimer = new CustomTimingsHandler("** " + name + "syncChunkLoad - Data");

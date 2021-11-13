@@ -8,14 +8,15 @@ public class ItemEgg extends Item {
     }
 
     public ItemStack a(ItemStack itemstack, World world, EntityHuman entityhuman) {
-        if (!entityhuman.abilities.canInstantlyBuild) {
-            --itemstack.count;
-        }
+        // DiegoVC start
+        if (!world.isStatic && world.addEntity(new EntityEgg(world, entityhuman))) {
+            if (!entityhuman.abilities.canInstantlyBuild) {
+                --itemstack.count;
+            }
 
-        world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
-        if (!world.isStatic) {
-            world.addEntity(new EntityEgg(world, entityhuman));
+            world.makeSound(entityhuman, "random.bow", 0.5f, 0.4f / (ItemEgg.g.nextFloat() * 0.4f + 0.8f));
         }
+        // DiegoVC end
 
         return itemstack;
     }

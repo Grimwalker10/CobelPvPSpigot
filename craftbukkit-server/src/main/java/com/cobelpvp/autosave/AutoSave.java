@@ -1,7 +1,6 @@
 package com.cobelpvp.autosave;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Queue;
 
 import org.bukkit.event.world.WorldSaveEvent;
@@ -9,7 +8,6 @@ import org.spigotmc.SpigotConfig;
 
 import net.minecraft.server.ExceptionWorldConflict;
 import net.minecraft.server.FileIOThread;
-import net.minecraft.server.IProgressUpdate;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegionFileCache;
 import net.minecraft.server.WorldServer;
@@ -63,7 +61,7 @@ public class AutoSave {
             case IDLE:
                 break;
             case START:
-                MinecraftServer.getLogger().info("[Autosave] Started ..");
+                MinecraftServer.getLogger().info("[Cobel Save] Initialized...");
                 for(WorldServer world: this.saveChunksQueue) {
                     world.getAutoSaveWorldData().setLastAutosaveTimeStamp();
                 }
@@ -138,9 +136,9 @@ public class AutoSave {
                 this.moveToNextStep();
                 break;                
             case FINISHED:
-                MinecraftServer.getLogger().info("[Autosave] Done. Queued " + this.chunkQueuedCount + " chunks for saving. Took " + formatLongTime(this.fileioEnd - this.fileioStart) + " seconds to write them.");
+                MinecraftServer.getLogger().info("[Cobel Save] Done. Queued " + this.chunkQueuedCount + " chunks for saving. Took " + formatLongTime(this.fileioEnd - this.fileioStart) + " seconds to write them.");
                 if(SpigotConfig.autoSaveClearRegionFileCache) {
-                    MinecraftServer.getLogger().info("[Autosave] Cleared " + this.regionFileCount + " cached region files in " + formatLongTime(this.regionFileCacheEnd - this.regionFileCacheStart) + " seconds.");
+                    MinecraftServer.getLogger().info("[Cobel Save] Cleared " + this.regionFileCount + " cached region files in " + formatLongTime(this.regionFileCacheEnd - this.regionFileCacheStart) + " seconds.");
                 }
                 this.reset();
                 return true;

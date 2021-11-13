@@ -2,9 +2,9 @@ package com.cobelpvp.pathsearch.jobs;
 
 import java.util.UUID;
 
-import com.cobelpvp.pathsearch.AsyncPathfinder;
 import com.cobelpvp.pathsearch.cache.SearchCacheEntry;
 import com.cobelpvp.pathsearch.cache.SearchCacheEntryEntity;
+import com.cobelpvp.pathsearch.AsyncPathfinder;
 
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityInsentient;

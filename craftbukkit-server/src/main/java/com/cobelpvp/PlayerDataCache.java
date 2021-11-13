@@ -1,9 +1,9 @@
-package com.cobelpvp.utils;
-
-import net.minecraft.server.MinecraftServer;
+package com.cobelpvp;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import net.minecraft.server.MinecraftServer;
 
 public class PlayerDataCache<K, V> extends LinkedHashMap<K, V>{
 

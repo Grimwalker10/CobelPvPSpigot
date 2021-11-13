@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.cobelpvp.pathsearch.PositionPathSearchType;
+
 import java.util.Random;
 
 public class PathfinderGoalFleeSun extends PathfinderGoal {
@@ -44,7 +46,7 @@ public class PathfinderGoalFleeSun extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a(com.cobelpvp.pathsearch.PositionPathSearchType.FLEESUN, this.b, this.c, this.d, this.e); // Poweruser
+        this.a.getNavigation().a(PositionPathSearchType.FLEESUN, this.b, this.c, this.d, this.e); // Poweruser
     }
 
     private Vec3D f() {

@@ -238,7 +238,7 @@ public class SpigotWorldConfig
         arrowDespawnRate = getInt( "arrow-despawn-rate", 1200  );
         log( "Arrow Despawn Rate: " + arrowDespawnRate );
     }
-
+    
     public boolean antiXray;
     public int engineMode;
     public List<Integer> hiddenBlocks;

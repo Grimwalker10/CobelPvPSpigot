@@ -30,7 +30,7 @@ public class TrackingRange
             return config.playerTrackingRange;
         // CobelPvP start
         } else if ( entity instanceof EntityArrow )
-        {
+        { 
             return config.playerTrackingRange;
         } else if (entity instanceof EntityEnderPearl)
         {

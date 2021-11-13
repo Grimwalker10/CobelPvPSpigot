@@ -1,4 +1,4 @@
-package com.cobelpvp;
+package com.cobelpvp.util;
 
 import net.minecraft.server.Block;
 import net.minecraft.server.Blocks;

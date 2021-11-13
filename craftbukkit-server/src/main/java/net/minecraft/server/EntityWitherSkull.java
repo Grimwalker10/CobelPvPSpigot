@@ -36,7 +36,7 @@ public class EntityWitherSkull extends EntityFireball {
         if (!this.world.isStatic) {
             if (movingobjectposition.entity != null) {
                 // Spigot start
-                boolean didDamage = false;
+                boolean didDamage = false;         	
                 if (this.shooter != null) {
                     didDamage = movingobjectposition.entity.damageEntity(DamageSource.mobAttack(this.shooter), 8.0F);
                     if (didDamage && !movingobjectposition.entity.isAlive()) {

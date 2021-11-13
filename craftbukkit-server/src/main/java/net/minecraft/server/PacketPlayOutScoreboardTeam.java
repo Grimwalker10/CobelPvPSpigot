@@ -7,13 +7,13 @@ import java.util.Iterator;
 
 public class PacketPlayOutScoreboardTeam extends Packet {
 
-    private String a = "";
-    private String b = "";
-    private String c = "";
-    private String d = "";
-    private Collection e = new ArrayList();
-    private int f;
-    private int g;
+    public String a = "";
+    public String b = "";
+    public String c = "";
+    public String d = "";
+    public Collection e = new ArrayList();
+    public int f;
+    public int g;
 
     public PacketPlayOutScoreboardTeam() {}
 

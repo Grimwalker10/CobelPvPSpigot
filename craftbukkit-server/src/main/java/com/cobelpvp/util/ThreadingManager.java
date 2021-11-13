@@ -1,35 +1,41 @@
-package com.cobelpvp;
+package com.cobelpvp.util;
 
-import com.cobelpvp.commands.WorldStatsCommand.WorldStatsTask;
-import com.cobelpvp.pathsearch.PathSearchThrottlerThread;
-import com.cobelpvp.pathsearch.jobs.PathSearchJob;
-import com.cobelpvp.utils.PlayerDataSaveJob;
-import net.minecraft.server.NBTCompressedStreamTools;
-import net.minecraft.server.NBTTagCompound;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.spigotmc.SpigotConfig;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.Executor;
 import java.io.File;
-import java.util.concurrent.Future;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
-import java.util.concurrent.*;
+import java.util.Iterator;
+import java.util.Queue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.cobelpvp.PlayerDataSaveJob;
+import com.cobelpvp.command.WorldStatsCommand;
+import com.cobelpvp.pathsearch.jobs.PathSearchJob;
+import com.cobelpvp.pathsearch.PathSearchThrottlerThread;
+import net.minecraft.server.NBTCompressedStreamTools;
+import net.minecraft.server.NBTTagCompound;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.spigotmc.SpigotConfig;
 
 public class ThreadingManager {
 
     private final Logger log = LogManager.getLogger();
     private static ThreadingManager instance;
     private PathSearchThrottlerThread pathSearchThrottler;
-    private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(1, new NamePriorityThreadFactory(Thread.NORM_PRIORITY + 2, "mSpigot_TimerService"));
+    private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(1, new NamePriorityThreadFactory(Thread.NORM_PRIORITY + 2, "Spigot_TimerService"));
     private TickCounter tickCounter = new TickCounter();
     private NamePriorityThreadFactory cachedThreadPoolFactory;
     private ExecutorService cachedThreadPool;
@@ -46,7 +52,7 @@ public class ThreadingManager {
         this.pathSearchThrottler = new PathSearchThrottlerThread(2);
         this.timerService.scheduleAtFixedRate(this.tickCounter, 1, 1000, TimeUnit.MILLISECONDS);
         this.tickTimerObject = new TickTimer();
-        this.cachedThreadPoolFactory = new NamePriorityThreadFactory(Thread.currentThread().getPriority() - 1, "mSpigot_Async-Executor").setLogThreads(true).setDaemon(true);
+        this.cachedThreadPoolFactory = new NamePriorityThreadFactory(Thread.currentThread().getPriority() - 1, "Spigot_Async-Executor").setLogThreads(true).setDaemon(true);
         this.cachedThreadPool = Executors.newCachedThreadPool(this.cachedThreadPoolFactory);
         this.nbtFiles = this.createTaskQueueWorker();
         this.headConversions = this.createTaskQueueWorker();
@@ -59,7 +65,7 @@ public class ThreadingManager {
         while((this.nbtFiles.isActive()) && !this.cachedThreadPool.isTerminated()) {
             try {
                 this.cachedThreadPool.awaitTermination(10, TimeUnit.SECONDS);
-                log.warn("mSpigot is still waiting for NBT files to be written to disk. " + this.nbtFiles.getTaskCount() + " to go...");
+                log.warn("Spigot is still waiting for NBT files to be written to disk. " + this.nbtFiles.getTaskCount() + " to go...");
             } catch(InterruptedException e) {}
         }
         if(!this.cachedThreadPool.isTerminated()) {
@@ -70,7 +76,7 @@ public class ThreadingManager {
                 e.printStackTrace();
             }
             if(SpigotConfig.logRemainingAsyncThreadsDuringShutdown && this.cachedThreadPoolFactory.getActiveCount() > 0) {
-                log.warn("mSpigot is still waiting for " + this.cachedThreadPoolFactory.getActiveCount() + " async threads to finish.");
+                log.warn("Spigot is still waiting for " + this.cachedThreadPoolFactory.getActiveCount() + " async threads to finish.");
                 Queue<WeakReference<Thread>> queue = this.cachedThreadPoolFactory.getThreadList();
                 Iterator<WeakReference<Thread>> iter = null;
                 if(queue != null) {
@@ -213,7 +219,7 @@ public class ThreadingManager {
         }
     }
 
-    public static void addWorldStatsTask(WorldStatsTask task) {
+    public static void addWorldStatsTask(WorldStatsCommand.WorldStatsTask task) {
         instance.timerService.schedule(task, 2, TimeUnit.SECONDS);
     }
 

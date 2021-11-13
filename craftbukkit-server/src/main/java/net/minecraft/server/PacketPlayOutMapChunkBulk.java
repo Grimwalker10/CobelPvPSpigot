@@ -1,12 +1,10 @@
 package net.minecraft.server;
 
-import com.cobelpvp.utils.ReusableByteArray;
+import com.cobelpvp.util.ReusableByteArray;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 
 public class PacketPlayOutMapChunkBulk extends Packet {
 

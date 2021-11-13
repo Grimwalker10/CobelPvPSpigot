@@ -1,4 +1,4 @@
-package com.cobelpvp.commands;
+package com.cobelpvp.command;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -45,7 +45,7 @@ public class SetViewDistanceCommand extends Command {
             }
             return true;
         } else {
-            sender.sendMessage("[mSpigot] Command - setviewdistance: " + this.description + "\nUsage: " + this.usageMessage);
+            sender.sendMessage("[Spigot] Command - setviewdistance: " + this.description + "\nUsage: " + this.usageMessage);
         }
         return false;
     }

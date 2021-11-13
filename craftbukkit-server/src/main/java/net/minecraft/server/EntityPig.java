@@ -26,7 +26,7 @@ public class EntityPig extends EntityAnimal {
     public void h() {
         super.h();
 
-        // CobelPvP - Add mobsEnabled check.
+        // MineHQ - Add mobsEnabled check.
         if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
             this.die();
         }

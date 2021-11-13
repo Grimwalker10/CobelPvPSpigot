@@ -5,7 +5,9 @@ import java.util.concurrent.Callable;
 // CraftBukkit start
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 // CraftBukkit end
 
@@ -127,7 +129,7 @@ public class PlayerInventory implements IInventory {
             itemstack = this.armor[k];
             if (itemstack != null && (item == null || itemstack.getItem() == item) && (i <= -1 || itemstack.getData() == i)) {
                 j += itemstack.count;
-                this.armor[k] = null;
+                this.player.setEquipment(k, null);
             }
         }
 
@@ -216,7 +218,7 @@ public class PlayerInventory implements IInventory {
             return false;
         } else {
             if (--this.items[i].count <= 0) {
-                this.items[i] = null;
+                this.setItem(i, null);
             }
 
             return true;
@@ -237,7 +239,7 @@ public class PlayerInventory implements IInventory {
                 if (itemstack.i()) {
                     i = this.getFirstEmptySlotIndex();
                     if (i >= 0) {
-                        this.items[i] = ItemStack.b(itemstack);
+                        this.setItem(i, ItemStack.b(itemstack));;
                         this.items[i].c = 5;
                         itemstack.count = 0;
                         return true;
@@ -277,7 +279,8 @@ public class PlayerInventory implements IInventory {
     public ItemStack splitStack(int i, int j) {
         ItemStack[] aitemstack = this.items;
 
-        if (i >= this.items.length) {
+        boolean settingArmor = i >= this.items.length;
+        if (settingArmor) {
             aitemstack = this.armor;
             i -= this.items.length;
         }
@@ -287,12 +290,20 @@ public class PlayerInventory implements IInventory {
 
             if (aitemstack[i].count <= j) {
                 itemstack = aitemstack[i];
-                aitemstack[i] = null;
+                if (settingArmor) {
+                    this.player.setEquipment(i, null);
+                } else {
+                    aitemstack[i] = null;
+                }
                 return itemstack;
             } else {
                 itemstack = aitemstack[i].a(j);
                 if (aitemstack[i].count == 0) {
-                    aitemstack[i] = null;
+                    if (settingArmor) {
+                        this.player.setEquipment(i, null);
+                    } else {
+                        aitemstack[i] = null;
+                    }
                 }
 
                 return itemstack;
@@ -305,7 +316,8 @@ public class PlayerInventory implements IInventory {
     public ItemStack splitWithoutUpdate(int i) {
         ItemStack[] aitemstack = this.items;
 
-        if (i >= this.items.length) {
+        boolean settingArmor = i >= this.items.length;
+        if (settingArmor) {
             aitemstack = this.armor;
             i -= this.items.length;
         }
@@ -313,7 +325,11 @@ public class PlayerInventory implements IInventory {
         if (aitemstack[i] != null) {
             ItemStack itemstack = aitemstack[i];
 
-            aitemstack[i] = null;
+            if (settingArmor) {
+                this.player.setEquipment(i, null);
+            } else {
+                aitemstack[i] = null;
+            }
             return itemstack;
         } else {
             return null;
@@ -325,10 +341,12 @@ public class PlayerInventory implements IInventory {
 
         if (i >= aitemstack.length) {
             i -= aitemstack.length;
-            aitemstack = this.armor;
+            this.player.setEquipment(i, itemstack);
+        } else {
+            aitemstack[i] = itemstack;
         }
-
-        aitemstack[i] = itemstack;
+        
+        
     }
 
     public float a(Block block) {
@@ -380,8 +398,9 @@ public class PlayerInventory implements IInventory {
                     this.items[j] = itemstack;
                 }
 
-                if (j >= 100 && j < this.armor.length + 100) {
-                    this.armor[j - 100] = itemstack;
+                j -= 100;
+                if (j >= 0 && j < this.armor.length) {
+                    this.player.setEquipment(j, itemstack);
                 }
             }
         }
@@ -452,7 +471,7 @@ public class PlayerInventory implements IInventory {
             if (this.armor[i] != null && this.armor[i].getItem() instanceof ItemArmor) {
                 this.armor[i].damage((int) f, this.player);
                 if (this.armor[i].count == 0) {
-                    this.armor[i] = null;
+                    this.player.setEquipment(i, null);
                 }
             }
         }
@@ -464,14 +483,14 @@ public class PlayerInventory implements IInventory {
         for (i = 0; i < this.items.length; ++i) {
             if (this.items[i] != null) {
                 this.player.a(this.items[i], true, false);
-                this.items[i] = null;
+                this.setItem(i, null);
             }
         }
 
         for (i = 0; i < this.armor.length; ++i) {
             if (this.armor[i] != null) {
                 this.player.a(this.armor[i], true, false);
-                this.armor[i] = null;
+                this.player.setEquipment(i, null);
             }
         }
     }
@@ -486,7 +505,7 @@ public class PlayerInventory implements IInventory {
 
     public ItemStack getCarried() {
         // CraftBukkit start
-        if (this.g != null && this.g.count == 0) {
+        if (this.g != null && this.g.count <= 0) { // EMC
             this.setCarried(null);
         }
         // CraftBukkit end
@@ -527,11 +546,11 @@ public class PlayerInventory implements IInventory {
         int i;
 
         for (i = 0; i < this.items.length; ++i) {
-            this.items[i] = ItemStack.b(playerinventory.items[i]);
+            this.setItem(i, ItemStack.b(playerinventory.items[i]));
         }
 
         for (i = 0; i < this.armor.length; ++i) {
-            this.armor[i] = ItemStack.b(playerinventory.armor[i]);
+            this.player.setEquipment(i, ItemStack.b(playerinventory.armor[i]));
         }
 
         this.itemInHandIndex = playerinventory.itemInHandIndex;

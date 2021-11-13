@@ -1,4 +1,4 @@
-package com.cobelpvp;
+package com.cobelpvp.util;
 
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadFactory;
 public class NamePriorityThreadFactory implements ThreadFactory {
     private int priority;
     private int idCounter = 0;
-    private String name = "mSpigotThread";
+    private String name = "SpigotThread";
     private boolean isDaemon = false;
     private Queue<WeakReference<Thread>> createdThreadList;
 

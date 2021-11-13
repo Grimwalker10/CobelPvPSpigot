@@ -28,7 +28,6 @@ import org.spigotmc.SpigotConfig;
 
 public class WorldServer extends World {
 
-    private static final Logger a = LogManager.getLogger();
     private final MinecraftServer server;
     public EntityTracker tracker; // CraftBukkit - private final -> public
     private final PlayerChunkMap manager;
@@ -642,7 +641,14 @@ public class WorldServer extends World {
         }
     }
 
+    private static int tookTooLongs = 0;
+
     public List a(Chunk chunk, boolean flag) {
+
+        if (Bukkit.getPluginManager().getPlugin("UHC") != null) {
+            return null;
+        }
+
         ArrayList arraylist = null;
         ChunkCoordIntPair chunkcoordintpair = chunk.l();
         int i = (chunkcoordintpair.x << 4) - 2;
@@ -653,16 +659,22 @@ public class WorldServer extends World {
         for (int i1 = 0; i1 < 2; ++i1) {
             Iterator iterator;
 
+            int size;
+            String ita;
             if (i1 == 0) {
                 iterator = this.N.iterator();
+                size = this.N.size();
+                ita = "N";
             } else {
                 iterator = this.V.iterator();
-                if (!this.V.isEmpty()) {
-                    a.debug("toBeTicked = " + this.V.size());
-                }
+                size = this.V.size();
+                ita = "V";
             }
 
-            while (iterator.hasNext()) {
+            long started = System.currentTimeMillis();
+
+
+            while (iterator.hasNext() && (System.currentTimeMillis() - started < 500) && tookTooLongs < 30) {
                 NextTickListEntry nextticklistentry = (NextTickListEntry) iterator.next();
 
                 if (nextticklistentry.a >= i && nextticklistentry.a < j && nextticklistentry.c >= k && nextticklistentry.c < l) {
@@ -676,6 +688,13 @@ public class WorldServer extends World {
 
                     arraylist.add(nextticklistentry);
                 }
+            }
+
+            if (1000 <= System.currentTimeMillis() - started) {
+                Bukkit.getLogger().info("Saving took too long :(");
+                Bukkit.getLogger().info("Iterator size: " + size + ". Iterator: " + ita);
+                Bukkit.getLogger().info("Removing from iterator? " + flag);
+                tookTooLongs++;
             }
         }
 
@@ -793,7 +812,7 @@ public class WorldServer extends World {
                 i = chunkposition.x;
                 k = chunkposition.z;
             } else {
-                a.warn("Unable to find spawn biome");
+                LogManager.getLogger().warn("Unable to find spawn biome");
             }
 
             int l = 0;
@@ -835,7 +854,7 @@ public class WorldServer extends World {
 
     // Poweruser start
     public void saveOnlyLevel(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict {
-        if (SpigotConfig.disableSaving) return; // CobelPvP
+        if (SpigotConfig.disableSaving) return; // MineHQ
         if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.a("Saving level");
@@ -846,7 +865,7 @@ public class WorldServer extends World {
     }
 
     public boolean saveOnlyChunks(boolean flag, IProgressUpdate iprogressupdate) {
-        if (SpigotConfig.disableSaving) return true; // CobelPvP
+        if (SpigotConfig.disableSaving) return true; // MineHQ
         if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.c("Saving chunks");
@@ -885,14 +904,14 @@ public class WorldServer extends World {
     }
 
     public void flushSave() {
-        if (SpigotConfig.disableSaving) return; // CobelPvP
+        if (SpigotConfig.disableSaving) return; // MineHQ
         if (this.chunkProvider.canSave()) {
             this.chunkProvider.c();
         }
     }
 
     protected void a() throws ExceptionWorldConflict { // CraftBukkit - added throws
-        if (SpigotConfig.disableSaving) return; // CobelPvP
+        if (SpigotConfig.disableSaving) return; // MineHQ
         this.G();
         this.dataManager.saveWorldData(this.worldData, this.server.getPlayerList().t());
         // CraftBukkit start - save worldMaps once, rather than once per shared world

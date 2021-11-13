@@ -42,11 +42,11 @@ public class WatchableObject {
         return watchableobject.d = flag;
     }
 
-    // CobelPvP start
+    // DiegoVC start
     public WatchableObject clone() {
         WatchableObject watchableObject = new WatchableObject(this.a, this.b, this.c);
         watchableObject.a(this.d);
         return watchableObject;
     }
-    // CobelPvP end
+    // DiegoVC end
 }

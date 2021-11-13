@@ -1,7 +1,7 @@
-package com.cobelpvp.utils;
+package com.cobelpvp.util;
 
 import java.util.Map;
-import org.bukkit.potion.Potion;
+
 import org.bukkit.potion.PotionType;
 
 public class PotionMatcher

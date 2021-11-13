@@ -1,13 +1,16 @@
 package org.bukkit.craftbukkit;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import joptsimple.OptionParser;
@@ -18,7 +21,7 @@ public class Main {
     public static boolean useJline = true;
     public static boolean useConsole = true;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         // Todo: Installation script
         OptionParser parser = new OptionParser() {
             {
@@ -27,7 +30,7 @@ public class Main {
                 acceptsAll(asList("c", "config"), "Properties file to use")
                         .withRequiredArg()
                         .ofType(File.class)
-                        .defaultsTo(new File("config/server", "server.properties")) // CobelPvP - Dedicated config directory
+                        .defaultsTo(new File("config/server", "server.properties")) // MineHQ - Dedicated config directory
                         .describedAs("Properties file");
 
                 acceptsAll(asList("P", "plugins"), "Plugin directory to use")
@@ -100,13 +103,13 @@ public class Main {
                 acceptsAll(asList("b", "bukkit-settings"), "File for bukkit settings")
                         .withRequiredArg()
                         .ofType(File.class)
-                        .defaultsTo(new File("config/server", "bukkit.yml")) // CobelPvP - Dedicated config directory
+                        .defaultsTo(new File("config/server", "bukkit.yml")) // MineHQ - Dedicated config directory
                         .describedAs("Yml file");
 
                 acceptsAll(asList("C", "commands-settings"), "File for command settings")
                         .withRequiredArg()
                         .ofType(File.class)
-                        .defaultsTo(new File("config/server", "commands.yml")) // CobelPvP - Dedicated config directory
+                        .defaultsTo(new File("config/server", "commands.yml")) // MineHQ - Dedicated config directory
                         .describedAs("Yml file");
 
                 acceptsAll(asList("nojline"), "Disables jline and emulates the vanilla console");
@@ -135,11 +138,10 @@ public class Main {
             }
         } else if (options.has("v")) {
             System.out.println(CraftServer.class.getPackage().getImplementationVersion());
-        } else {
-            // Spigot Start
-            System.err.println("This is a custom Spigot for CobelPvP, the versions are 1.7.x and 1.8.x.\n"
-                    + "Dont run this spigot if you don't know what it is, this is only compatible with CobelPvP plugins\n");
-            // Spigot End
+        }
+
+            // Spigot end
+
             try {
                 // This trick bypasses Maven Shade's clever rewriting of our getProperty call when using String literals
                 String jline_UnsupportedTerminal = new String(new char[] {'j','l','i','n','e','.','U','n','s','u','p','p','o','r','t','e','d','T','e','r','m','i','n','a','l'});
@@ -183,7 +185,6 @@ public class Main {
                 t.printStackTrace();
                 System.exit(1); // SportBukkit
             }
-        }
     }
 
     private static List<String> asList(String... params) {

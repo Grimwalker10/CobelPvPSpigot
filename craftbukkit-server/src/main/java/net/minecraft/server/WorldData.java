@@ -10,10 +10,10 @@ public class WorldData {
     private int spawnX;
     private int spawnY;
     private int spawnZ;
-    // Poweruser start
+    // CobelPvP start
     private float spawnYaw;
     private float spawnPitch;
-    // Poweruser end
+    // CobelPvP end
     private long time;
     private long dayTime;
     private long lastPlayed;
@@ -75,10 +75,10 @@ public class WorldData {
         this.spawnX = nbttagcompound.getInt("SpawnX");
         this.spawnY = nbttagcompound.getInt("SpawnY");
         this.spawnZ = nbttagcompound.getInt("SpawnZ");
-        // Poweruser start
+        // CobelPvP start
         this.spawnYaw = nbttagcompound.getFloat("SpawnYaw");
         this.spawnPitch = nbttagcompound.getFloat("SpawnPitch");
-        // Poweruser end
+        // CobelPvP end
         this.time = nbttagcompound.getLong("Time");
         if (nbttagcompound.hasKeyOfType("DayTime", 99)) {
             this.dayTime = nbttagcompound.getLong("DayTime");
@@ -144,10 +144,10 @@ public class WorldData {
         this.spawnX = worlddata.spawnX;
         this.spawnY = worlddata.spawnY;
         this.spawnZ = worlddata.spawnZ;
-        // Poweruser start
+        // CobelPvP start
         this.spawnYaw = worlddata.spawnYaw;
         this.spawnPitch = worlddata.spawnPitch;
-        // Poweruser end
+        // CobelPvP end
         this.time = worlddata.time;
         this.dayTime = worlddata.dayTime;
         this.lastPlayed = worlddata.lastPlayed;

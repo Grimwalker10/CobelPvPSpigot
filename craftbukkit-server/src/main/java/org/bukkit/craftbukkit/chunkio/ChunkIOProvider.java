@@ -36,7 +36,7 @@ class ChunkIOProvider implements AsynchronousExecutor.CallBackProvider<QueuedChu
 
         queuedChunk.loader.loadEntities(chunk, queuedChunk.compound.getCompound("Level"), queuedChunk.world);
         chunk.lastSaved = queuedChunk.provider.world.getTime();
-        queuedChunk.provider.chunks.put(queuedChunk.x, queuedChunk.z, chunk); // CobelPvP
+        queuedChunk.provider.chunks.put(LongHash.toLong(queuedChunk.x, queuedChunk.z), chunk); // CobelPvP
         chunk.addEntities();
 
         if (queuedChunk.provider.chunkProvider != null) {

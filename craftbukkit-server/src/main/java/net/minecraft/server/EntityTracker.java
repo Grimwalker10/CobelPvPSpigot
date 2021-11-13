@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import com.cobelpvp.utils.IndexedLinkedHashSet;
+import com.cobelpvp.util.IndexedLinkedHashSet;
 
 public class EntityTracker {
 
@@ -39,10 +39,8 @@ public class EntityTracker {
             /*
             EntityPlayer entityplayer = (EntityPlayer) entity;
             Iterator iterator = this.c.iterator();
-
             while (iterator.hasNext()) {
                 EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
-
                 if (entitytrackerentry.tracker != entityplayer) {
                     entitytrackerentry.updatePlayer(entityplayer);
                 }
@@ -209,7 +207,6 @@ public class EntityTracker {
             for (Entity entity : slice) {
                 if (entity != entityplayer) {
                     EntityTrackerEntry entry = (EntityTrackerEntry) trackedEntities.get(entity.getId());
-
                     if (entry != null) {
                         entry.updatePlayer(entityplayer);
                     }

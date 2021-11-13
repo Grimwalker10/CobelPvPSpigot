@@ -1,4 +1,4 @@
-package com.cobelpvp.utils;
+package com.cobelpvp.util;
 
 import java.util.ArrayList;
 import java.util.Collection;

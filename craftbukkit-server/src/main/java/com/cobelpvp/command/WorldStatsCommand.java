@@ -1,4 +1,4 @@
-package com.cobelpvp.commands;
+package com.cobelpvp.command;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -7,7 +7,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.cobelpvp.ThreadingManager;
+import com.cobelpvp.util.ThreadingManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldServer;
 
@@ -79,7 +79,7 @@ public class WorldStatsCommand extends Command {
             pm.useTimings(this.wasTimingAlreadyOn);
 
             StringBuilder sb = new StringBuilder();
-            sb.append("[mSpigot]");
+            sb.append("[Spigot]");
             sb.append(ChatColor.GOLD);
             sb.append(" WorldStats:");
             sb.append("\n");

@@ -5,8 +5,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.bukkit.util.BlockVector;
-
 import com.cobelpvp.pathsearch.cache.SearchCacheEntry;
 import com.cobelpvp.pathsearch.cache.SearchCacheEntryEntity;
 import com.cobelpvp.pathsearch.cache.SearchCacheEntryPosition;
@@ -14,6 +12,8 @@ import com.cobelpvp.pathsearch.jobs.PathSearchJob;
 import com.cobelpvp.pathsearch.jobs.PathSearchJobNavigationEntity;
 import com.cobelpvp.pathsearch.jobs.PathSearchJobNavigationPosition;
 import com.cobelpvp.pathsearch.jobs.PathSearchQueuingManager;
+import org.bukkit.util.BlockVector;
+
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.MathHelper;

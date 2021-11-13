@@ -29,7 +29,7 @@ public class CraftLightningStrike extends CraftEntity implements LightningStrike
     public EntityType getType() {
         return EntityType.LIGHTNING;
     }
-
+    
     // Spigot start
     private final LightningStrike.Spigot spigot = new LightningStrike.Spigot()
     {

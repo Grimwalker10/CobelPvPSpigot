@@ -1,12 +1,12 @@
-package com.cobelpvp.utils;
-
-import net.minecraft.server.NBTCompressedStreamTools;
-import net.minecraft.server.NBTTagCompound;
+package com.cobelpvp;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
+import net.minecraft.server.NBTCompressedStreamTools;
+import net.minecraft.server.NBTTagCompound;
 
 public class PlayerDataSaveJob implements Runnable {
 

@@ -1,4 +1,4 @@
-package com.cobelpvp.utils;
+package com.cobelpvp.util;
 
 public class ReusableByteArray {
 

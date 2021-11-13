@@ -1,5 +1,7 @@
 package org.bukkit.craftbukkit.util;
 
+import org.bukkit.Bukkit;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -44,6 +46,9 @@ public class HashTreeSet<V> implements Set<V> {
 
             @Override
             public V next() {
+                if (!Bukkit.isPrimaryThread()) {
+                    throw new IllegalStateException("Async access of HTS iterator");
+                }
                 return last = it.next();
             }
 
@@ -71,12 +76,19 @@ public class HashTreeSet<V> implements Set<V> {
 
     @Override
     public boolean add(V e) {
+        if (!Bukkit.isPrimaryThread()) {
+            throw new IllegalStateException("Async access of HTS add");
+        }
+
         hash.add(e);
         return tree.add(e);
     }
 
     @Override
     public boolean remove(Object o) {
+        if (!Bukkit.isPrimaryThread()) {
+            throw new IllegalStateException("Async access of HTS remove");
+        }
         hash.remove(o);
         return tree.remove(o);
     }

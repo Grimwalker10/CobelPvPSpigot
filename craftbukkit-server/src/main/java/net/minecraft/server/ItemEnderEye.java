@@ -120,12 +120,15 @@ public class ItemEnderEye extends Item {
                     EntityEnderSignal entityendersignal = new EntityEnderSignal(world, entityhuman.locX, entityhuman.locY + 1.62D - (double) entityhuman.height, entityhuman.locZ);
 
                     entityendersignal.a((double) chunkposition.x, chunkposition.y, (double) chunkposition.z);
-                    world.addEntity(entityendersignal);
-                    world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
-                    world.a((EntityHuman) null, 1002, (int) entityhuman.locX, (int) entityhuman.locY, (int) entityhuman.locZ, 0);
-                    if (!entityhuman.abilities.canInstantlyBuild) {
-                        --itemstack.count;
+                    // CobelPvP start
+                    if (world.addEntity(entityendersignal)) {
+                        world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
+                        world.a((EntityHuman) null, 1002, (int) entityhuman.locX, (int) entityhuman.locY, (int) entityhuman.locZ, 0);
+                        if (!entityhuman.abilities.canInstantlyBuild) {
+                            --itemstack.count;
+                        }
                     }
+                    // CobelPvP end
                 }
             }
 

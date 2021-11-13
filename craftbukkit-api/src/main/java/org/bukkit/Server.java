@@ -13,10 +13,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.bukkit.Warning.WarningState;
-import org.bukkit.command.CommandException;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.command.PluginCommand;
+import org.bukkit.command.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
@@ -54,6 +51,8 @@ public interface Server extends PluginMessageRecipient {
      * For use in {@link #broadcast(java.lang.String, java.lang.String)}.
      */
     public static final String BROADCAST_CHANNEL_ADMINISTRATIVE = "bukkit.broadcast.admin";
+
+    SimpleCommandMap getCommandMap();
 
     /**
      * Used for all announcement messages, such as informing users that a
@@ -909,7 +908,7 @@ public interface Server extends PluginMessageRecipient {
      */
     public int getIdleTimeout();
 
-    // CobelPvP start
+    // MineHQ start
     /**
      * Gets a player object by the given disguised name.
      * <p>
@@ -929,7 +928,7 @@ public interface Server extends PluginMessageRecipient {
      * @return a player if one was found, null otherwise
      */
     public Player getPlayerExactByDisguise(String name);
-    // CobelPvP end
+    // MineHQ end
 
     /**
      * @see UnsafeValues

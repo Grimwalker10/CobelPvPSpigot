@@ -2,8 +2,8 @@ package com.cobelpvp.pathsearch.jobs;
 
 import java.util.concurrent.Callable;
 
-import com.cobelpvp.WeakChunkCache;
 import com.cobelpvp.pathsearch.cache.SearchCacheEntry;
+import com.cobelpvp.util.WeakChunkCache;
 import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.MathHelper;
 import net.minecraft.server.PathEntity;

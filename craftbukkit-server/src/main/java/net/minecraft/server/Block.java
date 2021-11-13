@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -9,7 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.event.block.BlockDropItemsEvent;
 
-import com.cobelpvp.utils.BlockAccessCache; // Poweruser
+import com.cobelpvp.util.BlockAccessCache; // Poweruser
 
 public class Block {
 
@@ -18,6 +17,7 @@ public class Block {
     public static final RegistryMaterials REGISTRY = REGISTRY_BLOCKS;
     private static final BlockAccessCache blockCache = new BlockAccessCache();
     // Poweruser end
+
     private CreativeModeTab creativeTab;
     protected String d;
     public static final StepSound e = new StepSound("stone", 1.0F, 1.0F);
@@ -70,7 +70,7 @@ public class Block {
         if (0 <= i && i < 4096) {
             return blocksArray[i];
         }
-
+        
         return null;
         // CobelPvP end
     }

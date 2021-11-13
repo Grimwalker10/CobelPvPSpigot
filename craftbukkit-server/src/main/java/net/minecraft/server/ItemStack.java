@@ -18,7 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.world.StructureGrowEvent;
 // CraftBukkit end
 
-import com.cobelpvp.ThreadingManager; // Poweruser
+import com.cobelpvp.util.ThreadingManager; // Poweruser
 
 public final class ItemStack {
 
@@ -273,7 +273,7 @@ public final class ItemStack {
         }
     }
     // Spigot end
-
+    
     public int getMaxStackSize() {
         return this.getItem().getMaxStackSize();
     }

@@ -1,48 +1,24 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.MapMaker;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.server.*;
-
 import net.minecraft.util.com.mojang.authlib.GameProfile;
-import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.NotImplementedException;
-import org.bukkit.*;
+import org.apache.commons.lang.Validate;
 import org.bukkit.Achievement;
-import org.bukkit.BanList;
-import org.bukkit.Statistic;
+import org.bukkit.*;
 import org.bukkit.Material;
+import org.bukkit.Statistic;
 import org.bukkit.Statistic.Type;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ManuallyAbandonedConversationCanceller;
+import org.bukkit.craftbukkit.*;
 import org.bukkit.craftbukkit.block.CraftSign;
 import org.bukkit.craftbukkit.conversations.ConversationTracker;
-import org.bukkit.craftbukkit.CraftEffect;
-import org.bukkit.craftbukkit.CraftOfflinePlayer;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.CraftSound;
-import org.bukkit.craftbukkit.CraftStatistic;
-import org.bukkit.event.player.PlayerVelocityEvent;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.map.RenderData;
 import org.bukkit.craftbukkit.scoreboard.CraftScoreboard;
@@ -60,6 +36,14 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 import org.spigotmc.SpigotConfig;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 @DelegateDeserialization(CraftOfflinePlayer.class)
 public class CraftPlayer extends CraftHumanEntity implements Player {
     private long firstPlayed = 0;
@@ -68,6 +52,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private final ConversationTracker conversationTracker = new ConversationTracker();
     private final Set<String> channels = new HashSet<String>();
     private final Set<UUID> hiddenPlayers = new HashSet<UUID>();
+    private final Set<UUID> hiddenPlayersFromTab = new HashSet<UUID>();
     private int hash = 0;
     private double health = 20;
     private boolean scaledHealth = false;
@@ -76,7 +61,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      private String disguisedName;
      private String originalPlayerListName;
      public GameProfile disguisedProfile;
-     // CobelPvP end
+     // MineHQ end
 
     public CraftPlayer(CraftServer server, EntityPlayer entity) {
         super(server, entity);
@@ -84,16 +69,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         firstPlayed = System.currentTimeMillis();
     }
 
-    // Kohi start
     @Override
     public void setVelocity(Vector vel) {
-        // To be consistent with old behavior, set the velocity before firing the event
+      // To be consistent with old behavior, set the velocity before firing the event
         this.setVelocityDirect(vel);
 
         PlayerVelocityEvent event = new PlayerVelocityEvent(this, vel.clone());
         this.getServer().getPluginManager().callEvent(event);
 
-        if(!event.isCancelled()) {
+        if (!event.isCancelled()) {
             // Set the velocity again in case it was changed by event handlers
             this.setVelocityDirect(event.getVelocity());
 
@@ -111,11 +95,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         entity.motX = vel.getX();
         entity.motY = vel.getY();
         entity.motZ = vel.getZ();
-        if (entity.motY > 0) {
-            entity.fallDistance = 0.0f;
-        }
     }
-    // Kohi end
 
     public GameProfile getProfile() {
         return getHandle().getProfile();
@@ -197,7 +177,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public String getDisplayName() {
-        return disguisedName != null ? disguisedName : getHandle().displayName; // CobelPvP - Disguises
+        return disguisedName != null ? disguisedName : getHandle().displayName; // MineHQ - Disguises
     }
 
     @Override
@@ -205,7 +185,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         getHandle().displayName = name == null ? getName() : name;
     }
 
-    // CobelPvP start - Disguises
+    // MineHQ start - Disguises
     @Override
     public String getDisguisedName() {
         return disguisedName != null ? disguisedName : getName();
@@ -217,7 +197,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public void disguise(String name, String texture) {
+    public void disguise(String name, String[] texture) {
         Validate.isTrue(!isDisguised(), "Player is already disguised");
         Validate.isTrue(!MinecraftServer.getServer().getPlayerList().disguisePlayerMap.containsKey(name), "Disguise name is already in use");
 
@@ -227,7 +207,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         disguisedName = name;
         disguisedProfile = new GameProfile(getUniqueId(), disguisedName);
         if (texture != null) {
-            // TODO: disguisedProfile.getProperties().put("texture", new Property("textures", texture, textureSignature));
+            //disguisedProfile.getProperties().put("texture", new Property("textures", texture[0], texture[1]));
         }
 
         originalPlayerListName = getPlayerListName();
@@ -314,7 +294,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             }
         }
     }
-    // CobelPvP end
+    // MineHQ end
 
     @Override
     public String getPlayerListName() {
@@ -346,7 +326,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         getHandle().listName = name;
 
-        if (!SpigotConfig.playerListPackets) return; // CobelPvP
+        if (!SpigotConfig.playerListPackets) return; // MineHQ
 
         // Change the name on the client side
         // Spigot start - protocol patch
@@ -360,7 +340,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             EntityPlayer entityplayer = (EntityPlayer) server.getHandle().players.get(i);
             if (entityplayer.playerConnection == null) continue;
 
-            if (entityplayer.getBukkitEntity().canSee(this)) {
+            if (entityplayer.getBukkitEntity().canSeeFromTab(this)) {
                 if (entityplayer.playerConnection.networkManager.getVersion() < 28)
                 {
                     entityplayer.playerConnection.sendPacket( oldpacket );
@@ -531,6 +511,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         packet.block = CraftMagicNumbers.getBlock(material);
         packet.data = data;
+        packet.fake = true;
         getHandle().playerConnection.sendPacket(packet);
     }
 
@@ -621,14 +602,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             return false;
         }
 
-        // CobelPvP start - don't allow excessive teleports
+        // MineHQ start - don't allow excessive teleports
         int locationChunkX = location.getBlockX() >> 4;
         int locationChunkZ = location.getBlockZ() >> 4;
 
         if (46340 <= Math.abs(locationChunkX) || 46340 <= Math.abs(locationChunkZ)) {
             throw new IllegalArgumentException("Invalid teleportation destination for " + this.getName() + "! Offending location: " + location.toString());
         }
-        // CobelPvP end
+        // MineHQ end
 
         // From = Players current Location
         Location from = this.getLocation();
@@ -1075,12 +1056,24 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
     }
 
-    public void hidePlayer(Player player) {
+    public void hidePlayer(Player player, boolean hideFromList) {
         Validate.notNull(player, "hidden player cannot be null");
         if (getHandle().playerConnection == null) return;
         if (equals(player)) return;
-        if (hiddenPlayers.contains(player.getUniqueId())) return;
+
+        if (hideFromList && !hiddenPlayersFromTab.contains(player.getUniqueId())) {
+            //remove the hidden player from this player user list
+            hiddenPlayersFromTab.add(player.getUniqueId());
+            getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.removePlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch
+        }
+
+        if (!hideFromList && hiddenPlayersFromTab.contains(player.getUniqueId())) {
+            getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ()));
+            hiddenPlayersFromTab.remove(player.getUniqueId());
+            return;
+        }
         hiddenPlayers.add(player.getUniqueId());
+
 
         //remove this player from the hidden player's EntityTrackerEntry
         EntityTracker tracker = ((WorldServer) entity.world).tracker;
@@ -1089,15 +1082,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (entry != null) {
             entry.clear(getHandle());
         }
-
-        //remove the hidden player from this player user list
-        getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.removePlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch
     }
+
+    public void hidePlayer(Player player) {
+        this.hidePlayer(player, false);
+    }
+
 
     public void showPlayer(Player player) {
         Validate.notNull(player, "shown player cannot be null");
         if (getHandle().playerConnection == null) return;
         if (equals(player)) return;
+        if (hiddenPlayersFromTab.contains(player.getUniqueId())) {
+            hiddenPlayersFromTab.remove(player.getUniqueId());
+        }
         if (!hiddenPlayers.contains(player.getUniqueId())) return;
         hiddenPlayers.remove(player.getUniqueId());
 
@@ -1108,16 +1106,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             entry.updatePlayer(getHandle());
         }
 
-        // getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch // CobelPvP - unneeded
+         getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch // MineHQ - unneeded
     }
 
     public void removeDisconnectingPlayer(Player player) {
+        hiddenPlayersFromTab.remove(player.getUniqueId());
         hiddenPlayers.remove(player.getUniqueId());
     }
+
 
     public boolean canSee(Player player) {
         return !hiddenPlayers.contains(player.getUniqueId());
     }
+
+    public boolean canSeeFromTab(Player player) { return !hiddenPlayersFromTab.contains(player.getUniqueId()); }
 
     public Map<String, Object> serialize() {
         Map<String, Object> result = new LinkedHashMap<String, Object>();
@@ -1457,15 +1459,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void setRealHealth(double health) {
-        double previous = this.health; // CobelPvP
+        double previous = this.health; // MineHQ
 
         this.health = health;
 
-        // CobelPvP start
+        // MineHQ start
         if (previous != health) {
             Bukkit.getPluginManager().callEvent(new PlayerHealthChangeEvent(this, previous, health));
         }
-        // CobelPvP end
+        // MineHQ end
     }
 
     public void updateScaledHealth() {
@@ -1597,25 +1599,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             return java.util.Collections.unmodifiableSet( ret );
         }
 
-        /**
-         * Sends the component to the player
-         *
-         * @param component the components to send
-         */
         @Override
-        public void sendMessage(net.md_5.bungee.api.chat.BaseComponent component)
+        public void sendMessage( BaseComponent component )
         {
             sendMessage( new BaseComponent[] { component } );
         }
 
-        /**
-         * Sends an array of components as a single message to the
-         * player
-         *
-         * @param components the components to send
-         */
         @Override
-        public void sendMessage(net.md_5.bungee.api.chat.BaseComponent ...components)
+        public void sendMessage( BaseComponent... components )
         {
             if ( getHandle().playerConnection == null ) return;
 

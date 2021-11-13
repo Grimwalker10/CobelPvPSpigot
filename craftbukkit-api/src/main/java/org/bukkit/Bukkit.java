@@ -11,10 +11,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.bukkit.Warning.WarningState;
-import org.bukkit.command.CommandException;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.command.PluginCommand;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.help.HelpMap;
@@ -43,6 +40,10 @@ public final class Bukkit {
      * Static class cannot be initialized.
      */
     private Bukkit() {}
+
+    public static SimpleCommandMap getCommandMap() {
+        return Bukkit.server.getCommandMap();
+    }
 
     /**
      * Gets the current {@link Server} singleton
@@ -745,7 +746,7 @@ public final class Bukkit {
         return server.getIdleTimeout();
     }
 
-    // CobelPvP start
+    // MineHQ start
     /**
      * @see Server#getPlayerByDisguise(String name)
      */
@@ -759,7 +760,7 @@ public final class Bukkit {
     public static Player getPlayerExactByDisguise(String name) {
         return server.getPlayerExactByDisguise(name);
     }
-    // CobelPvP end
+    // MineHQ end
 
     /**
      * @see Server#getUnsafe()

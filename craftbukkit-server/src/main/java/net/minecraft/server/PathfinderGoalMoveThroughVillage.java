@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.cobelpvp.pathsearch.PositionPathSearchType;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +39,7 @@ public class PathfinderGoalMoveThroughVillage extends PathfinderGoal {
                     boolean flag = this.a.getNavigation().c();
 
                     this.a.getNavigation().b(false);
-                    this.c = this.a.getNavigation().a(com.cobelpvp.pathsearch.PositionPathSearchType.MOVETHROUGHVILLAGE, (double) this.d.locX, (double) this.d.locY, (double) this.d.locZ); // Poweruser
+                    this.c = this.a.getNavigation().a(PositionPathSearchType.MOVETHROUGHVILLAGE, (double) this.d.locX, (double) this.d.locY, (double) this.d.locZ); // Poweruser
                     this.a.getNavigation().b(flag);
                     if (this.c != null) {
                         return true;
@@ -48,7 +50,7 @@ public class PathfinderGoalMoveThroughVillage extends PathfinderGoal {
                             return false;
                         } else {
                             this.a.getNavigation().b(false);
-                            this.c = this.a.getNavigation().a(com.cobelpvp.pathsearch.PositionPathSearchType.MOVETHROUGHVILLAGE, vec3d.a, vec3d.b, vec3d.c); // Poweruser
+                            this.c = this.a.getNavigation().a(PositionPathSearchType.MOVETHROUGHVILLAGE, vec3d.a, vec3d.b, vec3d.c); // Poweruser
                             this.a.getNavigation().b(flag);
                             return this.c != null;
                         }

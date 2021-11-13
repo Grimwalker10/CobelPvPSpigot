@@ -1,6 +1,7 @@
-package com.cobelpvp.commands;
+package com.cobelpvp.command;
 
-import com.cobelpvp.ThreadingManager;
+import com.cobelpvp.util.ThreadingManager;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

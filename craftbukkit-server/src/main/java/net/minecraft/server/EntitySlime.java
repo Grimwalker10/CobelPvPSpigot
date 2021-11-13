@@ -72,7 +72,7 @@ public class EntitySlime extends EntityInsentient implements IMonster {
             this.dead = true;
         }
 
-        // CobelPvP - Add mobsEnabled check.
+        // DiegoVC - Add mobsEnabled check.
         if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
             this.dead = true;
         }

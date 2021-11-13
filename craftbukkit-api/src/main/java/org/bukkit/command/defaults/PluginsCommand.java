@@ -18,7 +18,10 @@ public class PluginsCommand extends BukkitCommand {
 
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if (!testPermission(sender)) return true;
+        if (!sender.isOp()) {
+            sender.sendMessage(ChatColor.RED + "No permission.");
+            return true;
+        }
 
         sender.sendMessage("Plugins " + getPluginList());
         return true;

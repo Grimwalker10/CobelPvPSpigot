@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.server.ChunkCoordinates;
 import net.minecraft.server.CommandAchievement;
 import net.minecraft.server.CommandBan;
@@ -152,6 +153,7 @@ import org.bukkit.craftbukkit.util.Versioning;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerChatTabCompleteEvent;
+import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldSaveEvent;
@@ -181,6 +183,7 @@ import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.scheduler.BukkitWorker;
 import org.bukkit.util.StringUtil;
 import org.bukkit.util.permissions.DefaultPermissions;
+import org.spigotmc.SpigotConfig;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
@@ -802,6 +805,15 @@ public final class CraftServer implements Server {
     public boolean dispatchCommand(CommandSender sender, String commandLine) {
         Validate.notNull(sender, "Sender cannot be null");
         Validate.notNull(commandLine, "CommandLine cannot be null");
+
+
+        ServerCommandEvent event = new ServerCommandEvent(sender, commandLine);
+
+        this.getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            return true;
+        }
 
         if (commandMap.dispatch(sender, commandLine)) {
             return true;
@@ -1784,11 +1796,11 @@ public final class CraftServer implements Server {
         PlayerChatTabCompleteEvent event = new PlayerChatTabCompleteEvent(player, message, completions);
         String token = event.getLastToken();
         for (Player p : getOnlinePlayers()) {
-            // CobelPvP start - Disguises: Use #getDisguisedName instead of #getName
+            // MineHQ start - Disguises: Use #getDisguisedName instead of #getName
             if (player.canSee(p) && StringUtil.startsWithIgnoreCase(p.getDisguisedName(), token)) {
                 completions.add(p.getDisguisedName());
             }
-            // CobelPvP end
+            // MineHQ end
         }
         pluginManager.callEvent(event);
 
@@ -1867,7 +1879,7 @@ public final class CraftServer implements Server {
         return console.getIdleTimeout();
     }
 
-    // CobelPvP start
+    // MineHQ start
     @Override
     public Player getPlayerByDisguise(String name) {
         Validate.notNull(name, "Name cannot be null");
@@ -1894,7 +1906,7 @@ public final class CraftServer implements Server {
 
         return found;
     }
-    // CobelPvP end
+    // MineHQ end
 
     @Deprecated
     @Override
@@ -1911,13 +1923,8 @@ public final class CraftServer implements Server {
             return org.spigotmc.SpigotConfig.config;
         }
 
-        /**
-         * Sends the component to the player
-         *
-         * @param component the components to send
-         */
         @Override
-        public void broadcast(net.md_5.bungee.api.chat.BaseComponent component)
+        public void broadcast( BaseComponent component )
         {
             for ( Player player : getOnlinePlayers() )
             {
@@ -1925,14 +1932,8 @@ public final class CraftServer implements Server {
             }
         }
 
-        /**
-         * Sends an array of components as a single message to the
-         * player
-         *
-         * @param components the components to send
-         */
         @Override
-        public void broadcast(net.md_5.bungee.api.chat.BaseComponent ...components)
+        public void broadcast( BaseComponent... components )
         {
             for ( Player player : getOnlinePlayers() )
             {

@@ -1,8 +1,9 @@
 package org.spigotmc;
 
-import com.cobelpvp.commands.NoTrackCommand;
-import com.cobelpvp.commands.SetViewDistanceCommand;
-import com.cobelpvp.commands.WorldStatsCommand;
+import com.cobelpvp.command.NoTrackCommand;
+import com.cobelpvp.command.SetViewDistanceCommand;
+import com.cobelpvp.command.TPSCommand;
+import com.cobelpvp.command.WorldStatsCommand;
 import com.google.common.base.Throwables;
 import java.io.File;
 import java.io.IOException;
@@ -33,8 +34,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class SpigotConfig
 {
-
-    private static final File CONFIG_FILE = new File( "config/server", "spigot.yml" ); // CobelPvP - Dedicated config directory
+    private static final File CONFIG_FILE = new File( "config/server", "spigot.yml" );
     private static final String HEADER = "This is the main configuration file for Spigot.\n"
             + "As you can see, there's tons to configure. Some options may impact gameplay, so use\n"
             + "with caution, and make sure you know what each option does before configuring.\n"
@@ -46,11 +46,9 @@ public class SpigotConfig
             + "\n"
             + "IRC: #spigot @ irc.spi.gt ( http://www.spigotmc.org/pages/irc/ )\n"
             + "Forums: http://www.spigotmc.org/\n";
-    /*========================================================================*/
     public static YamlConfiguration config;
     static int version;
     static Map<String, Command> commands;
-    /*========================================================================*/
     private static Metrics metrics;
 
     public static void init()
@@ -211,7 +209,7 @@ public class SpigotConfig
         outdatedServerMessage = transform( getString( "messages.outdated-server", outdatedServerMessage ) );
     }
 
-    public static int timeoutTime = 60;
+    public static int timeoutTime = 10;
     public static boolean restartOnCrash = true;
     public static String restartScript = "./start.sh";
     public static String restartMessage;
@@ -247,12 +245,10 @@ public class SpigotConfig
         lateBind = getBoolean( "settings.late-bind", false );
     }
 
-    public static boolean disableStatSaving;
+    public static boolean disableStatSaving = true;
     public static TObjectIntHashMap<String> forcedStats = new TObjectIntHashMap<String>();
     private static void stats()
     {
-        disableStatSaving = getBoolean( "stats.disable-saving", false );
-
         if ( !config.contains( "stats.forced-stats" ) ) {
             config.createSection( "stats.forced-stats" );
         }
@@ -268,9 +264,7 @@ public class SpigotConfig
 
         if ( disableStatSaving && section.getInt( "achievement.openInventory", 0 ) < 1 )
         {
-            Bukkit.getLogger().warning( "*** WARNING *** stats.disable-saving is true but stats.forced-stats.achievement.openInventory" +
-                    " isn't set to 1. Disabling stat saving without forcing the achievement may cause it to get stuck on the player's " +
-                    "screen." );
+            forcedStats.put("achievement.openInventory", 1);
         }
     }
 
@@ -324,13 +318,13 @@ public class SpigotConfig
         replaceCommands = new HashSet<String>( (List<String>) getList( "commands.replace-commands",
                 Arrays.asList( "setblock", "summon", "testforblock", "tellraw" ) ) );
     }
-
+    
     public static int userCacheCap;
     private static void userCacheCap()
     {
         userCacheCap = getInt( "settings.user-cache-size", 1000 );
     }
-
+    
     public static boolean saveUserCacheOnStopOnly;
     private static void saveUserCacheOnStopOnly()
     {
@@ -418,7 +412,7 @@ public class SpigotConfig
 
     private static void powertpsCommand()
     {
-        commands.put( "tps2", new com.cobelpvp.commands.TPSCommand( "tps2" ) );
+        commands.put( "tpsgraph", new TPSCommand( "tpsgraph" ) );
     }
 
     private static void worldstatsCommand() {
@@ -458,9 +452,22 @@ public class SpigotConfig
     private static void lagSpikeLoggerTickLimitNanos() {
         lagSpikeLoggerTickLimitNanos = ((long) getInt( "settings.lagSpikeLogger.tickLimitInMilliseconds", 100)) * 1000000L;
     }
-    // Poweruser end
 
-    // CobelPvP start
+    public static int brewingMultiplier;
+    private static void brewingMultiplier() {
+        brewingMultiplier = getInt("settings.brewingMultiplier", 1);
+    }
+
+    public static int smeltingMultiplier;
+    private static void smeltingMultiplier() {
+        smeltingMultiplier = getInt("settings.smeltingMultiplier", 1);
+    }
+
+    public static boolean instantRespawn;
+    private static void instantRespawn()  {
+        instantRespawn = getBoolean("settings.instantRespawn", false);
+    }
+
     private static void noTrackCommand() {
         commands.put( "notrack", new NoTrackCommand( "notrack" ) );
     }
@@ -499,12 +506,6 @@ public class SpigotConfig
     private static void cacheChunkMaps() {
         cacheChunkMaps = getBoolean("settings.cache-chunk-maps", false);
     }
-    // CobelPvP end
-
-    public static boolean reduceArmorDamage;
-    private static void reduceArmorDamage() {
-        reduceArmorDamage = getBoolean("settings.reduce-armor-damage", false);
-    }
 
     public static boolean disableSaving;
     private static void disableSaving() {
@@ -516,22 +517,22 @@ public class SpigotConfig
     public static boolean onlyCustomTab;
     private static void packets() {
         onlyCustomTab = getBoolean("settings.only-custom-tab", false);
-        playerListPackets = !onlyCustomTab && !getBoolean("settings.disable.player-list-packets", false);
-        updatePingOnTablist = !onlyCustomTab && !getBoolean("settings.disable.ping-update-packets", false);
-    }
-    // CobelPvP end
 
-    // Griffin start
-    public static int brewingMultiplier;
-    private static void brewingMultiplier() {
-        brewingMultiplier = getInt("settings.brewingMultiplier", 1);
+        if (!onlyCustomTab) {
+            playerListPackets = !getBoolean("settings.disable.player-list-packets", false);
+            updatePingOnTablist = getBoolean("settings.disable.ping-update-packets", false);
+        }
     }
 
-    public static int smeltingMultiplier;
-    private static void smeltingMultiplier() {
-        smeltingMultiplier = getInt("settings.smeltingMultiplier", 1);
+    public static boolean reduceArmorDamage;
+    private static void reduceArmorDamage() {
+        reduceArmorDamage = getBoolean("settings.reduce-armor-damage", false);
     }
-    // Griffin end
+
+    public static boolean pearlThroughGatesAndTripwire = false;
+    private static void pearls() {
+        pearlThroughGatesAndTripwire = getBoolean("settings.pearl-through-gates-and-tripwire", false);
+    }
 
     public static double knockbackFriction = 2.0D;
     public static double knockbackHorizontal = 0.35D;
@@ -539,4 +540,5 @@ public class SpigotConfig
     public static double knockbackVerticalLimit = 0.4D;
     public static double knockbackExtraHorizontal = 0.425D;
     public static double knockbackExtraVertical = 0.085D;
+    
 }

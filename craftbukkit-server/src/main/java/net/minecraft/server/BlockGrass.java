@@ -25,10 +25,10 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
 
     public void a(World world, int i, int j, int k, Random random) {
         if (!world.isStatic) {
-            // Poweruser start
+            // CobelPvP start
             int lightLevel = world.getLightLevel(i, j + 1, k);
             if (lightLevel < 4 && world.getType(i, j + 1, k).k() > 2) {
-            // Poweruser end
+            // CobelPvP end
                 // CraftBukkit start
                 org.bukkit.World bworld = world.getWorld();
                 BlockState blockState = bworld.getBlockAt(i, j, k).getState();

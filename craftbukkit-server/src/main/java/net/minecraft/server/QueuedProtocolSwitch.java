@@ -1,10 +1,10 @@
 package net.minecraft.server;
 
 import net.minecraft.util.io.netty.channel.ChannelFutureListener;
-import net.minecraft.util.io.netty.channel.ChannelPromise; // Poweruser
+import net.minecraft.util.io.netty.channel.ChannelPromise; // DiegoVC
 import net.minecraft.util.io.netty.util.concurrent.GenericFutureListener;
 
-public class QueuedProtocolSwitch implements Runnable { // Poweruser - public
+public class QueuedProtocolSwitch implements Runnable { // DiegoVC - public
 
     final EnumProtocol a;
     final EnumProtocol b;
@@ -21,7 +21,7 @@ public class QueuedProtocolSwitch implements Runnable { // Poweruser - public
     }
 
     public void run() {
-    // Poweruser start
+    // DiegoVC start
         execute(this.e, this.a, this.b, this.c, this.d);
     }
 
@@ -36,5 +36,5 @@ public class QueuedProtocolSwitch implements Runnable { // Poweruser - public
             NetworkManager.a(networkmanager).writeAndFlush(packet).addListeners(agenericfuturelistener).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         }
     }
-    // Poweruser end
+    // DiegoVC end
 }

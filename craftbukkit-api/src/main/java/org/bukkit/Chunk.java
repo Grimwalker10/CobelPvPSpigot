@@ -123,8 +123,8 @@ public interface Chunk {
     boolean unload();
 
 
-    // CobelPvP start - chunk snapshot api
+    // MineHQ start - chunk snapshot api
     com.cobelpvp.chunksnapshot.ChunkSnapshot takeSnapshot();
     void restoreSnapshot(com.cobelpvp.chunksnapshot.ChunkSnapshot snapshot);
-    // CobelPvP end
+    // MineHQ end
 }

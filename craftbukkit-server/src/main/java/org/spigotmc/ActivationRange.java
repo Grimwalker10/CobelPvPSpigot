@@ -12,7 +12,6 @@ import net.minecraft.server.EntityComplexPart;
 import net.minecraft.server.EntityCreature;
 import net.minecraft.server.EntityEnderCrystal;
 import net.minecraft.server.EntityEnderDragon;
-import net.minecraft.server.EntityEnderPearl; // PaperSpigot
 import net.minecraft.server.EntityFallingBlock; // PaperSpigot
 import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityFireworks;
@@ -29,7 +28,6 @@ import net.minecraft.server.EntityWither;
 import net.minecraft.server.MathHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.World;
-import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.SpigotTimings;
 
 public class ActivationRange
@@ -232,7 +230,7 @@ public class ActivationRange
         {
             EntityLiving living = (EntityLiving) entity;
             // Kohi -  remove hurtticks check, we will activate entities in their hurt routine
-            if ( living.attackTicks > 0 || living.effects.size() > 0 )
+            if ( living.attackTicks > 0 || living.getEffects().size() > 0 )
             {
                 return true;
             }

@@ -10,7 +10,6 @@ import net.minecraft.server.Blocks;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.EnumSkyBlock;
 import net.minecraft.server.Facing;
-import net.minecraft.server.IWorldAccess;
 import net.minecraft.server.MathHelper;
 
 public class LightingUpdater {

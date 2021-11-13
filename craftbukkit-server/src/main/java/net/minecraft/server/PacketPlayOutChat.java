@@ -1,13 +1,16 @@
 package net.minecraft.server;
 
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
+
 import java.io.IOException;
 
 public class PacketPlayOutChat extends Packet {
 
     private IChatBaseComponent a;
-    public net.md_5.bungee.api.chat.BaseComponent[] components; // Spigot
+    public BaseComponent[] components; // Spigot - Update 20140909b
     private boolean b;
-    private int pos; // Spigot
+    private int pos; // Spigot - Update 20141001a
 
     public PacketPlayOutChat() {
         this.b = true;
@@ -17,7 +20,6 @@ public class PacketPlayOutChat extends Packet {
         this(ichatbasecomponent, true);
     }
 
-    // Spigot start
     public PacketPlayOutChat(IChatBaseComponent ichatbasecomponent, int pos) {
         this(ichatbasecomponent, pos, true);
     }
@@ -32,26 +34,26 @@ public class PacketPlayOutChat extends Packet {
         this.b = flag;
         this.pos = pos;
     }
-    // Spigot end
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
         this.a = ChatSerializer.a(packetdataserializer.c(32767));
     }
 
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
-        // Spigot start
-        if ( components != null )
+        // Spigot start - Update 20140909b
+        if (components != null)
         {
-            packetdataserializer.a( net.md_5.bungee.chat.ComponentSerializer.toString( components ) );
-        } else
-        {
-            packetdataserializer.a( ChatSerializer.a( this.a ) );
+            packetdataserializer.a( ComponentSerializer.toString(components) );
+        }
+        else {
+            packetdataserializer.a( ChatSerializer.a(a) );
         }
         // Spigot end
+
         // Spigot start - protocol patch
         if ( packetdataserializer.version >= 16 )
         {
-            packetdataserializer.writeByte(pos);
+            packetdataserializer.writeByte( this.pos );
         }
         // Spigot end
     }

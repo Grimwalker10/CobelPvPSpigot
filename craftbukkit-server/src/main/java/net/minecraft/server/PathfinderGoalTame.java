@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.cobelpvp.pathsearch.PositionPathSearchType;
+
 public class PathfinderGoalTame extends PathfinderGoal {
 
     private EntityHorse entity;
@@ -32,7 +34,7 @@ public class PathfinderGoalTame extends PathfinderGoal {
     }
 
     public void c() {
-        this.entity.getNavigation().a(com.cobelpvp.pathsearch.PositionPathSearchType.TAME, this.c, this.d, this.e, this.b); // Poweruser
+        this.entity.getNavigation().a(PositionPathSearchType.TAME, this.c, this.d, this.e, this.b); // Poweruser
     }
 
     public boolean b() {

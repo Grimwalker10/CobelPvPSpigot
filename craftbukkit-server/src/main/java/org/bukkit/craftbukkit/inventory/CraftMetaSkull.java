@@ -14,7 +14,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import com.google.common.collect.ImmutableMap.Builder;
 
-import com.cobelpvp.ThreadingManager; // Poweruser
+import com.cobelpvp.util.ThreadingManager; // Poweruser
 
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
@@ -55,7 +55,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
             NBTTagCompound owner = new NBTTagCompound();
             GameProfileSerializer.serialize(owner, profile);
             tag.set( SKULL_OWNER.NBT, owner );
-            // Spigot start - do an async lookup of the profile.
+            // Spigot start - do an async lookup of the profile. 
             // Unfortunately there is not way to refresh the holding
             // inventory, so that responsibility is left to the user.
             ThreadingManager.queueHeadConversion(new Runnable() // Poweruser

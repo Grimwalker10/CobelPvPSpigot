@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.cobelpvp.NamePriorityThreadFactory;
+import com.cobelpvp.util.NamePriorityThreadFactory;
 import com.cobelpvp.pathsearch.jobs.PathSearchJob;
 
 public class PathSearchThrottlerThread extends ThreadPoolExecutor {
@@ -21,7 +21,7 @@ public class PathSearchThrottlerThread extends ThreadPoolExecutor {
     private static PathSearchThrottlerThread instance;
 
     public PathSearchThrottlerThread(int poolSize) {
-        super(poolSize, poolSize, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(), new NamePriorityThreadFactory(Thread.MIN_PRIORITY, "mSpigot_PathFinder"));
+        super(poolSize, poolSize, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(), new NamePriorityThreadFactory(Thread.MIN_PRIORITY, "Spigot_PathFinder"));
         instance = this;
         adjustPoolSize(poolSize);
         this.filter = new LinkedHashMap<PathSearchJob, PathSearchJob>();

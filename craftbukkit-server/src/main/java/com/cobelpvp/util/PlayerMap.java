@@ -1,11 +1,13 @@
-package com.cobelpvp;
+package com.cobelpvp.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.server.EntityHuman;
@@ -156,6 +158,29 @@ public class PlayerMap {
         }
 
         return bestPlayer;
+    }
+
+    public List<EntityPlayer> getNearbyPlayersIgnoreHeight(double x, double y, double z, double distance) {
+        List<EntityPlayer> toReturn = null;
+        
+        for (int chunkX = MathHelper.floor(x - distance) >> CHUNK_BITS; chunkX <= MathHelper.floor(x + distance) >> CHUNK_BITS; chunkX++) {
+            for (int chunkZ = MathHelper.floor(z - distance) >> CHUNK_BITS; chunkZ <= MathHelper.floor(z + distance) >> CHUNK_BITS; chunkZ++) {
+                List<EntityPlayer> players = map.get(xzToKey(chunkX, chunkZ));
+                if (players != null) {
+                    for (EntityPlayer player : players) {
+                        if (player != null && !player.dead && Math.abs(player.locX - x) <= distance && Math.abs(player.locZ - z) <= distance) {
+                            if (toReturn == null) {
+                                toReturn = Lists.newArrayList();
+                            }
+
+                            toReturn.add(player);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return toReturn == null ? Collections.emptyList() : toReturn;
     }
     
     public EntityPlayer getNearestAttackablePlayer(double x, double y, double z, double maxXZ, double maxY, Function<EntityHuman, Double> visibility) {

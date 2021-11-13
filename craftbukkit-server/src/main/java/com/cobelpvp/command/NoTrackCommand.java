@@ -1,4 +1,4 @@
-package com.cobelpvp.commands;
+package com.cobelpvp.command;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -14,7 +14,7 @@ public class NoTrackCommand extends Command {
         super(name);
         this.usageMessage = "/" + name + " <world name> <view distance>";
         this.description = "Adjusts a world's no track distance";
-        this.setPermission("frozenorb.command.notrack");
+        this.setPermission("cobelpvp.command.notrack");
     }
 
     @Override
@@ -45,7 +45,7 @@ public class NoTrackCommand extends Command {
             }
             return true;
         } else {
-            sender.sendMessage("[mSpigot] Command - notrack: " + this.description + "\nUsage: " + this.usageMessage);
+            sender.sendMessage("[Spigot] Command - notrack: " + this.description + "\nUsage: " + this.usageMessage);
         }
         return false;
     }

@@ -52,7 +52,12 @@ final class DispenseBehaviorFireball extends DispenseBehaviorItem {
         EntitySmallFireball entitysmallfireball = new EntitySmallFireball(world, d0, d1, d2, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ());
         entitysmallfireball.projectileSource = new org.bukkit.craftbukkit.projectiles.CraftBlockProjectileSource((TileEntityDispenser) isourceblock.getTileEntity());
 
-        world.addEntity(entitysmallfireball);
+        // CobelPvP start
+        if (!world.addEntity(entitysmallfireball)) {
+            itemstack.count++;
+            return itemstack;
+        }
+        // CobelPvP end
         // itemstack.a(1); // Handled during event processing
         // CraftBukkit end
 

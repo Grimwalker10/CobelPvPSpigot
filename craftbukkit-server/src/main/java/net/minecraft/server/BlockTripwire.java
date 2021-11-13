@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.event.entity.EntityInteractEvent; // CraftBukkit
+import org.spigotmc.SpigotConfig;
 
 public class BlockTripwire extends Block {
 
@@ -20,6 +21,15 @@ public class BlockTripwire extends Block {
 
     public AxisAlignedBB a(World world, int i, int j, int k) {
         return null;
+    }
+
+    @Override
+    public MovingObjectPosition a(World world, int i, int j, int k, Vec3D vec3d, Vec3D vec3d1) {
+        if (SpigotConfig.pearlThroughGatesAndTripwire) {
+            return null;
+        }
+
+        return super.a(world, i, j, k, vec3d, vec3d1);
     }
 
     public boolean c() {

@@ -67,7 +67,7 @@ public class PropertyManager {
     }
 
     public void savePropertiesFile() {
-        if (SpigotConfig.disableSaving) return; // CobelPvP
+        if (SpigotConfig.disableSaving) return; // DiegoVC
         FileOutputStream fileoutputstream = null;
 
         try {

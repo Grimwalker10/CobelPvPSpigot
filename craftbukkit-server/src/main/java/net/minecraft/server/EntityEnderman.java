@@ -29,7 +29,7 @@ public class EntityEnderman extends EntityMonster {
     public void h() {
         super.h();
 
-        // CobelPvP - Add mobsEnabled check.
+        // DiegoVC - Add mobsEnabled check.
         if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
             this.die();
         }

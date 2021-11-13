@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.cobelpvp.pathsearch.PositionPathSearchType;
+
 public class PathfinderGoalRandomStroll extends PathfinderGoal {
 
     private EntityCreature a;
@@ -41,6 +43,6 @@ public class PathfinderGoalRandomStroll extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a(com.cobelpvp.pathsearch.PositionPathSearchType.RANDOMSTROLL, this.b, this.c, this.d, this.e); // Poweruser
+        this.a.getNavigation().a(PositionPathSearchType.RANDOMSTROLL, this.b, this.c, this.d, this.e); // Poweruser
     }
 }

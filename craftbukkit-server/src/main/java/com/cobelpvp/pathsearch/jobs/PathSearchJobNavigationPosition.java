@@ -1,8 +1,8 @@
 package com.cobelpvp.pathsearch.jobs;
 
+import com.cobelpvp.pathsearch.cache.SearchCacheEntryPosition;
 import com.cobelpvp.pathsearch.AsyncPathfinder;
 import com.cobelpvp.pathsearch.PositionPathSearchType;
-import com.cobelpvp.pathsearch.cache.SearchCacheEntryPosition;
 import net.minecraft.server.EntityInsentient;
 
 public class PathSearchJobNavigationPosition extends PathSearchJob {

@@ -1,14 +1,14 @@
 package net.minecraft.server;
 
 import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import javax.crypto.SecretKey;
-
 import net.minecraft.util.com.google.common.collect.Queues;
 import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.util.com.mojang.authlib.properties.Property;
 import net.minecraft.util.io.netty.channel.Channel;
-import net.minecraft.util.io.netty.channel.ChannelFutureListener;
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
 import net.minecraft.util.io.netty.channel.SimpleChannelInboundHandler;
 import net.minecraft.util.io.netty.channel.local.LocalChannel;
@@ -27,11 +27,12 @@ import com.google.common.collect.ImmutableSet;
 import org.spigotmc.SpigotCompressor;
 import org.spigotmc.SpigotDecompressor;
 // Spigot end
+import org.bukkit.Bukkit;
 
-// Poweruser start
+// CobelPvP start
 import org.spigotmc.CustomTimingsHandler;
 import org.bukkit.craftbukkit.SpigotTimings;
-// Poweruser end
+// CobelPvP end
 
 public class NetworkManager extends SimpleChannelInboundHandler {
 
@@ -73,7 +74,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
     // Spigot End
 
-    // Poweruser start
+    // CobelPvP start
     private boolean lockDownIncomingTraffic = false;
 
     protected boolean lockDownIncomingTraffic() {
@@ -81,9 +82,9 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         this.lockDownIncomingTraffic = true;
         return oldValue;
     }
-    // Poweruser end
+    // CobelPvP end
 
-    public static final GenericFutureListener[] emptyListenerArray = new GenericFutureListener[0]; // Poweruser
+    public static final GenericFutureListener[] emptyListenerArray = new GenericFutureListener[0]; // CobelPvP
 
     public NetworkManager(boolean flag) {
         this.j = flag;
@@ -159,20 +160,20 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         }
 
         if (this.m.eventLoop().inEventLoop()) {
-            /* Poweruser - is done in QueuedProtocolSwitch.execute(..)
+            /* CobelPvP - is done in QueuedProtocolSwitch.execute(..)
             if (enumprotocol != enumprotocol1) {
                 this.a(enumprotocol);
             }
             */
 
-            QueuedProtocolSwitch.execute(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener); // Poweruser
+            QueuedProtocolSwitch.execute(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener); // CobelPvP
         } else {
             this.m.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener));
         }
     }
-// CobelPvP start - remove unneeded packet queue
-    /*
 
+    // CobelPvP start - remove unneeded packet queue
+    /*
     private void i() {
         if (this.m != null && this.m.isOpen()) {
             // PaperSpigot  start - Improve Network Manager packet handling
@@ -239,7 +240,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public void close(IChatBaseComponent ichatbasecomponent) {
         // Spigot Start
         this.preparing = false;
-        this.k.clear();
+        this.k.clear(); // Spigot Update - 20140921a
         // this.l.clear(); // Spigot Update - 20140921a // CobelPvP
         // Spigot End
         if (this.m.isOpen()) {

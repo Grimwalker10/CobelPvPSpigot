@@ -21,7 +21,8 @@ public class TicksPerSecondCommand extends Command
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args)
     {
-        if (!testPermission(sender)) {
+        if (!sender.isOp()) {
+            sender.sendMessage(ChatColor.RED + "No permission.");
             return true;
         }
 

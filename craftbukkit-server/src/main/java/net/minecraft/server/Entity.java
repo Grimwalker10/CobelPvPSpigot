@@ -1,38 +1,38 @@
 package net.minecraft.server;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Server;
+import org.bukkit.TravelAgent;
+import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.SpigotTimings;
+import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.entity.Hanging;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Painting;
+import org.bukkit.entity.Vehicle;
+import org.bukkit.event.entity.EntityCombustByEntityEvent;
+import org.bukkit.event.entity.EntityCombustEvent;
+import org.bukkit.event.entity.EntityPortalEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.painting.PaintingBreakByEntityEvent;
+import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.plugin.PluginManager;
+import org.spigotmc.CustomTimingsHandler;
+
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
 // CraftBukkit start
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Server;
-import org.bukkit.TravelAgent;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Hanging;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Painting;
-import org.bukkit.entity.Vehicle;
-import org.spigotmc.CustomTimingsHandler; // Spigot
-import org.bukkit.event.entity.EntityCombustByEntityEvent;
-import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.painting.PaintingBreakByEntityEvent;
-import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.event.vehicle.VehicleExitEvent;
-import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.bukkit.event.entity.EntityCombustEvent;
-import org.bukkit.event.entity.EntityPortalEvent;
-import org.bukkit.plugin.PluginManager;
 // CraftBukkit end
-
 // Poweruser start
-import org.bukkit.craftbukkit.SpigotTimings;
 // Poweruser end
 
 public abstract class Entity {
@@ -487,6 +487,7 @@ public abstract class Entity {
             double d4 = this.locY;
             double d5 = this.locZ;
 
+            // if in web, make the entity's motion slower
             if (this.I) {
                 this.I = false;
                 d0 *= 0.25D;
@@ -1379,7 +1380,16 @@ public abstract class Entity {
         return !this.dead;
     }
 
+    private int lastInBlockTick = -1;
+    private boolean lastInBlockResult = false;
+
     public boolean inBlock() {
+        int currentTick = MinecraftServer.currentTick;
+        
+        if (lastInBlockTick == currentTick) {
+            return lastInBlockResult;
+        }
+
         for (int i = 0; i < 8; ++i) {
             float f = ((float) ((i >> 0) % 2) - 0.5F) * this.width * 0.8F;
             float f1 = ((float) ((i >> 1) % 2) - 0.5F) * 0.1F;
@@ -1389,10 +1399,14 @@ public abstract class Entity {
             int l = MathHelper.floor(this.locZ + (double) f2);
 
             if (this.world.getType(j, k, l).r()) {
+                lastInBlockTick = currentTick;
+                lastInBlockResult = true;
                 return true;
             }
         }
 
+        lastInBlockTick = currentTick;
+        lastInBlockResult = false;
         return false;
     }
 

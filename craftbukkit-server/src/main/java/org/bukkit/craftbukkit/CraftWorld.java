@@ -198,18 +198,18 @@ public class CraftWorld implements World {
 
     public boolean unloadChunkRequest(int x, int z, boolean safe) {
         org.spigotmc.AsyncCatcher.catchOp( "chunk unload"); // Spigot
-        if (isChunkInUse(x, z)) { // CobelPvP - never unload in-use chunks
+        if (isChunkInUse(x, z)) { // MineHQ - never unload in-use chunks
             return false;
         }
 
-        world.chunkProviderServer.queueUnload(x, z, true); // CobelPvP
+        world.chunkProviderServer.queueUnload(x, z, true); // MineHQ
 
         return true;
     }
 
     public boolean unloadChunk(int x, int z, boolean save, boolean safe) {
         org.spigotmc.AsyncCatcher.catchOp( "chunk unload"); // Spigot
-        if (isChunkInUse(x, z)) { // CobelPvP - never unload in-use chunks
+        if (isChunkInUse(x, z)) { // MineHQ - never unload in-use chunks
             return false;
         }
 
@@ -232,7 +232,7 @@ public class CraftWorld implements World {
         }
 
         world.chunkProviderServer.unloadQueue.remove(x, z);
-        world.chunkProviderServer.chunks.remove(x, z); // CobelPvP
+        world.chunkProviderServer.chunks.remove(x, z); // MineHQ
 
         return true;
     }
@@ -290,7 +290,7 @@ public class CraftWorld implements World {
         }
 
         world.chunkProviderServer.unloadQueue.remove(x, z);
-        net.minecraft.server.Chunk chunk = world.chunkProviderServer.chunks.get(x, z); // CobelPvP
+        net.minecraft.server.Chunk chunk = world.chunkProviderServer.chunks.get(LongHash.toLong(x, z)); // MineHQ
 
         if (chunk == null) {
             world.timings.syncChunkLoadTimer.startTiming(); // Spigot
@@ -304,7 +304,7 @@ public class CraftWorld implements World {
 
     private void chunkLoadPostProcess(net.minecraft.server.Chunk chunk, int x, int z) {
         if (chunk != null) {
-            world.chunkProviderServer.chunks.put(x, z, chunk); // CobelPvP
+            world.chunkProviderServer.chunks.put(LongHash.toLong(x, z), chunk); // MineHQ
 
             chunk.addEntities();
 

@@ -97,14 +97,15 @@ public class ItemPotion extends Item {
 
     public ItemStack a(ItemStack itemstack, World world, EntityHuman entityhuman) {
         if (g(itemstack.getData())) {
-            if (!entityhuman.abilities.canInstantlyBuild) {
-                --itemstack.count;
-            }
+            // CobelPvP start
+            if (!world.isStatic && world.addEntity(new EntityPotion(world, entityhuman, itemstack))) {
+                if (!entityhuman.abilities.canInstantlyBuild) {
+                    --itemstack.count;
+                }
 
-            world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
-            if (!world.isStatic) {
-                world.addEntity(new EntityPotion(world, entityhuman, itemstack));
+                world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
             }
+            // CobelPvP end
 
             return itemstack;
         } else {

@@ -35,7 +35,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
      */
     public String getDisplayName();
 
-    // CobelPvP start - Disguises
+    // DiegoVC start - Disguises
     /**
      * Gets the disguised name of this player, or their
      * actual name if they're not currently disguised.
@@ -60,10 +60,10 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
      * @param name    The name of the player we want to disguise as
      * @param texture We can add custom skins by doing this.
      */
-    public void disguise(String name, String texture);
+    public void disguise(String name, String[] texture);
 
     /**
-     * @see #disguise(String, String)
+     * @see #disguise(String, String[])
      * This method does not allow for a custom skin.
      */
     public void disguise(String name);
@@ -72,7 +72,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
      * Un-disguise this player.
      */
     public void undisguise();
-    // CobelPvP end
+    // DiegoVC end
 
     /**
      * Sets the "friendly" name to display of this player. This may include
@@ -875,6 +875,14 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
     public void hidePlayer(Player player);
 
     /**
+     * Hides a player from this player
+     *
+     * @param player Player to hide
+     * @param hideFromTab if true, hides the player from the tablist aswell
+     */
+    public void hidePlayer(Player player, boolean hideFromTab);
+
+    /**
      * Allows this player to see a player that was previously hidden
      *
      * @param player Player to show
@@ -889,6 +897,15 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
      *     player
      */
     public boolean canSee(Player player);
+
+    /**
+     * Checks to see if a player has been hidden from the tablist for this player
+     *
+     * @param player Player to check
+     * @return True if the provided player is not being hidden from this
+     *     player's tablist
+     */
+    public boolean canSeeFromTab(Player player);
 
     /**
      * Checks to see if this player is currently standing on a block. This

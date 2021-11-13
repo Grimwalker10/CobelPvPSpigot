@@ -172,7 +172,7 @@ public class TileEntityFurnace extends TileEntity implements IWorldInventory {
 
         // CraftBukkit - moved from below
         if (this.isBurning() && this.canBurn()) {
-            this.cookTime += elapsedTicks * SpigotConfig.smeltingMultiplier; // CobelPvP
+            this.cookTime += elapsedTicks * SpigotConfig.smeltingMultiplier; // DiegoVC
             if (this.cookTime >= 200) {
                 this.cookTime %= 200;
                 this.burn();

@@ -10,13 +10,14 @@ import org.apache.logging.log4j.Logger;
 public class PacketPlayOutMultiBlockChange extends Packet {
 
     private static final Logger a = LogManager.getLogger();
-    private ChunkCoordIntPair b;
-    private byte[] c;
-    private int d;
+    public ChunkCoordIntPair b;
+    public byte[] c;
+    public int d;
     // Spigot start - protocol patch
-    private short[] ashort;
-    private int[] blocks;
+    public short[] ashort;
+    public int[] blocks;
     // Spigot end
+    public boolean fake = false;
 
     public PacketPlayOutMultiBlockChange() {}
 

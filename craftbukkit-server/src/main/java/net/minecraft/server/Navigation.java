@@ -1,16 +1,16 @@
 package net.minecraft.server;
 
-// Poweruser start
+// CobelPvP start
 import com.cobelpvp.pathsearch.PositionPathSearchType;
 import com.cobelpvp.pathsearch.jobs.PathSearchJob;
 import com.cobelpvp.pathsearch.jobs.PathSearchJobNavigationEntity;
 import com.cobelpvp.pathsearch.jobs.PathSearchJobNavigationPosition;
-//Poweruser end
+//DiegoVC end
 
 public class Navigation {
 
-    protected EntityInsentient a; // Poweruser - private -> protected
-    protected World b; // Poweruser - private -> protected
+    protected EntityInsentient a; // DiegoVC - private -> protected
+    protected World b; // DiegoVC - private -> protected
     private PathEntity c;
     private double d;
     private AttributeInstance e;
@@ -18,12 +18,12 @@ public class Navigation {
     private int g;
     private int h;
     private Vec3D i = Vec3D.a(0.0D, 0.0D, 0.0D);
-    protected boolean j = true; // Poweruser - private -> protected
-    protected boolean k; // Poweruser - private -> protected
-    protected boolean l; // Poweruser - private -> protected
-    protected boolean m; // Poweruser - private -> protected
+    protected boolean j = true; // DiegoVC - private -> protected
+    protected boolean k; // DiegoVC - private -> protected
+    protected boolean l; // DiegoVC - private -> protected
+    protected boolean m; // DiegoVC - private -> protected
 
-    // Poweruser start
+    // DiegoVC start
     public void setSearchResult(PathSearchJobNavigationEntity pathSearch) { }
 
     public void setSearchResult(PathSearchJobNavigationPosition pathSearch) { }
@@ -39,7 +39,7 @@ public class Navigation {
     public void cleanUpExpiredSearches() { }
 
     public void cancelSearch(PathSearchJob pathSearch) { }
-    // Poweruser end
+    // DiegoVC end
 
     public Navigation(EntityInsentient entityinsentient, World world) {
         this.a = entityinsentient;
@@ -230,7 +230,7 @@ public class Navigation {
         }
     }
 
-    protected boolean l() { // Poweruser - private -> protected
+    protected boolean l() { // DiegoVC - private -> protected
         return this.a.onGround || this.m && this.m() || this.a.am() && this.a instanceof EntityZombie && this.a.vehicle instanceof EntityChicken;
     }
 

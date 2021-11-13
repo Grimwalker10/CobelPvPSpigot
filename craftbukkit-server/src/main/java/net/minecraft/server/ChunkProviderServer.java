@@ -14,8 +14,7 @@ import org.bukkit.craftbukkit.util.LongHashSet;
 import org.bukkit.event.world.ChunkUnloadEvent;
 // CraftBukkit end
 
-import com.cobelpvp.utils.CoordinateChunkHybridMap;
-import com.cobelpvp.utils.CoordinateObjectHybridMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 public class ChunkProviderServer implements IChunkProvider {
 
@@ -27,7 +26,7 @@ public class ChunkProviderServer implements IChunkProvider {
     private IChunkLoader f;
     public boolean forceChunkLoad = false; // true -> false
     //public LongObjectHashMap<Chunk> chunks = new LongObjectHashMap<Chunk>();
-    public CoordinateObjectHybridMap<Chunk> chunks = new CoordinateChunkHybridMap(); // CobelPvP
+    public Long2ObjectOpenHashMap<Chunk> chunks = new Long2ObjectOpenHashMap<>(); // CobelPvP
     public WorldServer world;
     // CraftBukkit end
 
@@ -38,8 +37,12 @@ public class ChunkProviderServer implements IChunkProvider {
         this.chunkProvider = ichunkprovider;
     }
 
+    public boolean chunkExists(int i, int j) {
+        return ((ChunkRegionLoader) this.f).chunkExists(this.world, i, j);
+    }
+
     public boolean isChunkLoaded(int i, int j) {
-        return this.chunks.contains(i, j); // CraftBukkit // CobelPvP
+        return this.chunks.containsKey(LongHash.toLong(i, j)); // CraftBukkit // CobelPvP
     }
 
     // CraftBukkit start - Change return type to Collection and return the values of our chunk map
@@ -56,9 +59,9 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public void queueUnload(int i, int j, boolean checked) {
         if (!checked && this.world.getPlayerChunkMap().isChunkInUse(i, j)) return;
-        // CobelPvP end
+    // CobelPvP end
         // PaperSpigot start - Asynchronous lighting updates
-        Chunk chunk = this.chunks.get(i, j); // CobelPvP
+        Chunk chunk = this.chunks.get(LongHash.toLong(i, j)); // CobelPvP
         if (chunk != null && chunk.world.paperSpigotConfig.useAsyncLighting && (chunk.pendingLightUpdates.get() > 0 || chunk.world.getTime() - chunk.lightUpdateTime < 20)) {
             return;
         }
@@ -116,7 +119,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     // CraftBukkit start - Add async variant, provide compatibility
     public Chunk getChunkIfLoaded(int x, int z) {
-        return this.chunks.get(x, z); // CobelPvP
+        return this.chunks.get(LongHash.toLong(x, z)); // CobelPvP
     }
 
     public Chunk getChunkAt(int i, int j) {
@@ -125,7 +128,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public Chunk getChunkAt(int i, int j, Runnable runnable) {
         this.unloadQueue.remove(i, j);
-        Chunk chunk = this.chunks.get(i, j); // CobelPvP
+        Chunk chunk = this.chunks.get(LongHash.toLong(i, j)); // CobelPvP
         ChunkRegionLoader loader = null;
 
         if (this.f instanceof ChunkRegionLoader) {
@@ -154,7 +157,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public Chunk originalGetChunkAt(int i, int j) {
         this.unloadQueue.remove(i, j);
-        Chunk chunk = (Chunk) this.chunks.get(i, j); // CobelPvP
+        Chunk chunk = (Chunk) this.chunks.get(LongHash.toLong(i, j)); // CobelPvP
         boolean newChunk = false;
 
         if (chunk == null) {
@@ -179,7 +182,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 newChunk = true; // CraftBukkit
             }
 
-            this.chunks.put(i, j, chunk); // CraftBukkit // CobelPvP
+            this.chunks.put(LongHash.toLong(i, j), chunk); // CraftBukkit // CobelPvP
             chunk.addEntities();
 
             // CraftBukkit start
@@ -217,7 +220,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public Chunk getOrCreateChunk(int i, int j) {
         // CraftBukkit start
-        Chunk chunk = (Chunk) this.chunks.get(i, j); // CobelPvP
+        Chunk chunk = (Chunk) this.chunks.get(LongHash.toLong(i, j)); // CobelPvP
 
         chunk = chunk == null ? (!this.world.isLoading && !this.forceChunkLoad ? this.emptyChunk : this.getChunkAt(i, j)) : chunk;
         if (chunk == this.emptyChunk) return chunk;
@@ -338,7 +341,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 // Poweruser start
                 if (i >= org.spigotmc.SpigotConfig.autoSaveChunksPerTick && !flag) {
                     this.world.getAutoSaveWorldData().addAutoSaveChunkCount(i);
-                    // Poweruser end
+                // Poweruser end
                     return false;
                 }
             }
@@ -377,7 +380,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 int locX = LongHash.msw(chunkcoordinates);
                 int locZ = LongHash.lsw(chunkcoordinates);
                 nanoStart = System.nanoTime();
-                Chunk chunk = this.chunks.get(locX, locZ);
+                Chunk chunk = this.chunks.get(LongHash.toLong(locX, locZ));
                 chunksGet += System.nanoTime() - nanoStart;
                 // CobelPvP end
                 if (chunk == null) continue;
@@ -399,7 +402,7 @@ public class ChunkProviderServer implements IChunkProvider {
                         this.saveChunkNOP(chunk);
                         saveChunkNOP += System.nanoTime() - nanoStart;
                         nanoStart = System.nanoTime();
-                        this.chunks.remove(locX, locZ); // CraftBukkit // CobelPvP
+                        this.chunks.remove(LongHash.toLong(locX, locZ)); // CraftBukkit // CobelPvP
                         chunkRemove += System.nanoTime() - nanoStart;
                         unloaded++;
                         this.world.timings.doChunkUnloadSave.stopTiming();

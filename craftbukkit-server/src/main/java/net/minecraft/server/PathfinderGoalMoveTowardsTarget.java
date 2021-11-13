@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.cobelpvp.pathsearch.PositionPathSearchType;
+
 public class PathfinderGoalMoveTowardsTarget extends PathfinderGoal {
 
     private EntityCreature a;
@@ -46,6 +48,6 @@ public class PathfinderGoalMoveTowardsTarget extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a(com.cobelpvp.pathsearch.PositionPathSearchType.MOVETOWARDSTARGET, this.c, this.d, this.e, this.f); // Poweruser
+        this.a.getNavigation().a(PositionPathSearchType.MOVETOWARDSTARGET, this.c, this.d, this.e, this.f); // Poweruser
     }
 }

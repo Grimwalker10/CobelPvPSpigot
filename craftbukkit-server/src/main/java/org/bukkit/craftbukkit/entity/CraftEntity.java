@@ -409,7 +409,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
         return getHandle().vehicle.getBukkitEntity();
     }
-
+ 
     // Spigot start
     private final Spigot spigot = new Spigot()
     {

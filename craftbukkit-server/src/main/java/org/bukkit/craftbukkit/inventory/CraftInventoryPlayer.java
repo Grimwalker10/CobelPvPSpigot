@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.inventory;
 import java.util.HashMap;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.HumanEntity;

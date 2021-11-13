@@ -300,7 +300,7 @@ public class Chunk {
 
     private void c(boolean flag) {
         this.world.methodProfiler.a("recheckGaps");
-        if (this.areNeighborsLoaded(1)) { // Poweruser
+        if (this.areNeighborsLoaded(1)) { // CobelPvP
             for (int i = 0; i < 16; ++i) {
                 for (int j = 0; j < 16; ++j) {
                     if (this.c[i + j * 16]) {
@@ -308,12 +308,12 @@ public class Chunk {
                         int k = this.b(i, j);
                         int l = this.locX * 16 + i;
                         int i1 = this.locZ * 16 + j;
-                        // Poweruser start - pass that chunks have already been checked if they are loaded
+                        // CobelPvP start - pass that chunks have already been checked if they are loaded
                         int j1 = this.world.g(l - 1, i1, true);
                         int k1 = this.world.g(l + 1, i1, true);
                         int l1 = this.world.g(l, i1 - 1, true);
                         int i2 = this.world.g(l, i1 + 1, true);
-                        // Poweruser end
+                        // CobelPvP end
 
                         if (k1 < j1) {
                             j1 = k1;
@@ -327,13 +327,13 @@ public class Chunk {
                             j1 = i2;
                         }
 
-                        // Poweruser start - pass that chunks have already been checked if they are loaded
+                        // CobelPvP start - pass that chunks have already been checked if they are loaded
                         this.g(l, i1, j1, true);
                         this.g(l - 1, i1, k, true);
                         this.g(l + 1, i1, k, true);
                         this.g(l, i1 - 1, k, true);
                         this.g(l, i1 + 1, k, true);
-                        // Poweruser end
+                        // CobelPvP end
                         if (flag) {
                             this.world.methodProfiler.b();
                             return;
@@ -349,13 +349,13 @@ public class Chunk {
     }
 
     private void g(int i, int j, int k) {
-    // Poweruser start
+    // CobelPvP start
         this.g(i, j, k, false);
     }
 
     private void g(int i, int j, int k, boolean chunksHaveAlreadyBeenChecked) {
         int l = this.world.getHighestBlockYAt(i, j, chunksHaveAlreadyBeenChecked);
-    // Poweruser end
+    // CobelPvP end
 
         if (l > k) {
             this.c(i, j, k, l + 1);
@@ -365,13 +365,13 @@ public class Chunk {
     }
 
     private void c(int i, int j, int k, int l) {
-        // Poweruser start
+        // CobelPvP start
         if (l > k) {
             Chunk chunk = this.world.getChunkIfLoaded(i >> 4, j >> 4);
             if(chunk == null || !chunk.areNeighborsLoaded(1)) {
                 return;
             }
-        // Poweruser end
+        // CobelPvP end
             for (int i1 = k; i1 < l; ++i1) {
                 this.world.updateLight(EnumSkyBlock.SKY, i, i1, j); // PaperSpigot - Asynchronous lighting updates
             }

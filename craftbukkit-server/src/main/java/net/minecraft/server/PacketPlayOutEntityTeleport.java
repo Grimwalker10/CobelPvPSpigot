@@ -2,14 +2,14 @@ package net.minecraft.server;
 
 public class PacketPlayOutEntityTeleport extends Packet {
 
-    private int a;
-    private int b;
-    private int c;
-    private int d;
-    private byte e;
-    private byte f;
-    private boolean onGround; // Spigot - protocol patch
-    private boolean heightCorrection; // Spigot - protocol patch
+    public int a;
+    public int b;
+    public int c;
+    public int d;
+    public byte e;
+    public byte f;
+    public boolean onGround; // Spigot - protocol patch
+    public boolean heightCorrection; // Spigot Update - 20140916a
 
     public PacketPlayOutEntityTeleport() {}
 
@@ -22,7 +22,7 @@ public class PacketPlayOutEntityTeleport extends Packet {
         this.f = (byte) ((int) (entity.pitch * 256.0F / 360.0F));
     }
 
-    public PacketPlayOutEntityTeleport(int i, int j, int k, int l, byte b0, byte b1, boolean onGround, boolean heightCorrection) { // Spigot - protocol patch
+    public PacketPlayOutEntityTeleport(int i, int j, int k, int l, byte b0, byte b1, boolean onGround, boolean heightCorrection) { // Spigot - protocol patch  // Spigot Update - 20140916a
         this.a = i;
         this.b = j;
         this.c = k;
@@ -30,7 +30,7 @@ public class PacketPlayOutEntityTeleport extends Packet {
         this.e = b0;
         this.f = b1;
         this.onGround = onGround; // Spigot - protocol patch
-        this.heightCorrection = heightCorrection; // Spigot - protocol patch
+        this.heightCorrection = heightCorrection;  // Spigot Update - 20140916a
     }
 
     /**
@@ -67,7 +67,7 @@ public class PacketPlayOutEntityTeleport extends Packet {
         }
         // Spigot end
         packetdataserializer.writeInt(this.b);
-        packetdataserializer.writeInt(packetdataserializer.version >= 16 && this.heightCorrection ? this.c - 16 : this.c); // Spigot - protocol patch
+        packetdataserializer.writeInt((packetdataserializer.version >= 16 && heightCorrection) ? (this.c - 16) : this.c); // Spigot Update - 20140916a
         packetdataserializer.writeInt(this.d);
         packetdataserializer.writeByte(this.e);
         packetdataserializer.writeByte(this.f);

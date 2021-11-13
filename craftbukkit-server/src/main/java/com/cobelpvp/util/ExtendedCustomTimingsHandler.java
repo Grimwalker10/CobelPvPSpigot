@@ -1,4 +1,4 @@
-package com.cobelpvp.utils;
+package com.cobelpvp.util;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -6,20 +6,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Queue;
-import java.util.Set;
 
-import com.cobelpvp.ThreadingManager;
-import com.cobelpvp.ThreadingManager.TaskQueueWorker;
 import net.minecraft.server.MinecraftServer;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 import org.spigotmc.CustomTimingsHandler;
 import org.spigotmc.SpigotConfig;
 
@@ -27,7 +21,7 @@ public class ExtendedCustomTimingsHandler extends CustomTimingsHandler {
 
     private static File path = new File("LagSpikeLog");
     private static File file;
-    private static TaskQueueWorker taskQueue;
+    private static ThreadingManager.TaskQueueWorker taskQueue;
 
     public ExtendedCustomTimingsHandler(String name)
     {

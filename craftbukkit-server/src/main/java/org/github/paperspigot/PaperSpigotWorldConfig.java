@@ -136,18 +136,18 @@ public class PaperSpigotWorldConfig
     {
         softDespawnDistance = getInt( "despawn-ranges.soft", 32 ); // 32^2 = 1024, Minecraft Default
         hardDespawnDistance = getInt( "despawn-ranges.hard", 128 ); // 128^2 = 16384, Minecraft Default;
-
+        
         if ( softDespawnDistance > hardDespawnDistance)
         {
             softDespawnDistance = hardDespawnDistance;
         }
-
+        
         log( "Living Entity Despawn Ranges:  Soft: " + softDespawnDistance + " Hard: " + hardDespawnDistance );
-
+        
         softDespawnDistance = softDespawnDistance*softDespawnDistance;
         hardDespawnDistance = hardDespawnDistance*hardDespawnDistance;
     }
-
+    
     public boolean keepSpawnInMemory;
     private void keepSpawnInMemory()
     {
@@ -194,7 +194,7 @@ public class PaperSpigotWorldConfig
     public boolean disablePlayerCrits;
     private void mechanicsChanges()
     {
-        boatsDropBoats = getBoolean( "game-mechanics.boats-drop-boats", true );
+        boatsDropBoats = getBoolean( "game-mechanics.boats-drop-boats", false );
         lessPickyTorches = getBoolean( "game-mechanics.less-picky-torch-placement", false );
         disablePlayerCrits = getBoolean( "game-mechanics.disable-player-crits", false);
     }
@@ -235,7 +235,7 @@ public class PaperSpigotWorldConfig
         generateStronghold = getBoolean( "generator-settings.stronghold", true );
         generateTemple = getBoolean( "generator-settings.temple", true );
         generateVillage = getBoolean( "generator-settings.village", true );
-        generateFlatBedrock = getBoolean( "generator-settings.flat-bedrock", true );
+        generateFlatBedrock = getBoolean( "generator-settings.flat-bedrock", false );
     }
 
     public boolean loadUnloadedEnderPearls;
@@ -243,7 +243,7 @@ public class PaperSpigotWorldConfig
     public boolean loadUnloadedFallingBlocks;
     private void loadUnloaded()
     {
-        loadUnloadedEnderPearls = getBoolean( "load-chunks.enderpearls", true );
+        loadUnloadedEnderPearls = getBoolean( "load-chunks.enderpearls", false );
         loadUnloadedTNTEntities = getBoolean( "load-chunks.tnt-entities", false );
         loadUnloadedFallingBlocks = getBoolean( "load-chunks.falling-blocks", false );
     }
@@ -257,13 +257,13 @@ public class PaperSpigotWorldConfig
     public boolean disableEndCredits;
     private void disableEndCredits()
     {
-        disableEndCredits = getBoolean( "game-mechanics.disable-end-credits", true );
+        disableEndCredits = getBoolean( "game-mechanics.disable-end-credits", false );
     }
 
     public boolean optimizeExplosions;
     private void optimizeExplosions()
     {
-        optimizeExplosions = getBoolean( "optimize-explosions", true );
+        optimizeExplosions = getBoolean( "optimize-explosions", false );
     }
 
     public boolean fastDrainLava;
