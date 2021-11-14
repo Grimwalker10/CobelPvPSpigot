@@ -45,8 +45,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public double d;
     public double e;
     public final List chunkCoordIntPairQueue = new LinkedList();
-    public final Set<ChunkCoordIntPair> paddingChunks = new HashSet<ChunkCoordIntPair>(); // DiegoVC
-    // public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public // DiegoVC
+    public final Set<ChunkCoordIntPair> paddingChunks = new HashSet<ChunkCoordIntPair>(); // CobelPvP
+    // public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public // CobelPvP
     private final ServerStatisticManager bO;
     private float bP = Float.MIN_VALUE;
     private float bQ = -1.0E8F;
@@ -90,10 +90,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
     // Spigot end
 
-    // DiegoVC start
+    // CobelPvP start
     public int playerMapX;
     public int playerMapZ;
-    // DiegoVC end
+    // CobelPvP end
 
     public EntityPlayer(MinecraftServer minecraftserver, WorldServer worldserver, GameProfile gameprofile, PlayerInteractManager playerinteractmanager) {
         super(worldserver, gameprofile);
@@ -211,7 +211,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.activeContainer = this.defaultContainer;
         }
 
-        // DiegoVC start - nope
+        // CobelPvP start - nope
         /*
         while (!this.removeQueue.isEmpty()) {
             int i = Math.min(this.removeQueue.size(), 127);
@@ -227,7 +227,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
         }
         */
-        // DiegoVC end
+        // CobelPvP end
 
         if (!this.chunkCoordIntPairQueue.isEmpty()) {
             ArrayList arraylist = new ArrayList();
@@ -254,7 +254,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             }
 
             if (!arraylist.isEmpty()) {
-                // MineHQ start - if any real chunks overlap padding chunks, first send an unload then remove it from this player's padding list
+                // CobelPvP start - if any real chunks overlap padding chunks, first send an unload then remove it from this player's padding list
                 for (Object o : arraylist) {
                     if (this.paddingChunks.isEmpty()) {
                         break;
@@ -265,7 +265,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                         this.playerConnection.sendPacket(PacketPlayOutMapChunk.unload(c.locX, c.locZ));
                     }
                 }
-                // MineHQ end
+                // CobelPvP end
                 this.playerConnection.sendPacket(new PacketPlayOutMapChunkBulk(arraylist, this.playerConnection.networkManager.getVersion())); // Spigot - protocol patch
                 Iterator iterator2 = arraylist1.iterator();
 
@@ -275,7 +275,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                     this.b(tileentity);
                 }
 
-                // MineHQ start - nope
+                // CobelPvP start - nope
                 /*
                 iterator2 = arraylist.iterator();
 
@@ -284,7 +284,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                     this.r().getTracker().a(this, chunk);
                 }
                 */
-                // MineHQ end
+                // CobelPvP end
             }
         }
         this.world.timings.entityPlayerTickNormal.stopTiming(); // Poweruser
@@ -671,7 +671,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         if (currentVehicle != this.vehicle) {
             this.playerConnection.sendPacket(new PacketPlayOutAttachEntity(0, this, this.vehicle));
             this.playerConnection.a(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
-            // MineHQ start
+            // CobelPvP start
             if (this.vehicle instanceof EntityLiving) {
                 AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.vehicle).getAttributeMap();
                 Collection collection = attributemapserver.c();
@@ -679,7 +679,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                     this.playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.vehicle.getId(), collection));
                 }
             }
-            // MineHQ end
+            // CobelPvP end
         }
         // CraftBukkit end
     }
@@ -1043,7 +1043,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.lastSentExp = -1;
         this.bQ = -1.0F;
         this.bR = -1;
-        // this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue); // MineHQ
+        // this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue); // CobelPvP
     }
 
     protected void a(MobEffect mobeffect) {
@@ -1185,7 +1185,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void d(Entity entity) {
-        this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[] { entity.getId() })); // MineHQ
+        this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[] { entity.getId() })); // CobelPvP
     }
 
     public long x() {
@@ -1279,7 +1279,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
     // CraftBukkit end
 
-    // MineHQ start - Disguises
+    // CobelPvP start - Disguises
     public GameProfile getDisguiseProfile() {
         if (getBukkitEntity().isDisguised()) {
             return getBukkitEntity().disguisedProfile;
@@ -1287,5 +1287,5 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
         return getProfile();
     }
-    // MineHQ end
+    // CobelPvP end
 }

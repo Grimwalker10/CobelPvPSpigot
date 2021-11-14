@@ -30,7 +30,7 @@ public class Main {
                 acceptsAll(asList("c", "config"), "Properties file to use")
                         .withRequiredArg()
                         .ofType(File.class)
-                        .defaultsTo(new File("config/server", "server.properties")) // MineHQ - Dedicated config directory
+                        .defaultsTo(new File("config/server", "server.properties")) // CobelPvP - Dedicated config directory
                         .describedAs("Properties file");
 
                 acceptsAll(asList("P", "plugins"), "Plugin directory to use")
@@ -103,13 +103,13 @@ public class Main {
                 acceptsAll(asList("b", "bukkit-settings"), "File for bukkit settings")
                         .withRequiredArg()
                         .ofType(File.class)
-                        .defaultsTo(new File("config/server", "bukkit.yml")) // MineHQ - Dedicated config directory
+                        .defaultsTo(new File("config/server", "bukkit.yml")) // CobelPvP - Dedicated config directory
                         .describedAs("Yml file");
 
                 acceptsAll(asList("C", "commands-settings"), "File for command settings")
                         .withRequiredArg()
                         .ofType(File.class)
-                        .defaultsTo(new File("config/server", "commands.yml")) // MineHQ - Dedicated config directory
+                        .defaultsTo(new File("config/server", "commands.yml")) // CobelPvP - Dedicated config directory
                         .describedAs("Yml file");
 
                 acceptsAll(asList("nojline"), "Disables jline and emulates the vanilla console");

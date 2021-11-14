@@ -1392,7 +1392,7 @@ public abstract class World implements IBlockAccess {
                         for ( int y = ystart; y < l; y++ )
                         {
                             Block block = chunk.getType(x - cx, y, z - cz );
-                            if ( block != null && block != Blocks.AIR) // MineHQ
+                            if ( block != null && block != Blocks.AIR) // CobelPvP
                             {
                                 // PaperSpigot start - FallingBlocks and TNT collide with specific non-collidable blocks
                                 if (entity.world.paperSpigotConfig.fallingBlocksCollideWithSigns && (entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock) &&
@@ -3046,11 +3046,11 @@ public abstract class World implements IBlockAccess {
     }
 
     public EntityHuman findNearbyPlayer(double d0, double d1, double d2, double d3) {
-        // MineHQ start
+        // CobelPvP start
         if (0 <= d3 && d3 <= 64) {
             return this.playerMap.getNearestPlayer(d0, d1, d2, d3);
         }
-        // MineHQ end
+        // CobelPvP end
         double d4 = -1.0D;
         EntityHuman entityhuman = null;
 
@@ -3076,7 +3076,7 @@ public abstract class World implements IBlockAccess {
         return this.findNearbyVulnerablePlayer(entity.locX, entity.locY, entity.locZ, d0);
     }
 
-    // MineHQ start
+    // CobelPvP start
     private static final Function<EntityHuman, Double> invisibilityFunction = new Function<EntityHuman, Double>() {
         @Override
         public Double apply(EntityHuman entityHuman) {
@@ -3094,14 +3094,14 @@ public abstract class World implements IBlockAccess {
             return null;
         }
     };
-    // MineHQ end
+    // CobelPvP end
 
     public EntityHuman findNearbyVulnerablePlayer(double d0, double d1, double d2, double d3) {
-        // MineHQ start
+        // CobelPvP start
         if (0 <= d3 && d3 <= 64.0D) {
             return this.playerMap.getNearestAttackablePlayer(d0, d1, d2, d3, d3, invisibilityFunction);
         }
-        // MineHQ end
+        // CobelPvP end
         double d4 = -1.0D;
         EntityHuman entityhuman = null;
 
@@ -3147,11 +3147,11 @@ public abstract class World implements IBlockAccess {
     }
 
     public EntityHuman findNearbyPlayerWhoAffectsSpawning(double x, double y, double z, double radius) {
-        // MineHQ start
+        // CobelPvP start
         if (0 <= radius && radius <= 64.0) {
             return this.playerMap.getNearbyPlayer(x, y, z, radius, true);
         }
-        // MineHQ end
+        // CobelPvP end
         double nearestRadius = - 1.0D;
         EntityHuman entityHuman = null;
 
@@ -3452,7 +3452,7 @@ public abstract class World implements IBlockAccess {
         }
     }
 
-    // MineHQ start - chunk unload queue slowness
+    // CobelPvP start - chunk unload queue slowness
     public long obtainLock, pendingSavesPut, fileIOThreadAddition, writeStartNBT, writeSections, writeBiomes, writeEntities, writeTileEntities, writeTileTicks;
     public void printTimings() {
         MinecraftServer.getLogger().warn("Obtain lock: " + obtainLock);
@@ -3478,5 +3478,5 @@ public abstract class World implements IBlockAccess {
         this.writeTileEntities = 0;
         this.writeTileTicks = 0;
     }
-    // MineHQ end
+    // CobelPvP end
 }

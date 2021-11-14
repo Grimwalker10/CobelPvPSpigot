@@ -180,7 +180,7 @@ public class CraftChunk implements Chunk {
                     blockids[j] = (short) (baseids[j] & 0xFF);
                 }
 
-                // MineHQ start - 1.7 has no extended block IDs
+                // CobelPvP start - 1.7 has no extended block IDs
                 /*
                 if (cs[i].getExtendedIdArray() != null) { /* If we've got extended IDs *//*
                     byte[] extids = cs[i].getExtendedIdArray().a;
@@ -197,7 +197,7 @@ public class CraftChunk implements Chunk {
                     }
                 }
                 */
-                // MineHQ end
+                // CobelPvP end
                 sectionBlockIDs[i] = blockids;
 
                 /* Get block data nibbles */
@@ -328,7 +328,7 @@ public class CraftChunk implements Chunk {
         Arrays.fill(emptySkyLight, (byte) 0xFF);
     }
 
-    // MineHQ start - chunk snapshot api
+    // CobelPvP start - chunk snapshot api
     @Override
     public com.cobelpvp.chunksnapshot.ChunkSnapshot takeSnapshot() {
         net.minecraft.server.Chunk handle = getHandle();
@@ -391,5 +391,5 @@ public class CraftChunk implements Chunk {
         handle.n = true; // needs saving flag
         worldServer.getPlayerChunkMap().resend(x, z);
     }
-    // MineHQ end
+    // CobelPvP end
 }

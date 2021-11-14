@@ -61,7 +61,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      private String disguisedName;
      private String originalPlayerListName;
      public GameProfile disguisedProfile;
-     // MineHQ end
+     // CobelPvP end
 
     public CraftPlayer(CraftServer server, EntityPlayer entity) {
         super(server, entity);
@@ -177,7 +177,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public String getDisplayName() {
-        return disguisedName != null ? disguisedName : getHandle().displayName; // MineHQ - Disguises
+        return disguisedName != null ? disguisedName : getHandle().displayName; // CobelPvP - Disguises
     }
 
     @Override
@@ -185,7 +185,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         getHandle().displayName = name == null ? getName() : name;
     }
 
-    // MineHQ start - Disguises
+    // CobelPvP start - Disguises
     @Override
     public String getDisguisedName() {
         return disguisedName != null ? disguisedName : getName();
@@ -294,7 +294,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             }
         }
     }
-    // MineHQ end
+    // CobelPvP end
 
     @Override
     public String getPlayerListName() {
@@ -326,7 +326,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         getHandle().listName = name;
 
-        if (!SpigotConfig.playerListPackets) return; // MineHQ
+        if (!SpigotConfig.playerListPackets) return; // CobelPvP
 
         // Change the name on the client side
         // Spigot start - protocol patch
@@ -602,14 +602,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             return false;
         }
 
-        // MineHQ start - don't allow excessive teleports
+        // CobelPvP start - don't allow excessive teleports
         int locationChunkX = location.getBlockX() >> 4;
         int locationChunkZ = location.getBlockZ() >> 4;
 
         if (46340 <= Math.abs(locationChunkX) || 46340 <= Math.abs(locationChunkZ)) {
             throw new IllegalArgumentException("Invalid teleportation destination for " + this.getName() + "! Offending location: " + location.toString());
         }
-        // MineHQ end
+        // CobelPvP end
 
         // From = Players current Location
         Location from = this.getLocation();
@@ -1106,7 +1106,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             entry.updatePlayer(getHandle());
         }
 
-         getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch // MineHQ - unneeded
+         getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch // CobelPvP - unneeded
     }
 
     public void removeDisconnectingPlayer(Player player) {
@@ -1459,15 +1459,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void setRealHealth(double health) {
-        double previous = this.health; // MineHQ
+        double previous = this.health; // CobelPvP
 
         this.health = health;
 
-        // MineHQ start
+        // CobelPvP start
         if (previous != health) {
             Bukkit.getPluginManager().callEvent(new PlayerHealthChangeEvent(this, previous, health));
         }
-        // MineHQ end
+        // CobelPvP end
     }
 
     public void updateScaledHealth() {

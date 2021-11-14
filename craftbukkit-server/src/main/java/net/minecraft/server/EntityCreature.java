@@ -8,12 +8,12 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityUnleashEvent;
 // CraftBukkit end
 
-// DiegoVC start
+// CobelPvP start
 import com.cobelpvp.pathsearch.jobs.PathSearchJob;
 import com.cobelpvp.pathsearch.jobs.PathSearchJobEntity;
 import com.cobelpvp.pathsearch.jobs.PathSearchJobPosition;
 import com.cobelpvp.pathsearch.jobs.PathSearchQueuingManager;
-// DiegoVC end
+// CobelPvP end
 
 public abstract class EntityCreature extends EntityInsentient {
 
@@ -28,7 +28,7 @@ public abstract class EntityCreature extends EntityInsentient {
     private PathfinderGoal bs = new PathfinderGoalMoveTowardsRestriction(this, 1.0D);
     private boolean bt;
 
-    // DiegoVC start
+    // CobelPvP start
     private PathSearchQueuingManager queuingManager = new PathSearchQueuingManager();
     private boolean searchIssued = false;
     private PathEntity returnedPathEntity;
@@ -61,12 +61,12 @@ public abstract class EntityCreature extends EntityInsentient {
         this.queuingManager.checkLastSearchResult(pathSearchJobPosition);
         this.returnedPathEntity = pathentity;
     }
-    // DiegoVC end
+    // CobelPvP end
 
-    // DiegoVC start
+    // CobelPvP start
     private long lastRayTraceTick = -1L;
     private boolean lastRayTraceResult = false;
-    // DiegoVC end
+    // CobelPvP end
 
     public EntityCreature(World world) {
         super(world);
@@ -106,19 +106,19 @@ public abstract class EntityCreature extends EntityInsentient {
 
             if (this.target != null) {
                 //this.pathEntity = this.world.findPath(this, this.target, f11, true, false, false, true);
-                this.issueSearch(this.target, f11); // DiegoVC
+                this.issueSearch(this.target, f11); // CobelPvP
             }
         } else if (this.target.isAlive()) {
             float f1 = this.target.e((Entity) this);
 
-            // DiegoVC start - don't constantly ray trace
+            // CobelPvP start - don't constantly ray trace
             if (this.lastRayTraceTick + 50 < this.ticksLived) {
                 this.lastRayTraceTick = this.ticksLived;
                 this.lastRayTraceResult = this.hasLineOfSight(this.target);
             }
 
             if (this.lastRayTraceResult) {
-            // DiegoVC end
+            // CobelPvP end
                 this.a(this.target, f1);
             }
         } else {
@@ -142,16 +142,16 @@ public abstract class EntityCreature extends EntityInsentient {
 
         this.world.methodProfiler.b();
 
-        // DiegoVC start
+        // CobelPvP start
         if(this.returnedPathEntity != null) {
             this.pathEntity = this.returnedPathEntity;
             this.returnedPathEntity = null;
         }
-        // DiegoVC end
+        // CobelPvP end
 
         if (!this.bn && this.target != null && (this.pathEntity == null || this.random.nextInt(20) == 0)) {
             //this.pathEntity = this.world.findPath(this, this.target, f11, true, false, false, true);
-            this.issueSearch(this.target, f11); // DiegoVC
+            this.issueSearch(this.target, f11); // CobelPvP
         } else if (!this.bn && (this.pathEntity == null && this.random.nextInt(180) == 0 || this.random.nextInt(120) == 0 || this.bo > 0) && this.aU < 100) {
             this.bQ();
         }
@@ -255,7 +255,7 @@ public abstract class EntityCreature extends EntityInsentient {
 
         if (flag) {
             //this.pathEntity = this.world.a(this, i, j, k, 10.0F, true, false, false, true);
-            this.issueSearch(i, j, k, 10.0F); // DiegoVC
+            this.issueSearch(i, j, k, 10.0F); // CobelPvP
         }
 
         this.world.methodProfiler.b();

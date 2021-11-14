@@ -48,7 +48,7 @@ public abstract class GenLayer {
 
         GenLayer genlayer1 = GenLayerZoom.b(1000L, genlayer, 0);
         GenLayerCleaner genlayercleaner = new GenLayerCleaner(100L, genlayer1);
-        Object object = new GenLayerBiome(200L, genlayer, worldtype, world); // DiegoVC - add world
+        Object object = new GenLayerBiome(200L, genlayer, worldtype, world); // CobelPvP - add world
 
         if (!flag) {
             GenLayer genlayer2 = GenLayerZoom.b(1000L, (GenLayer) object, 2);
@@ -57,7 +57,7 @@ public abstract class GenLayer {
         }
 
         GenLayer genlayer3 = GenLayerZoom.b(1000L, genlayercleaner, 2);
-        GenLayerRegionHills genlayerregionhills = new GenLayerRegionHills(1000L, (GenLayer) object, genlayer3, world); // DiegoVC - add world
+        GenLayerRegionHills genlayerregionhills = new GenLayerRegionHills(1000L, (GenLayer) object, genlayer3, world); // CobelPvP - add world
 
         genlayer1 = GenLayerZoom.b(1000L, genlayercleaner, 2);
         genlayer1 = GenLayerZoom.b(1000L, genlayer1, b0);

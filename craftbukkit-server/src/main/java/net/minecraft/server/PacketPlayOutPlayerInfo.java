@@ -37,7 +37,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = ADD_PLAYER;
         packet.username = player.listName;
-        packet.player = player.getDisguiseProfile(); // DiegoVC - disguises
+        packet.player = player.getDisguiseProfile(); // CobelPvP - disguises
         packet.ping = player.ping;
         packet.gamemode = player.playerInteractManager.getGameMode().getId();
         return packet;
@@ -47,7 +47,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = UPDATE_LATENCY;
         packet.username = player.listName;
-        packet.player = player.getDisguiseProfile(); // DiegoVC - disguises
+        packet.player = player.getDisguiseProfile(); // CobelPvP - disguises
         packet.ping = player.ping;
         return packet;
     }
@@ -56,7 +56,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = UPDATE_GAMEMODE;
         packet.username = player.listName;
-        packet.player = player.getDisguiseProfile(); // DiegoVC - disguises
+        packet.player = player.getDisguiseProfile(); // CobelPvP - disguises
         packet.gamemode = player.playerInteractManager.getGameMode().getId();
         return packet;
     }
@@ -65,7 +65,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = UPDATE_DISPLAY_NAME;
         packet.username = player.listName;
-        packet.player = player.getDisguiseProfile(); // DiegoVC - disguises
+        packet.player = player.getDisguiseProfile(); // CobelPvP - disguises
         return packet;
     }
 
@@ -73,7 +73,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = REMOVE_PLAYER;
         packet.username = player.listName;
-        packet.player = player.getDisguiseProfile(); // DiegoVC - disguises
+        packet.player = player.getDisguiseProfile(); // CobelPvP - disguises
         return packet;
     }
 

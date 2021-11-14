@@ -28,11 +28,11 @@ public class ItemFishingRod extends Item {
             }
             // CraftBukkit end
 
-            // DiegoVC start
+            // CobelPvP start
             if (!world.isStatic && world.addEntity(hook)) {
                 world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
             }
-            // DiegoVC end
+            // CobelPvP end
 
             entityhuman.ba();
         }

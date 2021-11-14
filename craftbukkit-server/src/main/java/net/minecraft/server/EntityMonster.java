@@ -27,7 +27,7 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
             this.die();
         }
 
-        // DiegoVC - Add mobsEnabled check.
+        // CobelPvP - Add mobsEnabled check.
         if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
             this.die();
         }
@@ -41,15 +41,15 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
         return "game.hostile.swim.splash";
     }
 
-    private long lastTargetSearchTick = -1L; // DiegoVC
+    private long lastTargetSearchTick = -1L; // CobelPvP
     protected Entity findTarget() {
-        // DiegoVC start
+        // CobelPvP start
         if (this.lastTargetSearchTick + 50 < this.ticksLived) {
             this.lastTargetSearchTick = this.ticksLived;
         } else {
             return null;
         }
-        // DiegoVC end
+        // CobelPvP end
         EntityHuman entityhuman = this.world.findNearbyVulnerablePlayer(this, 16.0D);
 
         return entityhuman != null && this.hasLineOfSight(entityhuman) ? entityhuman : null;
@@ -161,18 +161,18 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
         if (this.world.b(EnumSkyBlock.SKY, i, j, k) > this.random.nextInt(32)) {
             return false;
         } else {
-            // int l = this.world.getLightLevel(i, j, k); // DiegoVC
-            boolean passes; // DiegoVC
+            // int l = this.world.getLightLevel(i, j, k); // CobelPvP
+            boolean passes; // CobelPvP
             if (this.world.P()) {
                 int i1 = this.world.j;
 
                 this.world.j = 10;
-                // l = this.world.getLightLevel(i, j, k); // DiegoVC
-                passes = !this.world.isLightLevel(i, j, k, this.random.nextInt(9)); // DiegoVC
+                // l = this.world.getLightLevel(i, j, k); // CobelPvP
+                passes = !this.world.isLightLevel(i, j, k, this.random.nextInt(9)); // CobelPvP
                 this.world.j = i1;
-            } else { passes = !this.world.isLightLevel(i, j, k, this.random.nextInt(9)); } // DiegoVC
+            } else { passes = !this.world.isLightLevel(i, j, k, this.random.nextInt(9)); } // CobelPvP
 
-            return passes; // DiegoVC
+            return passes; // CobelPvP
         }
     }
 

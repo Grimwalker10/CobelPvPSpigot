@@ -8,7 +8,7 @@ public class ItemEgg extends Item {
     }
 
     public ItemStack a(ItemStack itemstack, World world, EntityHuman entityhuman) {
-        // DiegoVC start
+        // CobelPvP start
         if (!world.isStatic && world.addEntity(new EntityEgg(world, entityhuman))) {
             if (!entityhuman.abilities.canInstantlyBuild) {
                 --itemstack.count;
@@ -16,7 +16,7 @@ public class ItemEgg extends Item {
 
             world.makeSound(entityhuman, "random.bow", 0.5f, 0.4f / (ItemEgg.g.nextFloat() * 0.4f + 0.8f));
         }
-        // DiegoVC end
+        // CobelPvP end
 
         return itemstack;
     }

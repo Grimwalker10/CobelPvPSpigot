@@ -593,7 +593,7 @@ public abstract class PlayerList {
                 cworld = (CraftWorld) this.server.server.getWorlds().get(0);
                 chunkcoordinates = cworld.getHandle().getSpawn();
 
-                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5, cworld.getHandle().getWorldData().getSpawnYaw(), cworld.getHandle().getWorldData().getSpawnPitch()); // DiegoVC
+                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5, cworld.getHandle().getWorldData().getSpawnYaw(), cworld.getHandle().getWorldData().getSpawnPitch()); // CobelPvP
             }
 
             Player respawnPlayer = this.cserver.getPlayer(entityplayer1);

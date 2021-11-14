@@ -76,9 +76,9 @@ public final class JavaPluginLoader implements PluginLoader {
         }
 
         final File parentFile = file.getParentFile();
-        final File dataFolder = new File("config", description.getName()); // MineHQ
+        final File dataFolder = new File("config", description.getName()); // CobelPvP
         @SuppressWarnings("deprecation")
-        final File oldDataFolder = new File("config", description.getRawName()); // MineHQ
+        final File oldDataFolder = new File("config", description.getRawName()); // CobelPvP
 
         // Found old data folder
         if (dataFolder.equals(oldDataFolder)) {

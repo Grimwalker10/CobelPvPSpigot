@@ -1621,7 +1621,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 this.n.a(this.player.activeContainer.windowId, Short.valueOf(packetplayinwindowclick.f()));
                 this.player.playerConnection.sendPacket(new PacketPlayOutTransaction(packetplayinwindowclick.c(), packetplayinwindowclick.f(), false));
                 this.player.activeContainer.a(this.player, false);
-                ArrayList arraylist = new ArrayList(this.player.activeContainer.c.size()); // DiegoVC
+                ArrayList arraylist = new ArrayList(this.player.activeContainer.c.size()); // CobelPvP
 
                 for (int i = 0; i < this.player.activeContainer.c.size(); ++i) {
                     arraylist.add(((Slot) this.player.activeContainer.c.get(i)).getItem());
@@ -1879,14 +1879,14 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (itemstack.getItem() == Items.BOOK_AND_QUILL && itemstack.getItem() == itemstack1.getItem()) {
-                        // MineHQ start - handle book editting better
+                        // CobelPvP start - handle book editting better
                         ItemStack newBook = itemstack1.cloneItemStack();
                         if (!newBook.hasTag()) {
                             newBook.setTag(new NBTTagCompound());
                         }
                         newBook.tag.set("pages", itemstack.getTag().getList("pages", 8));
                         CraftEventFactory.handleEditBookEvent(player, newBook); // CraftBukkit
-                        // MineHQ end
+                        // CobelPvP end
                     }
 
                     return;
@@ -1918,7 +1918,7 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (itemstack.getItem() == Items.WRITTEN_BOOK && itemstack1.getItem() == Items.BOOK_AND_QUILL) {
-                        // MineHQ start - handle book editting better
+                        // CobelPvP start - handle book editting better
                         ItemStack newBook = itemstack1.cloneItemStack();
                         if (!newBook.hasTag()) {
                             newBook.setTag(new NBTTagCompound());
@@ -1928,7 +1928,7 @@ public class PlayerConnection implements PacketPlayInListener {
                         newBook.tag.set("pages", itemstack.getTag().getList("pages", 8));
                         newBook.setItem(Items.WRITTEN_BOOK);
                         CraftEventFactory.handleEditBookEvent(player, newBook); // CraftBukkit
-                        // MineHQ end
+                        // CobelPvP end
                     }
 
                     return;

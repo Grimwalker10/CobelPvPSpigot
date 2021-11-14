@@ -35,7 +35,7 @@ public class BlockMycel extends Block {
                     blockState.update(true);
                 }
                 // CraftBukkit end
-            } else if (lightLevel >= 9) { // DiegoVC
+            } else if (lightLevel >= 9) { // CobelPvP
                 int numGrowth = Math.min(4, Math.max(20, (int) (4 * 100F / world.growthOdds))); // Spigot
                 for (int l = 0; l < numGrowth; ++l) { // Spigot
                     int i1 = i + random.nextInt(3) - 1;

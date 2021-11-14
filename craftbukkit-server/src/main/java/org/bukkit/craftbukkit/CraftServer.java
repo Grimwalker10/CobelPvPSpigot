@@ -1796,11 +1796,11 @@ public final class CraftServer implements Server {
         PlayerChatTabCompleteEvent event = new PlayerChatTabCompleteEvent(player, message, completions);
         String token = event.getLastToken();
         for (Player p : getOnlinePlayers()) {
-            // MineHQ start - Disguises: Use #getDisguisedName instead of #getName
+            // CobelPvP start - Disguises: Use #getDisguisedName instead of #getName
             if (player.canSee(p) && StringUtil.startsWithIgnoreCase(p.getDisguisedName(), token)) {
                 completions.add(p.getDisguisedName());
             }
-            // MineHQ end
+            // CobelPvP end
         }
         pluginManager.callEvent(event);
 
@@ -1879,7 +1879,7 @@ public final class CraftServer implements Server {
         return console.getIdleTimeout();
     }
 
-    // MineHQ start
+    // CobelPvP start
     @Override
     public Player getPlayerByDisguise(String name) {
         Validate.notNull(name, "Name cannot be null");
@@ -1906,7 +1906,7 @@ public final class CraftServer implements Server {
 
         return found;
     }
-    // MineHQ end
+    // CobelPvP end
 
     @Deprecated
     @Override

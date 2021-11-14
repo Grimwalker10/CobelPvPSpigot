@@ -35,7 +35,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
      */
     public String getDisplayName();
 
-    // DiegoVC start - Disguises
+    // CobelPvP start - Disguises
     /**
      * Gets the disguised name of this player, or their
      * actual name if they're not currently disguised.
@@ -72,7 +72,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
      * Un-disguise this player.
      */
     public void undisguise();
-    // DiegoVC end
+    // CobelPvP end
 
     /**
      * Sets the "friendly" name to display of this player. This may include

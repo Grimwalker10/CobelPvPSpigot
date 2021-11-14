@@ -908,7 +908,7 @@ public interface Server extends PluginMessageRecipient {
      */
     public int getIdleTimeout();
 
-    // MineHQ start
+    // CobelPvP start
     /**
      * Gets a player object by the given disguised name.
      * <p>
@@ -928,7 +928,7 @@ public interface Server extends PluginMessageRecipient {
      * @return a player if one was found, null otherwise
      */
     public Player getPlayerExactByDisguise(String name);
-    // MineHQ end
+    // CobelPvP end
 
     /**
      * @see UnsafeValues

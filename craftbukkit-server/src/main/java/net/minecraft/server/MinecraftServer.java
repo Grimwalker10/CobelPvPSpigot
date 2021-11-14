@@ -51,7 +51,7 @@ import com.cobelpvp.autosave.AutoSave;
 
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
 
-    private static final File a = new File( "config/misc", "usercache.json"); // MineHQ - Dedicated config directory
+    private static final File a = new File( "config/misc", "usercache.json"); // CobelPvP - Dedicated config directory
     private static MinecraftServer j;
     public Convertable convertable; // CraftBukkit - private final -> public
     private final MojangStatisticsGenerator l = new MojangStatisticsGenerator("server", this, ar());
@@ -130,7 +130,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     private AutoSave autoSaveManager;
     // CobelPvP end
 
-    public float lastTickTime = 0F; // MineHQ
+    public float lastTickTime = 0F; // CobelPvP
 
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
         net.minecraft.util.io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
@@ -381,7 +381,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     protected void saveChunks(boolean flag) throws ExceptionWorldConflict { // CraftBukkit - added throws
-        if (SpigotConfig.disableSaving) return; // MineHQ
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if (!this.M) {
             // CraftBukkit start - fire WorldSaveEvent
             // WorldServer[] aworldserver = this.worldServer;
@@ -598,8 +598,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         SpigotTimings.serverTickTimer.startTiming(); // Spigot
         long i = System.nanoTime();
 
-        ThreadingManager.getTickCounter().increaseTickCounter(); // DiegoVC
-        ThreadingManager.startTickTimerTask(); // DiegoVC
+        ThreadingManager.getTickCounter().increaseTickCounter(); // CobelPvP
+        ThreadingManager.startTickTimerTask(); // CobelPvP
 
         ++this.ticks;
         if (this.R) {
@@ -624,7 +624,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             this.q.b().a(agameprofile);
         }
 
-        // DiegoVC start
+        // CobelPvP start
         if(this.autoSaveManager.isActive()) {
             SpigotTimings.worldSaveTimer.startTiming(); // Spigot
             server.playerCommandState = true;
@@ -681,7 +681,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public void v() {
-        // MineHQ start - tick connections earlier
+        // CobelPvP start - tick connections earlier
         // We tick the playerList here too so updated
         // pings are sent out as soon as possible.
         SpigotTimings.connectionTimer.startTiming(); // Spigot
@@ -690,7 +690,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         SpigotTimings.playerListTimer.startTiming(); // Spigot
         this.u.tick();
         SpigotTimings.playerListTimer.stopTiming(); // Spigot
-        // MineHQ end
+        // CobelPvP end
         this.methodProfiler.a("levels");
 
         SpigotTimings.schedulerTimer.startTiming(); // Spigot
@@ -728,7 +728,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
             // if (i == 0 || this.getAllowNether()) {
                 WorldServer worldserver = this.worlds.get(i);
-                if (!worldserver.checkTicking()) continue; // MineHQ
+                if (!worldserver.checkTicking()) continue; // CobelPvP
 
                 this.methodProfiler.a(worldserver.getWorldData().getName());
                 this.methodProfiler.a("pools");
@@ -791,7 +791,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         }
 
         this.methodProfiler.c("connection");
-        // MineHQ start - move up
+        // CobelPvP start - move up
         /*
         SpigotTimings.connectionTimer.startTiming(); // Spigot
         this.ai().c();
@@ -801,7 +801,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.u.tick();
         SpigotTimings.playerListTimer.stopTiming(); // Spigot
         */
-        // MineHQ end
+        // CobelPvP end
         this.methodProfiler.c("tickables");
 
         SpigotTimings.tickablesTimer.startTiming(); // Spigot

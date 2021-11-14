@@ -15,7 +15,7 @@
     </dependencies>
     <packaging>pom</packaging>
 
-    <name>CraftBukkit</name>
+    <name>Spigot</name>
     <description>Production version of Spigot for CobelPvP Network.</description>
 
     <modules>

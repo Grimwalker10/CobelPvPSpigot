@@ -11,13 +11,13 @@ public class PacketPlayOutMapChunk extends Packet {
     private int b;
     private int c;
     private int d;
-    private static final ReusableByteArray bufferCache = new ReusableByteArray(164196); // DiegoVC
+    private static final ReusableByteArray bufferCache = new ReusableByteArray(164196); // CobelPvP
     private byte[] f;
     private boolean g;
     private int h;
     private static byte[] i = new byte[196864];
 
-    private World world; // DiegoVC - use world instead of chunk
+    private World world; // CobelPvP - use world instead of chunk
     private int mask; // Spigot
 
     public PacketPlayOutMapChunk() {}
@@ -29,12 +29,12 @@ public class PacketPlayOutMapChunk extends Packet {
         this.a = chunk.locX;
         this.b = chunk.locZ;
         this.g = flag;
-        // DiegoVC start - don't need to do chunkmap for unload chunk packets
+        // CobelPvP start - don't need to do chunkmap for unload chunk packets
         if (i == 0 && this.g) {
             return;
         }
-        // DiegoVC end
-        ChunkMap chunkmap = chunk.getChunkMap(flag, i, version); // DiegoVC
+        // CobelPvP end
+        ChunkMap chunkmap = chunk.getChunkMap(flag, i, version); // CobelPvP
 
         this.d = chunkmap.c;
         this.c = chunkmap.b;
@@ -42,7 +42,7 @@ public class PacketPlayOutMapChunk extends Packet {
         this.f = chunkmap.a;
     }
 
-    // DiegoVC start - constructor for unload chunk packets
+    // CobelPvP start - constructor for unload chunk packets
     public static PacketPlayOutMapChunk unload(int x, int z) {
         PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk();
         packet.a = x;
@@ -50,14 +50,14 @@ public class PacketPlayOutMapChunk extends Packet {
         packet.g = true;
         return packet;
     }
-    // DiegoVC end
+    // CobelPvP end
 
     public static int c() {
         return 196864;
     }
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
-        // DiegoVC start - this is client code
+        // CobelPvP start - this is client code
         /*
         this.a = packetdataserializer.readInt();
         this.b = packetdataserializer.readInt();
@@ -96,7 +96,7 @@ public class PacketPlayOutMapChunk extends Packet {
             inflater.end();
         }
         */
-        // DiegoVC end
+        // CobelPvP end
     }
 
     public void b(PacketDataSerializer packetdataserializer) {
@@ -104,7 +104,7 @@ public class PacketPlayOutMapChunk extends Packet {
         packetdataserializer.writeInt(this.b);
         packetdataserializer.writeBoolean(this.g);
         packetdataserializer.writeShort((short) (this.c & '\uffff'));
-        // DiegoVC start - don't send any data for unload chunks, the client still accepts the packets fine without it
+        // CobelPvP start - don't send any data for unload chunks, the client still accepts the packets fine without it
         if (this.g && this.c == 0) {
             if (packetdataserializer.version < 27) {
                 packetdataserializer.writeShort((short) (this.d & '\uffff'));
@@ -114,7 +114,7 @@ public class PacketPlayOutMapChunk extends Packet {
             }
             return;
         }
-        // DiegoVC end
+        // CobelPvP end
         // Spigot start - protocol patch
         if ( packetdataserializer.version < 27 )
         {
@@ -165,7 +165,7 @@ public class PacketPlayOutMapChunk extends Packet {
         for (l = 0; l < achunksection.length; ++l) {
             if (achunksection[l] != null && (!flag || !achunksection[l].isEmpty()) && (i & 1 << l) != 0) {
                 chunkmap.b |= 1 << l;
-                // DiegoVC start - 1.7 has no extended block IDs
+                // CobelPvP start - 1.7 has no extended block IDs
                 /*
                 if (achunksection[l].getExtendedIdArray() != null) {
                     chunkmap.c |= 1 << l;
@@ -249,7 +249,7 @@ public class PacketPlayOutMapChunk extends Packet {
             }
         }
 
-        // DiegoVC start - 1.7 has no extended block IDs
+        // CobelPvP start - 1.7 has no extended block IDs
         /*
         if (k > 0 && version < 24) {
             for (l = 0; l < achunksection.length; ++l) {
@@ -261,7 +261,7 @@ public class PacketPlayOutMapChunk extends Packet {
             }
         }
         */
-        // DiegoVC end
+        // CobelPvP end
 
         if (flag) {
             byte[] abyte2 = chunk.m();

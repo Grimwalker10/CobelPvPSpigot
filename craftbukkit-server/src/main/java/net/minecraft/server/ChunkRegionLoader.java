@@ -242,13 +242,13 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                 nbttagcompound1 = new NBTTagCompound();
                 nbttagcompound1.setByte("Y", (byte) (chunksection.getYPosition() >> 4 & 255));
                 nbttagcompound1.setByteArray("Blocks", chunksection.getIdArray());
-                // DiegoVC start - 1.7 has no extended block IDs
+                // CobelPvP start - 1.7 has no extended block IDs
                 /*
                 if (chunksection.getExtendedIdArray() != null) {
                     nbttagcompound1.setByteArray("Add", chunksection.getExtendedIdArray().a);
                 }
                 */
-                // DiegoVC end
+                // CobelPvP end
                 nbttagcompound1.setByteArray("Data", chunksection.getDataArray().a);
                 nbttagcompound1.setByteArray("BlockLight", chunksection.getEmittedLightArray().a);
                 if (flag) {
@@ -345,13 +345,13 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             ChunkSection chunksection = new ChunkSection(b1 << 4, flag);
 
             chunksection.setIdArray(nbttagcompound1.getByteArray("Blocks"));
-            // DiegoVC start - 1.7 has no extended block IDs
+            // CobelPvP start - 1.7 has no extended block IDs
             /*
             if (nbttagcompound1.hasKeyOfType("Add", 7)) {
                 chunksection.setExtendedIdArray(new NibbleArray(nbttagcompound1.getByteArray("Add"), 4));
             }
             */
-            // DiegoVC end
+            // CobelPvP end
 
             chunksection.setDataArray(new NibbleArray(nbttagcompound1.getByteArray("Data"), 4));
             chunksection.setEmittedLightArray(new NibbleArray(nbttagcompound1.getByteArray("BlockLight"), 4));

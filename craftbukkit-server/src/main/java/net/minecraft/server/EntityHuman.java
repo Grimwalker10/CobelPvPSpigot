@@ -1670,15 +1670,15 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
             f = 0.0F;
         }
 
-        float previous = getAbsorptionHearts(); // MineHQ
+        float previous = getAbsorptionHearts(); // CobelPvP
 
         this.getDataWatcher().watch(17, Float.valueOf(f));
 
-        // MineHQ start
+        // CobelPvP start
         if (previous != f) {
             Bukkit.getPluginManager().callEvent(new PlayerHealthChangeEvent(((CraftPlayer) getBukkitEntity()), getHealth(), getHealth()));
         }
-        // MineHQ end
+        // CobelPvP end
     }
 
     public float getAbsorptionHearts() {

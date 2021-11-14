@@ -311,7 +311,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     public void aB() {
         SpigotTimings.serverCommandTimer.startTiming(); // Spigot
 
-        // DiegoVC start - better server command queue
+        // CobelPvP start - better server command queue
         ServerCommand queuedCommand;
         while ((queuedCommand = this.commandsQueue.poll()) != null) {
             // CraftBukkit start - ServerCommand for preprocessing
@@ -326,7 +326,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             this.server.dispatchServerCommand(this.console, queuedCommand);
             // CraftBukkit end
         }
-        // DiegoVC end
+        // CobelPvP end
         
         SpigotTimings.serverCommandTimer.stopTiming(); // Spigot
     }
