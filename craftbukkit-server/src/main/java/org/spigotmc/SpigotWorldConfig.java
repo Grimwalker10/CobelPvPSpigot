@@ -302,7 +302,7 @@ public class SpigotWorldConfig
     public int maxCollisionsPerEntity;
     private void maxEntityCollision()
     {
-        maxCollisionsPerEntity = getInt( "max-entity-collisions", 8 );
+        maxCollisionsPerEntity = getInt( "max-entity-collisions", 6 );
         log( "Max Entity Collisions: " + maxCollisionsPerEntity );
     }
 
@@ -334,9 +334,9 @@ public class SpigotWorldConfig
     private void initHunger()
     {
         walkExhaustion = (float) getDouble( "hunger.walk-exhaustion", 0.2 );
-        sprintExhaustion = (float) getDouble( "hunger.sprint-exhaustion", 0.8 );
+        sprintExhaustion = (float) getDouble( "hunger.sprint-exhaustion", 0.6 );
         combatExhaustion = (float) getDouble( "hunger.combat-exhaustion", 0.3 );
-        regenExhaustion = (float) getDouble( "hunger.regen-exhaustion", 3 );
+        regenExhaustion = (float) getDouble( "hunger.regen-exhaustion", 2.6 );
     }
 
     public int currentPrimedTnt = 0;
