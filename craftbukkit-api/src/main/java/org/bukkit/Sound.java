@@ -161,7 +161,6 @@ public enum Sound {
     ZOMBIE_PIG_ANGRY,
     ZOMBIE_PIG_DEATH,
     ZOMBIE_PIG_HURT,
-    // Dig Sounds
     DIG_WOOL,
     DIG_GRASS,
     DIG_GRAVEL,
@@ -169,7 +168,6 @@ public enum Sound {
     DIG_SNOW,
     DIG_STONE,
     DIG_WOOD,
-    // Fireworks
     FIREWORK_BLAST,
     FIREWORK_BLAST2,
     FIREWORK_LARGE_BLAST,
@@ -178,7 +176,6 @@ public enum Sound {
     FIREWORK_TWINKLE2,
     FIREWORK_LAUNCH,
     SUCCESSFUL_HIT,
-    // Horses
     HORSE_ANGRY,
     HORSE_ARMOR,
     HORSE_BREATHE,
@@ -201,7 +198,6 @@ public enum Sound {
     HORSE_ZOMBIE_DEATH,
     HORSE_ZOMBIE_HIT,
     HORSE_ZOMBIE_IDLE,
-    // Villager
     VILLAGER_DEATH,
     VILLAGER_HAGGLE,
     VILLAGER_HIT,

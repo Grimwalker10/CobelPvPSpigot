@@ -1278,14 +1278,4 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         return (CraftPlayer) super.getBukkitEntity();
     }
     // CraftBukkit end
-
-    // CobelPvP start - Disguises
-    public GameProfile getDisguiseProfile() {
-        if (getBukkitEntity().isDisguised()) {
-            return getBukkitEntity().disguisedProfile;
-        }
-
-        return getProfile();
-    }
-    // CobelPvP end
 }

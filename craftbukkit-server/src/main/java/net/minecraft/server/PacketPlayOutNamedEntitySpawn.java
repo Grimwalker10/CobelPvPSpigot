@@ -26,7 +26,7 @@ public class PacketPlayOutNamedEntitySpawn extends Packet {
 
     public PacketPlayOutNamedEntitySpawn(EntityHuman entityhuman) {
         this.a = entityhuman.getId();
-        this.b = ((EntityPlayer) entityhuman).getDisguiseProfile(); // CobelPvP - disguises
+        this.b = entityhuman.getProfile();
         this.c = MathHelper.floor(entityhuman.locX * 32.0D);
         this.d = MathHelper.floor(entityhuman.locY * 32.0D);
         this.e = MathHelper.floor(entityhuman.locZ * 32.0D);

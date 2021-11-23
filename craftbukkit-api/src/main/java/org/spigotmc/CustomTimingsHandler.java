@@ -22,7 +22,7 @@ import java.util.ArrayDeque; // Poweruser
 public class CustomTimingsHandler
 {
 
-    protected static Queue<CustomTimingsHandler> HANDLERS = new ConcurrentLinkedQueue<CustomTimingsHandler>(); // Poweruser - protected
+    protected static Queue<CustomTimingsHandler> HANDLERS = new ConcurrentLinkedQueue<CustomTimingsHandler>();
     /*========================================================================*/
     private final String name;
     private final CustomTimingsHandler parent;
@@ -32,10 +32,8 @@ public class CustomTimingsHandler
     private long totalTime = 0;
     private long curTickTotal = 0;
     private long violations = 0;
-    // Poweruser start
     private ArrayDeque<Long> currentTimings;
     private long currentTimingsSum;
-    // Poweruser end
 
     public CustomTimingsHandler(String name)
     {
@@ -46,10 +44,8 @@ public class CustomTimingsHandler
     {
         this.name = name;
         this.parent = parent;
-        // Poweruser start
         this.currentTimings = new ArrayDeque<Long>();
         this.currentTimingsSum = 0L;
-        // Poweruser end
         HANDLERS.add( this );
     }
 
@@ -110,13 +106,13 @@ public class CustomTimingsHandler
         {
             for ( CustomTimingsHandler timings : HANDLERS )
             {
-                timings.updateAverageCalculation(); // Poweruser
-                if ( timings.curTickTotal > 50000000L ) // Poweruser - add L, mark number as long
+                timings.updateAverageCalculation();
+                if ( timings.curTickTotal > 50000000L )
                 {
-                    timings.violations += Math.ceil( timings.curTickTotal / 50000000L ); // Poweruser - add L, mark number as long
+                    timings.violations += Math.ceil( timings.curTickTotal / 50000000L );
                 }
                 timings.curTickTotal = 0;
-                timings.timingDepth = 0; // incase reset messes this up
+                timings.timingDepth = 0;
             }
         }
     }
@@ -126,7 +122,6 @@ public class CustomTimingsHandler
      */
     public void startTiming()
     {
-        // If second condtion fails we are already timing
         if ( Bukkit.getPluginManager().useTimings() && ++timingDepth == 1 )
         {
             start = System.nanoTime();
@@ -171,13 +166,10 @@ public class CustomTimingsHandler
         totalTime = 0;
         start = 0;
         timingDepth = 0;
-        // Poweruser start
         this.currentTimings.clear();
         this.currentTimingsSum = 0L;
-        // Poweruser end
     }
 
-    // Poweruser start
     private void updateAverageCalculation() {
         this.currentTimingsSum += this.curTickTotal;
         this.currentTimings.add(this.curTickTotal);
@@ -208,5 +200,4 @@ public class CustomTimingsHandler
     public String getName() {
         return this.name;
     }
-    // Poweruser end
 }

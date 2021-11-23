@@ -25,19 +25,11 @@ public class PacketPlayOutPlayerInfo extends Packet {
 
     public PacketPlayOutPlayerInfo() {}
 
-    /* removed to force breaking
-    public PacketPlayOutPlayerInfo(String s, boolean flag, int i) {
-        this.a = s;
-        this.b = flag;
-        this.c = i;
-    }
-    */
-
     public static PacketPlayOutPlayerInfo addPlayer(EntityPlayer player) {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = ADD_PLAYER;
         packet.username = player.listName;
-        packet.player = player.getDisguiseProfile(); // CobelPvP - disguises
+        packet.player = player.getProfile();
         packet.ping = player.ping;
         packet.gamemode = player.playerInteractManager.getGameMode().getId();
         return packet;
@@ -47,7 +39,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = UPDATE_LATENCY;
         packet.username = player.listName;
-        packet.player = player.getDisguiseProfile(); // CobelPvP - disguises
+        packet.player = player.getProfile();
         packet.ping = player.ping;
         return packet;
     }
@@ -56,7 +48,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = UPDATE_GAMEMODE;
         packet.username = player.listName;
-        packet.player = player.getDisguiseProfile(); // CobelPvP - disguises
+        packet.player = player.getProfile();
         packet.gamemode = player.playerInteractManager.getGameMode().getId();
         return packet;
     }
@@ -65,7 +57,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = UPDATE_DISPLAY_NAME;
         packet.username = player.listName;
-        packet.player = player.getDisguiseProfile(); // CobelPvP - disguises
+        packet.player = player.getProfile();
         return packet;
     }
 
@@ -73,7 +65,7 @@ public class PacketPlayOutPlayerInfo extends Packet {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
         packet.action = REMOVE_PLAYER;
         packet.username = player.listName;
-        packet.player = player.getDisguiseProfile(); // CobelPvP - disguises
+        packet.player = player.getProfile();
         return packet;
     }
 

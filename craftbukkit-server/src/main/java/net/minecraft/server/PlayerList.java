@@ -71,31 +71,6 @@ public abstract class PlayerList {
             return super.remove(key instanceof String ? ((String)key).toLowerCase() : key);
         }
     };
-    // CobelPvP start - Disguises
-    public final Map<String, EntityPlayer> disguisePlayerMap = new HashMap<String, EntityPlayer>() {
-        @Override
-        public EntityPlayer put(String key, EntityPlayer value) {
-            return super.put(key.toLowerCase(), value);
-        }
-
-        @Override
-        public EntityPlayer get(Object key) {
-            // put the .playerConnection check done in other places here
-            EntityPlayer player = super.get(key instanceof String ? ((String)key).toLowerCase() : key);
-            return (player != null && player.playerConnection != null) ? player : null;
-        }
-
-        @Override
-        public boolean containsKey(Object key) {
-            return get(key) != null;
-        }
-
-        @Override
-        public EntityPlayer remove(Object key) {
-            return super.remove(key instanceof String ? ((String)key).toLowerCase() : key);
-        }
-    };
-    // CobelPvP end
     public final Map<UUID, EntityPlayer> uuidMap = new java.util.HashMap<UUID, EntityPlayer>() {
         @Override
         public EntityPlayer get(Object key) {
@@ -415,11 +390,6 @@ public abstract class PlayerList {
         worldserver.getPlayerChunkMap().removePlayer(entityplayer);
         this.players.remove(entityplayer);
         this.playerMap.remove(entityplayer.getName()); // PaperSpigot
-        // CobelPvP start - Disguises
-        if (entityplayer.getBukkitEntity().isDisguised()) {
-            this.disguisePlayerMap.remove(entityplayer.getBukkitEntity().getDisguisedName());
-        }
-        // CobelPvP end
         this.uuidMap.remove(entityplayer.getUniqueID()); // PaperSpigot
         this.n.remove(entityplayer.getUniqueID());
         ChunkIOExecutor.adjustPoolSize(this.getPlayerCount()); // CraftBukkit

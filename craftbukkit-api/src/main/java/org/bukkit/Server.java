@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
-
 import org.bukkit.Warning.WarningState;
 import org.bukkit.command.*;
 import org.bukkit.entity.Entity;
@@ -32,10 +31,8 @@ import org.bukkit.plugin.messaging.PluginMessageRecipient;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.util.CachedServerIcon;
-
 import com.avaje.ebean.config.ServerConfig;
 import com.google.common.collect.ImmutableList;
-
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -908,28 +905,6 @@ public interface Server extends PluginMessageRecipient {
      */
     public int getIdleTimeout();
 
-    // CobelPvP start
-    /**
-     * Gets a player object by the given disguised name.
-     * <p>
-     * This method may not return objects for disguises not in use.
-     *
-     * @param name the disguised name to look up
-     * @return a player if one was found, null otherwise
-     */
-    public Player getPlayerByDisguise(String name);
-
-    /**
-     * Gets the player with the exact given disguise name, case insensitive
-     * <p>
-     * This method may not return objects for disguises not in use.
-     *
-     * @param name the exact disguised name of a player
-     * @return a player if one was found, null otherwise
-     */
-    public Player getPlayerExactByDisguise(String name);
-    // CobelPvP end
-
     /**
      * @see UnsafeValues
      */
@@ -965,12 +940,10 @@ public interface Server extends PluginMessageRecipient {
             throw new UnsupportedOperationException( "Not supported yet." );
         }
 
-        // PaperSpigot start - Add getTPS method
         public double[] getTPS()
         {
             throw new UnsupportedOperationException( "Not supported yet." );
         }
-        // PaperSpigot end
     }
 
     Spigot spigot();

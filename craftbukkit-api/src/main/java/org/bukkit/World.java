@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
@@ -129,14 +128,12 @@ public interface World extends PluginMessageRecipient, Metadatable {
      */
     public Chunk getChunkAt(Block block);
 
-    // PaperSpigot start - Async chunk load API
     public static interface ChunkLoadCallback {
         public void onLoad(Chunk chunk);
     }
     public void getChunkAtAsync(int x, int z, ChunkLoadCallback cb);
     public void getChunkAtAsync(Location location, ChunkLoadCallback cb);
     public void getChunkAtAsync(Block block, ChunkLoadCallback cb);
-    // PaperSpigot end
 
     /**
      * Checks if the specified {@link Chunk} is loaded
@@ -476,7 +473,6 @@ public interface World extends PluginMessageRecipient, Metadatable {
      */
     public boolean setSpawnLocation(int x, int y, int z);
 
-    // Poweruser start
     /**
      * Sets the spawn location of the world
      *
@@ -488,7 +484,6 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * @return True if it was successfully set.
      */
     public boolean setSpawnLocation(int x, int y, int z, float yaw, float pitch);
-    // Poweruser end
 
     /**
      * Gets the relative in-game time of this world.
@@ -1178,7 +1173,6 @@ public interface World extends PluginMessageRecipient, Metadatable {
      */
     public boolean isGameRule(String rule);
 
-    // Spigot start
     public class Spigot
     {
 
@@ -1250,7 +1244,6 @@ public interface World extends PluginMessageRecipient, Metadatable {
     }
 
     Spigot spigot();
-    // Spigot end
 
     /**
      * Represents various map environment types that a world may be
