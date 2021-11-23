@@ -127,15 +127,15 @@ public class PaperSpigotWorldConfig
     private void exhaustionValues ()
     {
         blockBreakExhaustion = getFloat( "player-exhaustion.block-break", 0.025F );
-        playerSwimmingExhaustion = getFloat("player-exhaustion.swimming", 0.015F );
+        playerSwimmingExhaustion = getFloat("player-exhaustion.swimming", 0.014F );
     }
 
     public Integer softDespawnDistance;
     public Integer hardDespawnDistance;
     private void despawnDistances()
     {
-        softDespawnDistance = getInt( "despawn-ranges.soft", 32 ); // 32^2 = 1024, Minecraft Default
-        hardDespawnDistance = getInt( "despawn-ranges.hard", 128 ); // 128^2 = 16384, Minecraft Default;
+        softDespawnDistance = getInt( "despawn-ranges.soft", 30 ); // 32^2 = 1024, Minecraft Default
+        hardDespawnDistance = getInt( "despawn-ranges.hard", 100 ); // 128^2 = 16384, Minecraft Default;
         
         if ( softDespawnDistance > hardDespawnDistance)
         {
@@ -235,7 +235,7 @@ public class PaperSpigotWorldConfig
         generateStronghold = getBoolean( "generator-settings.stronghold", true );
         generateTemple = getBoolean( "generator-settings.temple", true );
         generateVillage = getBoolean( "generator-settings.village", true );
-        generateFlatBedrock = getBoolean( "generator-settings.flat-bedrock", false );
+        generateFlatBedrock = getBoolean( "generator-settings.flat-bedrock", true );
     }
 
     public boolean loadUnloadedEnderPearls;
@@ -263,7 +263,7 @@ public class PaperSpigotWorldConfig
     public boolean optimizeExplosions;
     private void optimizeExplosions()
     {
-        optimizeExplosions = getBoolean( "optimize-explosions", false );
+        optimizeExplosions = getBoolean( "optimize-explosions", true );
     }
 
     public boolean fastDrainLava;

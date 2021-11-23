@@ -171,14 +171,14 @@ public class PaperSpigotConfig
     public static double weaknessEffectModifier;
     private static void effectModifiers()
     {
-        strengthEffectModifier = getDouble( "effect-modifiers.strength", 1.3D );
+        strengthEffectModifier = getDouble( "effect-modifiers.strength", 0.45D );
         weaknessEffectModifier = getDouble( "effect-modifiers.weakness", -0.5D );
     }
 
     public static int maxPacketsPerPlayer;
     private static void maxPacketsPerPlayer()
     {
-        maxPacketsPerPlayer = getInt( "max-packets-per-player", 1000 );
+        maxPacketsPerPlayer = getInt( "max-packets-per-player", 700 );
     }
 
     public static boolean stackableLavaBuckets;
