@@ -194,7 +194,7 @@ public class PaperSpigotWorldConfig
     public boolean disablePlayerCrits;
     private void mechanicsChanges()
     {
-        boatsDropBoats = getBoolean( "game-mechanics.boats-drop-boats", false );
+        boatsDropBoats = getBoolean( "game-mechanics.boats-drop-boats", true );
         lessPickyTorches = getBoolean( "game-mechanics.less-picky-torch-placement", false );
         disablePlayerCrits = getBoolean( "game-mechanics.disable-player-crits", false);
     }
@@ -243,7 +243,7 @@ public class PaperSpigotWorldConfig
     public boolean loadUnloadedFallingBlocks;
     private void loadUnloaded()
     {
-        loadUnloadedEnderPearls = getBoolean( "load-chunks.enderpearls", false );
+        loadUnloadedEnderPearls = getBoolean( "load-chunks.enderpearls", true );
         loadUnloadedTNTEntities = getBoolean( "load-chunks.tnt-entities", false );
         loadUnloadedFallingBlocks = getBoolean( "load-chunks.falling-blocks", false );
     }
@@ -257,7 +257,7 @@ public class PaperSpigotWorldConfig
     public boolean disableEndCredits;
     private void disableEndCredits()
     {
-        disableEndCredits = getBoolean( "game-mechanics.disable-end-credits", false );
+        disableEndCredits = getBoolean( "game-mechanics.disable-end-credits", true );
     }
 
     public boolean optimizeExplosions;

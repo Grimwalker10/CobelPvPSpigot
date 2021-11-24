@@ -1,4 +1,4 @@
-package com.cobelpvp.generator;
+package com.cobelpvp.util.worldgen;
 
 import net.minecraft.server.GenLayer;
 import net.minecraft.server.IntCache;

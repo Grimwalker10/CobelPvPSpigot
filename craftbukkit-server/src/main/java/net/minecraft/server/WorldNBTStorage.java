@@ -19,8 +19,8 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 // CraftBukkit end
 
 // Poweruser start
-import com.cobelpvp.PlayerDataCache;
-import com.cobelpvp.PlayerDataSaveJob;
+import com.cobelpvp.util.PlayerDataCache;
+import com.cobelpvp.util.PlayerDataSaveJob;
 import com.cobelpvp.util.ThreadingManager;
 // Poweruser end
 

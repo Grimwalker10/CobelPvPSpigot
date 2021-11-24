@@ -2,9 +2,7 @@ package net.minecraft.server;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.bukkit.craftbukkit.util.LongHash;
-
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 

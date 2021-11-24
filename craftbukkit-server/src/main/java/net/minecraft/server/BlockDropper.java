@@ -1,9 +1,7 @@
 package net.minecraft.server;
 
-// CraftBukkit start
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
-// CraftBukkit end
 
 public class BlockDropper extends BlockDispenser {
 

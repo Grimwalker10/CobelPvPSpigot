@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
-import com.cobelpvp.generator.GeneratorConfig;
-
+import com.cobelpvp.util.worldgen.GeneratorConfig;
 import java.util.Random;
 
 public class BiomeDecorator {
@@ -47,15 +46,6 @@ public class BiomeDecorator {
         this.g = new WorldGenSand(Blocks.GRAVEL, 6);
         this.h = new WorldGenMinable(Blocks.DIRT, 32);
         this.i = new WorldGenMinable(Blocks.GRAVEL, 32);
-        // CobelPvP - move down so they can get world config
-        /*
-        this.j = new WorldGenMinable(Blocks.COAL_ORE, 16);
-        this.k = new WorldGenMinable(Blocks.IRON_ORE, 8);
-        this.l = new WorldGenMinable(Blocks.GOLD_ORE, 8);
-        this.m = new WorldGenMinable(Blocks.REDSTONE_ORE, 7);
-        this.n = new WorldGenMinable(Blocks.DIAMOND_ORE, 7);
-        this.o = new WorldGenMinable(Blocks.LAPIS_ORE, 6);
-        */
         this.p = new WorldGenFlowers(Blocks.YELLOW_FLOWER);
         this.q = new WorldGenFlowers(Blocks.BROWN_MUSHROOM);
         this.r = new WorldGenFlowers(Blocks.RED_MUSHROOM);

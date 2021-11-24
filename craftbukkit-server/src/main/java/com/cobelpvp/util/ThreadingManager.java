@@ -19,7 +19,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.cobelpvp.PlayerDataSaveJob;
 import com.cobelpvp.command.WorldStatsCommand;
 import com.cobelpvp.pathsearch.jobs.PathSearchJob;
 import com.cobelpvp.pathsearch.PathSearchThrottlerThread;

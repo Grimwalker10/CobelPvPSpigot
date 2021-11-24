@@ -1,4 +1,4 @@
-package com.cobelpvp;
+package com.cobelpvp.util;
 
 import java.io.File;
 import java.io.FileOutputStream;

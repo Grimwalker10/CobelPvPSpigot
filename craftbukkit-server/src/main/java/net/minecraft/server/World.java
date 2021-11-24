@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.cobelpvp.generator.GeneratorConfig;
+import com.cobelpvp.util.worldgen.GeneratorConfig;
 // PaperSpigot end
 
 // CraftBukkit start

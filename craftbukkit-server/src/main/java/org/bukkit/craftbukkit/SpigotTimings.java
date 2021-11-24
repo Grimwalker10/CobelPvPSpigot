@@ -1,14 +1,10 @@
 package org.bukkit.craftbukkit;
 
-import com.google.common.collect.Maps;
 import net.minecraft.server.*;
 import org.bukkit.plugin.java.JavaPluginLoader;
 import org.spigotmc.CustomTimingsHandler;
 import org.bukkit.scheduler.BukkitTask;
-
 import java.util.HashMap;
-import java.util.Map;
-
 import org.bukkit.craftbukkit.scheduler.CraftTask;
 
 public class SpigotTimings {
@@ -158,10 +154,8 @@ public class SpigotTimings {
         public final CustomTimingsHandler tracker;
         public final CustomTimingsHandler doTick;
         public final CustomTimingsHandler tickEntities;
-        // CobelPvP start
         public final CustomTimingsHandler entityPlayerTickNormal;
         public final CustomTimingsHandler entityPlayerTickOnMove;
-        // CobelPvP end
 
         public final CustomTimingsHandler syncChunkLoadTimer;
         public final CustomTimingsHandler syncChunkLoadDataTimer;

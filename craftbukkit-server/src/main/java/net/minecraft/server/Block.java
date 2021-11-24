@@ -3,12 +3,10 @@ package net.minecraft.server;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.event.block.BlockDropItemsEvent;
-
-import com.cobelpvp.util.BlockAccessCache; // Poweruser
+import com.cobelpvp.util.BlockAccessCache;
 
 public class Block {
 
@@ -496,7 +494,6 @@ public class Block {
             int j1 = this.getDropCount(i1, world.random);
 
             for (int k1 = 0; k1 < j1; ++k1) {
-                // CraftBukkit - <= to < to allow for plugins to completely disable block drops from explosions
                 if (world.random.nextFloat() < f) {
                     Item item = this.getDropType(l, world.random, i1);
 

@@ -4,7 +4,6 @@ import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.UUID;
-
 import net.minecraft.util.com.google.gson.JsonDeserializationContext;
 import net.minecraft.util.com.google.gson.JsonDeserializer;
 import net.minecraft.util.com.google.gson.JsonElement;

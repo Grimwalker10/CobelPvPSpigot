@@ -3,7 +3,7 @@ package net.minecraft.server;
 public class AttributeRanged extends AttributeBase {
 
     private final double a;
-    public double b; // Spigot
+    public double b;
     private String c;
 
     public AttributeRanged(String s, double d0, double d1, double d2) {

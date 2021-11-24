@@ -1,4 +1,4 @@
-package com.cobelpvp;
+package com.cobelpvp.util;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -33,7 +33,6 @@ public class LightingUpdater {
             int l = 0;
             int i1 = 0;
 
-            //this.methodProfiler.a("getBrightness");
             int j1 = this.b(enumskyblock, i, j, k);
             int k1 = this.a(i, j, k, enumskyblock);
             int l1;
@@ -84,9 +83,6 @@ public class LightingUpdater {
                 l = 0;
             }
 
-            //this.methodProfiler.b();
-            //this.methodProfiler.a("checkedPosition < toCheckCount");
-
             while (l < i1) {
                 l1 = arrayI[l++];
                 i2 = (l1 & 63) - 32 + i;
@@ -131,7 +127,6 @@ public class LightingUpdater {
                 }
             }
 
-            // PaperSpigot start - Asynchronous light updates
             if (chunk.world.paperSpigotConfig.useAsyncLighting) {
                 chunk.pendingLightUpdates.decrementAndGet();
                 if (neighbors != null) {
@@ -140,8 +135,6 @@ public class LightingUpdater {
                     }
                 }
             }
-            // PaperSpigot end
-            //this.methodProfiler.b();
             this.chunks.clear();
             return true;
         }
