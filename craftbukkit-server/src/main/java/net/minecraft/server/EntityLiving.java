@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Sets;
-import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.util.CraftPotionUtils;
@@ -13,23 +12,17 @@ import org.bukkit.event.entity.PotionEffectAddEvent;
 import org.bukkit.event.entity.PotionEffectExpireEvent;
 import org.bukkit.event.entity.PotionEffectExtendEvent;
 import org.bukkit.event.entity.PotionEffectRemoveEvent;
-import org.bukkit.event.player.PlayerAttackEvent;
 import org.spigotmc.ActivationRange;
 import org.spigotmc.SpigotConfig;
-
 import com.google.common.base.Function;
-
 import java.util.*;
-
-// CraftBukkit start
-// CraftBukkit end
 
 public abstract class EntityLiving extends Entity {
 
     private static final UUID b = UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D");
     private static final AttributeModifier c = (new AttributeModifier(b, "Sprinting speed boost", 0.30000001192092896D, 2)).a(false);
     private AttributeMapBase d;
-    public CombatTracker combatTracker = new CombatTracker(this); // CraftBukkit - private -> public, remove final
+    public CombatTracker combatTracker = new CombatTracker(this);
     private final Map<Integer, MobEffect> effects = new HashMap<>();
     private final ItemStack[] g = new ItemStack[5];
     public boolean at;
@@ -56,7 +49,7 @@ public abstract class EntityLiving extends Entity {
     public float aO;
     public float aP;
     public float aQ = 0.02F;
-    public EntityHuman killer; // CraftBukkit - protected -> public
+    public EntityHuman killer;
     protected int lastDamageByPlayerTime;
     protected boolean aT;
     protected int aU;
@@ -66,7 +59,7 @@ public abstract class EntityLiving extends Entity {
     protected float aY;
     protected float aZ;
     protected int ba;
-    public float lastDamage; // CraftBukkit - protected -> public
+    public float lastDamage;
     protected boolean bc;
     public float bd;
     public float be;
@@ -77,34 +70,29 @@ public abstract class EntityLiving extends Entity {
     protected double bj;
     protected double bk;
     protected double bl;
-    public boolean updateEffects = true; // CraftBukkit - private -> public
-    public EntityLiving lastDamager; // CraftBukkit - private -> public
+    public boolean updateEffects = true;
+    public EntityLiving lastDamager;
     private int bm;
     private EntityLiving bn;
     private int bo;
     private float bp;
     private int bq;
     private float br;
-    // CraftBukkit start
     public int expToDrop;
     public int maxAirTicks = 300;
     private boolean applyingSprintKnockback;
     ArrayList<org.bukkit.inventory.ItemStack> drops = null;
     private DamageSource lastDamageSource;
 
-    // CraftBukkit end
-    // Spigot start
     public void inactiveTick() {
         super.inactiveTick();
-        ++this.aU; // Above all the floats
+        ++this.aU;
     }
 
-    // Spigot end
 
     public EntityLiving(World world) {
         super(world);
         this.aD();
-        // CraftBukkit - setHealth(getMaxHealth()) inlined and simplified to skip the instanceof check for EntityPlayer, as getBukkitEntity() is not initialized in constructor
         this.datawatcher.watch(6, (float) this.getAttributeInstance(GenericAttributes.maxHealth).getValue());
         this.k = true;
         this.aL = (float) (Math.random() + 1.0D) * 0.01F;
@@ -149,14 +137,12 @@ public abstract class EntityLiving extends Entity {
                     block = this.world.getType(i, j - 1, k);
                 }
             } else if (!this.world.isStatic && this.fallDistance > 3.0F) {
-                // CraftBukkit start - supply player as argument in particles for visibility API to work
                 if (this instanceof EntityPlayer) {
                     this.world.a((EntityHuman) this, 2006, i, j, k, MathHelper.f(this.fallDistance - 3.0F));
                     ((EntityPlayer) this).playerConnection.sendPacket(new PacketPlayOutWorldEvent(2006, i, j, k, MathHelper.f(this.fallDistance - 3.0F), false));
                 } else {
                     this.world.triggerEffect(2006, i, j, k, MathHelper.f(this.fallDistance - 3.0F));
                 }
-                // CraftBukkit end
             }
 
             block.a(this.world, i, j, k, this, this.fallDistance);
@@ -170,7 +156,7 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void C() {
-        SpigotTimings.timerEntityLiving_C.startTiming(); // Poweruser
+        SpigotTimings.timerEntityLiving_C.startTiming();
         this.aC = this.aD;
         super.C();
         this.world.methodProfiler.a("livingEntityBaseTick");
@@ -206,11 +192,9 @@ public abstract class EntityLiving extends Entity {
                 this.mount((Entity) null);
             }
         } else {
-            // CraftBukkit start - Only set if needed to work around a DataWatcher inefficiency
             if (this.getAirTicks() != 300) {
                 this.setAirTicks(maxAirTicks);
             }
-            // CraftBukkit end
         }
 
         if (this.isAlive() && 0 < this.fireTicks && this.L()) {
@@ -259,10 +243,9 @@ public abstract class EntityLiving extends Entity {
         this.lastYaw = this.yaw;
         this.lastPitch = this.pitch;
         this.world.methodProfiler.b();
-        SpigotTimings.timerEntityLiving_C.stopTiming(); // Poweruser
+        SpigotTimings.timerEntityLiving_C.stopTiming();
     }
 
-    // CraftBukkit start
     public int getExpReward() {
         int exp = this.getExpValue(this.killer);
 
@@ -272,7 +255,6 @@ public abstract class EntityLiving extends Entity {
             return 0;
         }
     }
-    // CraftBukkit end
 
     public boolean isBaby() {
         return false;
@@ -280,10 +262,9 @@ public abstract class EntityLiving extends Entity {
 
     protected void aF() {
         ++this.deathTicks;
-        if (this.deathTicks >= 20 && !this.dead) { // CraftBukkit - (this.deathTicks == 20) -> (this.deathTicks >= 20 && !this.dead)
+        if (this.deathTicks >= 20 && !this.dead) {
             int i;
 
-            // CraftBukkit start - Update getExpReward() above if the removed if() changes!
             i = this.expToDrop;
             while (i > 0) {
                 int j = EntityExperienceOrb.getOrbValue(i);
@@ -292,7 +273,6 @@ public abstract class EntityLiving extends Entity {
                 this.world.addEntity(new EntityExperienceOrb(this.world, this.locX, this.locY, this.locZ, j));
             }
             this.expToDrop = 0;
-            // CraftBukkit end
 
             this.die();
 
@@ -427,7 +407,6 @@ public abstract class EntityLiving extends Entity {
             }
         }
 
-        // CraftBukkit start
         if (nbttagcompound.hasKey("Bukkit.MaxHealth")) {
             NBTBase nbtbase = nbttagcompound.get("Bukkit.MaxHealth");
             if (nbtbase.getTypeId() == 5) {
@@ -436,7 +415,6 @@ public abstract class EntityLiving extends Entity {
                 this.getAttributeInstance(GenericAttributes.maxHealth).setValue((double) ((NBTTagInt) nbtbase).d());
             }
         }
-        // CraftBukkit end
 
         if (nbttagcompound.hasKeyOfType("HealF", 99)) {
             this.setHealth(nbttagcompound.getFloat("HealF"));
@@ -543,7 +521,6 @@ public abstract class EntityLiving extends Entity {
     }
 
     public boolean hasEffect(int i) {
-        // CraftBukkit - Add size check for efficiency
         return this.effects.size() != 0 && this.effects.containsKey(Integer.valueOf(i));
     }
 
@@ -1104,12 +1081,10 @@ public abstract class EntityLiving extends Entity {
 
             f = (float) event.getFinalDamage();
 
-            // Apply damage to helmet
             if ((damagesource == DamageSource.ANVIL || damagesource == DamageSource.FALLING_BLOCK) && this.getEquipment(4) != null) {
                 this.getEquipment(4).damage((int) (event.getDamage() * 4.0F + this.random.nextFloat() * event.getDamage() * 2.0F), this);
             }
 
-            // Apply damage to armor
             if (!damagesource.ignoresArmor()) {
                 float armorDamage = (float) (event.getDamage() + event.getDamage(DamageModifier.BLOCKING) + event.getDamage(DamageModifier.HARD_HAT));
                 this.damageArmor(armorDamage);
@@ -1436,7 +1411,7 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void h() {
-        SpigotTimings.timerEntityBaseTick.startTiming(); // Spigot
+        SpigotTimings.timerEntityBaseTick.startTiming();
         super.h();
         if (!this.world.isStatic) {
             int i = this.aZ();
@@ -1475,9 +1450,9 @@ public abstract class EntityLiving extends Entity {
             }
         }
 
-        SpigotTimings.timerEntityBaseTick.stopTiming(); // Spigot
+        SpigotTimings.timerEntityBaseTick.stopTiming();
         this.e();
-        SpigotTimings.timerEntityTickRest.startTiming(); // Spigot
+        SpigotTimings.timerEntityTickRest.startTiming();
         double d0 = this.locX - this.lastX;
         double d1 = this.locZ - this.lastZ;
         float f = (float) (d0 * d0 + d1 * d1);
@@ -1542,7 +1517,7 @@ public abstract class EntityLiving extends Entity {
 
         this.world.methodProfiler.b();
         this.aX += f2;
-        SpigotTimings.timerEntityTickRest.stopTiming(); // Spigot
+        SpigotTimings.timerEntityTickRest.stopTiming();
     }
 
     protected float f(float f, float f1) {
@@ -1607,7 +1582,7 @@ public abstract class EntityLiving extends Entity {
         }
 
         this.world.methodProfiler.a("ai");
-        SpigotTimings.timerEntityAI.startTiming(); // Spigot
+        SpigotTimings.timerEntityAI.startTiming();
         if (this.bh()) {
             this.bc = false;
             this.bd = 0.0F;
@@ -1625,7 +1600,7 @@ public abstract class EntityLiving extends Entity {
                 this.aO = this.yaw;
             }
         }
-        SpigotTimings.timerEntityAI.stopTiming(); // Spigot
+        SpigotTimings.timerEntityAI.stopTiming();
 
         this.world.methodProfiler.b();
         this.world.methodProfiler.a("jump");
@@ -1647,15 +1622,15 @@ public abstract class EntityLiving extends Entity {
         this.bd *= 0.98F;
         this.be *= 0.98F;
         this.bf *= 0.9F;
-        SpigotTimings.timerEntityAIMove.startTiming(); // Spigot
+        SpigotTimings.timerEntityAIMove.startTiming();
         this.e(this.bd, this.be);
-        SpigotTimings.timerEntityAIMove.stopTiming(); // Spigot
+        SpigotTimings.timerEntityAIMove.stopTiming();
         this.world.methodProfiler.b();
         this.world.methodProfiler.a("push");
         if (!this.world.isStatic) {
-            SpigotTimings.timerEntityAICollision.startTiming(); // Spigot
+            SpigotTimings.timerEntityAICollision.startTiming();
             this.bo();
-            SpigotTimings.timerEntityAICollision.stopTiming(); // Spigot
+            SpigotTimings.timerEntityAICollision.stopTiming();
         }
 
         this.world.methodProfiler.b();
