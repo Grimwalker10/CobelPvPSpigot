@@ -46,7 +46,7 @@ public abstract class EntityLiving extends Entity {
     public float aE;
     public float aF;
     public float aG;
-    public int maxNoDamageTicks = 21;
+    public int maxNoDamageTicks = 20;
     public float aI;
     public float aJ;
     public float aK;
