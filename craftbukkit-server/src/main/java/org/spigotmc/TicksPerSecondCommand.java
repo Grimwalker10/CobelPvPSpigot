@@ -28,6 +28,9 @@ public class TicksPerSecondCommand extends Command
 
         if (sender.hasPermission("bukkit.command.tps.advanced")) {
             double[] tps = Bukkit.spigot().getTPS();
+            Runtime runtime = Runtime.getRuntime();
+            double usedMemory = (double)(runtime.totalMemory() - runtime.freeMemory());
+            double freeMemory = (double)runtime.maxMemory() - usedMemory;
             String[] tpsAvg = new String[tps.length];
 
             for (int i = 0; i < tps.length; i++) {
@@ -40,6 +43,7 @@ public class TicksPerSecondCommand extends Command
 
             sender.sendMessage(ChatColor.GOLD + "TPS from last 1m, 5m, 15m: " + StringUtils.join(tpsAvg, ", "));
             sender.sendMessage(ChatColor.GOLD + "Full tick: " + formatTickTime(MinecraftServer.getServer().lastTickTime) + " ms");
+            sender.sendMessage(ChatColor.GOLD + "Memory: " + formatMem(usedMemory) + "§7/" + formatMem((double)runtime.maxMemory()) + " §8(§c" + formatMem(freeMemory) + " free§8)");
             sender.sendMessage(ChatColor.GOLD + "Active entities: " + ChatColor.GREEN + activeEntities + "/" + entities + " (" + activePercent + "%)");
             sender.sendMessage(ChatColor.GOLD + "Online players: " + ChatColor.GREEN + Bukkit.getOnlinePlayers().size() + "/" + Bukkit.getMaxPlayers());
         } else {
@@ -71,6 +75,10 @@ public class TicksPerSecondCommand extends Command
 
     private static String formatTickTime(double time) {
         return (time < 40.0D ? ChatColor.GREEN : time < 60.0D ? ChatColor.YELLOW : ChatColor.RED).toString() + Math.round(time * 10.0D) / 10.0D;
+    }
+
+    private static String formatMem(double mem) {
+        return "§a" + Math.round(mem / 1024.0D / 1024.0D) + "MB";
     }
 
     private static String formatAdvancedTps(double tps) {
