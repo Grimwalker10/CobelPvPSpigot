@@ -1,4 +1,4 @@
-package com.cobelpvp.command;
+package com.cobelpvp.commands;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -212,7 +212,6 @@ public class WorldStatsCommand extends Command {
             InfoHolder ih = new InfoHolder(ws.getWorld().getName());
             ih.chunks = ws.chunkProviderServer.chunks.size();
             ih.entities = ws.entityList.size();
-            //ih.tileEntities = ws.tileEntityList.size();
             ih.players = ws.players.size();
             return ih;
         }

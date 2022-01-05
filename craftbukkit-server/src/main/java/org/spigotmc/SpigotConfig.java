@@ -1,9 +1,9 @@
 package org.spigotmc;
 
-import com.cobelpvp.command.NoTrackCommand;
-import com.cobelpvp.command.SetViewDistanceCommand;
-import com.cobelpvp.command.TPSCommand;
-import com.cobelpvp.command.WorldStatsCommand;
+import com.cobelpvp.commands.NoTrackCommand;
+import com.cobelpvp.commands.SetViewDistanceCommand;
+import com.cobelpvp.commands.TPSCommand;
+import com.cobelpvp.commands.WorldStatsCommand;
 import com.google.common.base.Throwables;
 import java.io.File;
 import java.io.IOException;

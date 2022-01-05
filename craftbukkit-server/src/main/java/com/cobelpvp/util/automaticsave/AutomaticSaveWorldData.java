@@ -1,14 +1,14 @@
-package com.cobelpvp.autosave;
+package com.cobelpvp.util.automaticsave;
 
 import net.minecraft.server.World;
 
-public class AutoSaveWorldData {
+public class AutomaticSaveWorldData {
 
     private long lastAutoSaveTimeStamp;
     private int autoSaveChunkCount;
     private final World world;
 
-    public AutoSaveWorldData(World world) {
+    public AutomaticSaveWorldData(World world) {
         this.world = world;
         this.setLastAutosaveTimeStamp();
     }

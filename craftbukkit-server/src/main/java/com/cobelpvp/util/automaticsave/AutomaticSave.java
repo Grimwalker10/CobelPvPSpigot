@@ -1,4 +1,4 @@
-package com.cobelpvp.autosave;
+package com.cobelpvp.util.automaticsave;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -12,7 +12,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegionFileCache;
 import net.minecraft.server.WorldServer;
 
-public class AutoSave {
+public class AutomaticSave {
 
     private AutoSaveStep step;
     private Queue<WorldServer> levelAndMapsQueue;
@@ -26,7 +26,7 @@ public class AutoSave {
     private long regionFileCacheEnd;
     private int chunkQueuedCount;
 
-    public AutoSave() {
+    public AutomaticSave() {
         this.levelAndMapsQueue = new ArrayDeque<WorldServer>();
         this.saveChunksQueue = new ArrayDeque<WorldServer>();
         this.unloadChunksQueue = new ArrayDeque<WorldServer>();

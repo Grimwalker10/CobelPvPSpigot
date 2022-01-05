@@ -46,7 +46,7 @@ import org.spigotmc.SpigotConfig;
 
 // CobelPvP start
 import com.cobelpvp.util.ThreadingManager;
-import com.cobelpvp.autosave.AutoSave;
+import com.cobelpvp.util.automaticsave.AutomaticSave;
 // CobelPvP end
 
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
@@ -127,7 +127,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
     // CobelPvP start
     private ThreadingManager threadingManager;
-    private AutoSave autoSaveManager;
+    private AutomaticSave automaticSaveManager;
     // CobelPvP end
 
     public float lastTickTime = 0F; // CobelPvP
@@ -138,7 +138,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         j = this;
         this.d = proxy;
         this.threadingManager = new ThreadingManager(); // CobelPvP
-        this.autoSaveManager = new AutoSave(); // CobelPvP
+        this.automaticSaveManager = new AutomaticSave(); // CobelPvP
         // this.universe = file1; // CraftBukkit
         // this.p = new ServerConnection(this); // Spigot
         this.o = new CommandDispatcher();
@@ -625,18 +625,18 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         }
 
         // CobelPvP start
-        if(this.autoSaveManager.isActive()) {
+        if(this.automaticSaveManager.isActive()) {
             SpigotTimings.worldSaveTimer.startTiming(); // Spigot
             server.playerCommandState = true;
-            this.autoSaveManager.execute();
+            this.automaticSaveManager.execute();
             server.playerCommandState = false;
             SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
         } else if ((this.autosavePeriod > 0) && ((this.ticks % this.autosavePeriod) == 0)) { // CraftBukkit
-            this.autoSaveManager.reset();
+            this.automaticSaveManager.reset();
             for(WorldServer worldserver: worlds) {
-                this.autoSaveManager.queueWorld(worldserver);
+                this.automaticSaveManager.queueWorld(worldserver);
             }
-            this.autoSaveManager.start();
+            this.automaticSaveManager.start();
         }
         // Poweruser end
         /*

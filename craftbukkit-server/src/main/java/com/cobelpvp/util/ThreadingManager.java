@@ -19,7 +19,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.cobelpvp.command.WorldStatsCommand;
+import com.cobelpvp.commands.WorldStatsCommand;
 import com.cobelpvp.pathsearch.jobs.PathSearchJob;
 import com.cobelpvp.pathsearch.PathSearchThrottlerThread;
 import net.minecraft.server.NBTCompressedStreamTools;

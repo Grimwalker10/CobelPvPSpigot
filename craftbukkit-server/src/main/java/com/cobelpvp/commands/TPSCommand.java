@@ -1,4 +1,4 @@
-package com.cobelpvp.command;
+package com.cobelpvp.commands;
 
 import com.cobelpvp.util.ThreadingManager;
 
@@ -18,7 +18,7 @@ public class TPSCommand extends Command {
         super(name);
         this.usageMessage = "/" + name;
         this.description = "Displays the servers tick rate of the last 30 seconds";
-        this.setPermission( "cobelpvp.command.tps2" );
+        this.setPermission( "cobelpvp.command.tpsgraph" );
         this.builders = new StringBuilder[this.steps.length];
         for(int i = 0; i < this.builders.length; i++) {
             this.builders[i] = new StringBuilder();

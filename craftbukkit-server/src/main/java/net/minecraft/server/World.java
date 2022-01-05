@@ -42,7 +42,7 @@ import com.cobelpvp.util.PlayerMap;
 import com.cobelpvp.util.WeakChunkCache;
 import com.cobelpvp.util.ThreadingManager;
 import com.cobelpvp.util.ThreadingManager.TaskQueueWorker;
-import com.cobelpvp.autosave.AutoSaveWorldData;
+import com.cobelpvp.util.automaticsave.AutomaticSaveWorldData;
 // Poweruser end
 
 public abstract class World implements IBlockAccess {
@@ -222,10 +222,10 @@ public abstract class World implements IBlockAccess {
 
     // Poweruser start
     public ChunkProviderServer chunkProviderServer; // moved here from WorldServer
-    private final AutoSaveWorldData autoSaveWorldData;
+    private final AutomaticSaveWorldData automaticSaveWorldData;
 
-    public AutoSaveWorldData getAutoSaveWorldData() {
-        return this.autoSaveWorldData;
+    public AutomaticSaveWorldData getAutoSaveWorldData() {
+        return this.automaticSaveWorldData;
     }
     // Poweruser end
 
@@ -334,7 +334,7 @@ public abstract class World implements IBlockAccess {
             this.world.setSpawnFlags(false, false);
         }
 
-        this.autoSaveWorldData = new AutoSaveWorldData(this); // Poweruser
+        this.automaticSaveWorldData = new AutomaticSaveWorldData(this); // Poweruser
     }
 
     protected abstract IChunkProvider j();

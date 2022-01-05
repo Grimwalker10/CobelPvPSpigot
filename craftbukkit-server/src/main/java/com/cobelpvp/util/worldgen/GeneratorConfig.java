@@ -74,7 +74,7 @@ public class GeneratorConfig {
         conf = YamlConfiguration.loadConfiguration(file);
         conf.options().copyDefaults(true);
 
-        oceans = getBoolean("oceans", true);
+        oceans = getBoolean("oceans", false);
         biomePlains = getBoolean("biome.plains", true);
         biomeDesert = getBoolean("biome.desert", true);
         biomeDesertHills = getBoolean("biome.desert-hills", true);
@@ -107,28 +107,28 @@ public class GeneratorConfig {
         spawnBiomeRadius = getInt("spawn.radius", 0);
         spawnBiomeRivers = getBoolean("spawn.rivers", false);
 
-        cavesMultiplier = (float) getDouble("caves.multiplier", 1.0);
+        cavesMultiplier = (float) getDouble("caves.multiplier", 1.2);
 
-        coalMultiplier = (float) getDouble("ores.coal.multiplier", 1.0);
+        coalMultiplier = (float) getDouble("ores.coal.multiplier", 4.0);
         coalSize = getInt("ores.coal.size", 16);
         coalMustTouchAir = getBoolean("ores.coal.must-touch-air", false);
-        ironMultiplier = (float) getDouble("ores.iron.multiplier", 1.0);
+        ironMultiplier = (float) getDouble("ores.iron.multiplier", 5.0);
         ironSize = getInt("ores.iron.size", 8);
         ironMustTouchAir = getBoolean("ores.iron.must-touch-air", false);
-        goldMultiplier = (float) getDouble("ores.gold.multiplier", 1.0);
+        goldMultiplier = (float) getDouble("ores.gold.multiplier", 6.0);
         goldSize = getInt("ores.gold.size", 8);
         goldMustTouchAir = getBoolean("ores.gold.must-touch-air", false);
-        redstoneMultiplier = (float) getDouble("ores.redstone.multiplier", 1.0);
+        redstoneMultiplier = (float) getDouble("ores.redstone.multiplier", 3.0);
         redstoneSize = getInt("ores.redstone.size", 7);
         redstoneMustTouchAir = getBoolean("ores.redstone.must-touch-air", false);
-        diamondMultiplier = (float) getDouble("ores.diamond.multiplier", 1.0);
-        diamondSize = getInt("ores.diamond.size", 7);
+        diamondMultiplier = (float) getDouble("ores.diamond.multiplier", 9.0);
+        diamondSize = getInt("ores.diamond.size", 9);
         diamondMustTouchAir = getBoolean("ores.diamond.must-touch-air", false);
-        lapisMultiplier = (float) getDouble("ores.lapis.multiplier", 1.0);
+        lapisMultiplier = (float) getDouble("ores.lapis.multiplier", 2.0);
         lapisSize = getInt("ores.lapis.size", 6);
         lapisMustTouchAir = getBoolean("ores.lapis.must-touch-air", false);
 
-        sugarCaneMultiplier = (float) getDouble("sugar-cane.multiplier", 1.0);
+        sugarCaneMultiplier = (float) getDouble("sugar-cane.multiplier", 2.0);
 
         try {
             conf.save(file);
