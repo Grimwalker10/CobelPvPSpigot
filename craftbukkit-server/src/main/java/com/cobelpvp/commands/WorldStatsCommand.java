@@ -79,7 +79,7 @@ public class WorldStatsCommand extends Command {
             pm.useTimings(this.wasTimingAlreadyOn);
 
             StringBuilder sb = new StringBuilder();
-            sb.append("[Spigot]");
+            sb.append("[CobelPvP]");
             sb.append(ChatColor.GOLD);
             sb.append(" WorldStats:");
             sb.append("\n");
