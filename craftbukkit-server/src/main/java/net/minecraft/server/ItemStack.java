@@ -18,7 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.world.StructureGrowEvent;
 // CraftBukkit end
 
-import com.cobelpvp.util.ThreadingManager; // Poweruser
+import com.cobelpvp.utils.ThreadingManager; // Poweruser
 
 public final class ItemStack {
 

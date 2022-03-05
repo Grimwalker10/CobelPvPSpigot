@@ -1,4 +1,4 @@
-package com.cobelpvp;
+package com.cobelpvp.utils;
 
 import java.util.HashMap;
 import java.util.List;

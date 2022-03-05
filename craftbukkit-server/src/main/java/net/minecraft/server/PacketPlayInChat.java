@@ -2,8 +2,8 @@ package net.minecraft.server;
 
 import java.io.IOException; // CraftBukkit
 
-import com.cobelpvp.util.ThreadingManager; // Poweruser
-import com.cobelpvp.util.ThreadingManager.TaskQueueWorker; // Poweruser
+import com.cobelpvp.utils.ThreadingManager; // Poweruser
+import com.cobelpvp.utils.ThreadingManager.TaskQueueWorker; // Poweruser
 
 public class PacketPlayInChat extends Packet {
 

@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.cobelpvp.util.WrappedArrayMap;
+import com.cobelpvp.utils.WrappedArrayMap;
 import net.minecraft.util.org.apache.commons.lang3.ObjectUtils;
 import org.spigotmc.ProtocolData; // Spigot - protocol patch
 

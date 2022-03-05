@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.cobelpvp.util.ThreadingManager; // CobelPvP
+import com.cobelpvp.utils.ThreadingManager; // CobelPvP
 
 public class PersistentCollection {
 

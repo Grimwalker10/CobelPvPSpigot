@@ -1,4 +1,4 @@
-package com.cobelpvp.util;
+package com.cobelpvp.utils;
 
 import java.util.Map;
 

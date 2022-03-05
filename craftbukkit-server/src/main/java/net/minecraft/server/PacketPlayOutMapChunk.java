@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-import com.cobelpvp.util.ReusableByteArray;
+import com.cobelpvp.utils.ReusableByteArray;
 
 import java.io.IOException;
 import java.util.zip.Deflater;

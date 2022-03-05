@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
-import com.cobelpvp.util.ThreadingManager; // Poweruser
+import com.cobelpvp.utils.ThreadingManager; // Poweruser
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.plugin.IllegalPluginAccessException;

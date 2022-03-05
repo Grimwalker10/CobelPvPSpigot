@@ -19,9 +19,9 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 // CraftBukkit end
 
 // Poweruser start
-import com.cobelpvp.util.PlayerDataCache;
-import com.cobelpvp.util.PlayerDataSaveJob;
-import com.cobelpvp.util.ThreadingManager;
+import com.cobelpvp.utils.PlayerDataCache;
+import com.cobelpvp.utils.PlayerDataSaveJob;
+import com.cobelpvp.utils.ThreadingManager;
 // Poweruser end
 
 public class WorldNBTStorage implements IDataManager, IPlayerFileData {

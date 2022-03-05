@@ -16,7 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 // Pweruser start
-import com.cobelpvp.util.ThreadingManager;
+import com.cobelpvp.utils.ThreadingManager;
 // Poweruser end
 
 public class LoginListener implements PacketLoginInListener {

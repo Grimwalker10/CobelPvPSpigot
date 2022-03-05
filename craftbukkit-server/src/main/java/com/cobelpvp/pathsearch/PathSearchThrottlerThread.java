@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.cobelpvp.util.NamePriorityThreadFactory;
+import com.cobelpvp.utils.NamePriorityThreadFactory;
 import com.cobelpvp.pathsearch.jobs.PathSearchJob;
 
 public class PathSearchThrottlerThread extends ThreadPoolExecutor {

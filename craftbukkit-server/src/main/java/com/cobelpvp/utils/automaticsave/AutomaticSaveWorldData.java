@@ -1,4 +1,4 @@
-package com.cobelpvp.util.automaticsave;
+package com.cobelpvp.utils.automaticsave;
 
 import net.minecraft.server.World;
 

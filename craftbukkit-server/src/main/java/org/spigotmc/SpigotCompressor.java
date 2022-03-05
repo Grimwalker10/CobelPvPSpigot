@@ -1,6 +1,6 @@
 package org.spigotmc;
 
-import com.cobelpvp.util.ReusableByteArray;
+import com.cobelpvp.utils.ReusableByteArray;
 import net.minecraft.util.io.netty.buffer.ByteBuf;
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
 import net.minecraft.util.io.netty.handler.codec.MessageToByteEncoder;

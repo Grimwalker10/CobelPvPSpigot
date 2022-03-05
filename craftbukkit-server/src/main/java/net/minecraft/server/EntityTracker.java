@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import com.cobelpvp.util.IndexedLinkedHashSet;
+import com.cobelpvp.utils.IndexedLinkedHashSet;
 
 public class EntityTracker {
 

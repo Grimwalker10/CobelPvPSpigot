@@ -1,6 +1,6 @@
 package com.cobelpvp.pathsearch.jobs;
 
-import com.cobelpvp.util.ThreadingManager;
+import com.cobelpvp.utils.ThreadingManager;
 
 public class PathSearchQueuingManager {
 

@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-import com.cobelpvp.util.worldgen.GeneratorConfig;
+import com.cobelpvp.utils.worldgen.GeneratorConfig;
 import java.util.Random;
 
 public class BiomeDecorator {
