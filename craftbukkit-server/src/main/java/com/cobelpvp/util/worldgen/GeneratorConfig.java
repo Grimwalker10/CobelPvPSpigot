@@ -18,7 +18,7 @@ public class GeneratorConfig {
     public boolean biomeDesert;
     public boolean biomeDesertHills;
     public boolean biomeExtremeHills;
-    public boolean biomeExtremeHillsPlus;
+    public boolean biomeSmallMountains;
     public boolean biomeForest;
     public boolean biomeForestHills;
     public boolean biomeTaiga;
@@ -79,7 +79,7 @@ public class GeneratorConfig {
         biomeDesert = getBoolean("biome.desert", true);
         biomeDesertHills = getBoolean("biome.desert-hills", true);
         biomeExtremeHills = getBoolean("biome.extreme-hills", true);
-        biomeExtremeHillsPlus = getBoolean("biome.extreme-hills-plus", true);
+        biomeSmallMountains = getBoolean("biome.small-mountains", true);
         biomeForest = getBoolean("biome.forest", true);
         biomeForestHills = getBoolean("biome.forest-hills", true);
         biomeTaiga = getBoolean("biome.taiga", true);

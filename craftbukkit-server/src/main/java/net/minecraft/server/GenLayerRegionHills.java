@@ -70,8 +70,8 @@ public class GenLayerRegionHills extends GenLayer {
                         i2 = BiomeBase.JUNGLE_HILLS.id;
                     } else if (k1 == BiomeBase.OCEAN.id) {
                         i2 = BiomeBase.DEEP_OCEAN.id;
-                    } else if (k1 == BiomeBase.EXTREME_HILLS.id && this.world.generatorConfig.biomeExtremeHillsPlus) {
-                        i2 = BiomeBase.EXTREME_HILLS_PLUS.id;
+                    } else if (k1 == BiomeBase.SMALL_MOUNTAINS.id && this.world.generatorConfig.biomeSmallMountains) {
+                        i2 = BiomeBase.SMALL_MOUNTAINS.id;
                     } else if (k1 == BiomeBase.SAVANNA.id && this.world.generatorConfig.biomeSavannaPlateau) {
                         i2 = BiomeBase.SAVANNA_PLATEAU.id;
                     } else if (a(k1, BiomeBase.MESA_PLATEAU_F.id) && this.world.generatorConfig.biomeMesa) {
