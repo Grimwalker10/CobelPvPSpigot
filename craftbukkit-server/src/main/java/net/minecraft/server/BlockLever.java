@@ -166,7 +166,7 @@ public class BlockLever extends Block {
     }
 
     public void updateShape(IBlockAccess iblockaccess, int i, int j, int k) {
-        if (SpigotConfig.pearlThroughGatesAndTripwire) {
+        if (SpigotConfig.pearlThroughGates) {
             this.a(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
             return;
         }

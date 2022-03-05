@@ -23,15 +23,6 @@ public class BlockTripwire extends Block {
         return null;
     }
 
-    @Override
-    public MovingObjectPosition a(World world, int i, int j, int k, Vec3D vec3d, Vec3D vec3d1) {
-        if (SpigotConfig.pearlThroughGatesAndTripwire) {
-            return null;
-        }
-
-        return super.a(world, i, j, k, vec3d, vec3d1);
-    }
-
     public boolean c() {
         return false;
     }

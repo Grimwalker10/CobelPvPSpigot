@@ -38,12 +38,10 @@ public class EntityEnderPearl extends EntityProjectile {
     }
 
     protected void a(MovingObjectPosition movingobjectposition) {
-        if (SpigotConfig.pearlThroughGatesAndTripwire) {
+        if (SpigotConfig.pearlThroughGates) {
             Block block = this.world.getType(movingobjectposition.b, movingobjectposition.c, movingobjectposition.d);
 
-            if (block == Blocks.TRIPWIRE) {
-                return;
-            } else if (block == Blocks.FENCE_GATE) {
+            if (block == Blocks.FENCE_GATE) {
                 BlockIterator bi = null;
 
                 try {

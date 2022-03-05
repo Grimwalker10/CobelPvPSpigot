@@ -529,9 +529,9 @@ public class SpigotConfig
         reduceArmorDamage = getBoolean("settings.reduce-armor-damage", true);
     }
 
-    public static boolean pearlThroughGatesAndTripwire = false;
+    public static boolean pearlThroughGates = false;
     private static void pearls() {
-        pearlThroughGatesAndTripwire = getBoolean("settings.pearl-through-gates-and-tripwire", false);
+        pearlThroughGates = getBoolean("settings.pearl-through-gates", true);
     }
 
     public static double knockbackFriction = 1.8D;
