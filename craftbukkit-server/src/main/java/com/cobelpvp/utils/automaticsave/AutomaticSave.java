@@ -2,10 +2,8 @@ package com.cobelpvp.utils.automaticsave;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
-
 import org.bukkit.event.world.WorldSaveEvent;
 import org.spigotmc.SpigotConfig;
-
 import net.minecraft.server.ExceptionWorldConflict;
 import net.minecraft.server.FileIOThread;
 import net.minecraft.server.MinecraftServer;

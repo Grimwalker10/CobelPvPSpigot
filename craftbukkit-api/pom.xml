@@ -44,7 +44,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.0-beta-3</version>
+                <version>3.3</version>
                 <configuration>
                     <reportPlugins>
                         <plugin>
@@ -135,8 +135,6 @@
             <version>1.16.10</version>
             <scope>compile</scope>
         </dependency>
-
-        <!-- testing -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

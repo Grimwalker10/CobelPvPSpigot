@@ -69,7 +69,6 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
-        <!-- jline and jansi versions must be kept in sync -->
         <dependency>
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
@@ -109,7 +108,6 @@
             <version>1.16.10</version>
             <scope>provided</scope>
         </dependency>
-        <!-- testing -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -134,7 +132,6 @@
         </dependency>
     </dependencies>
 
-    <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
     <build>
         <defaultGoal>clean install</defaultGoal>
         <plugins>
@@ -237,20 +234,6 @@
                                     <pattern>io.netty</pattern>
                                     <shadedPattern>net.minecraft.util.io.netty</shadedPattern>
                                 </relocation>
-                                <!-- These contain native libraries, and cannot be properly relocated
-                                <relocation>
-                                  <pattern>org.fusesource</pattern>
-                                  <shadedPattern>org.bukkit.craftbukkit.libs.${project.dependencies[4].version}.org.fusesource</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                  <pattern>org.sqlite</pattern>
-                                  <shadedPattern>org.bukkit.craftbukkit.libs.${project.dependencies[5].version}.org.sqlite</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                  <pattern>com.mysql</pattern>
-                                  <shadedPattern>org.bukkit.craftbukkit.libs.${project.dependencies[6].version}.com.mysql</shadedPattern>
-                                </relocation>
-                                !-->
                                 <relocation>
                                     <pattern>org.bukkit.craftbukkit</pattern>
                                     <shadedPattern>org.bukkit.craftbukkit.v${minecraft_version}</shadedPattern>
@@ -282,13 +265,10 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
-                    <!-- We use the Eclipse compiler as it doesn't need a JDK -->
                     <compilerId>eclipse</compilerId>
-                    <!-- Source and target are ignored if this isn't true -->
                     <optimize>true</optimize>
                 </configuration>
                 <dependencies>
-                    <!-- We need our custom version as it fixes some bugs on case sensitive file systems -->
                     <dependency>
                         <groupId>org.codehaus.plexus</groupId>
                         <artifactId>plexus-compiler-eclipse</artifactId>
@@ -328,7 +308,6 @@
         </plugins>
         <pluginManagement>
             <plugins>
-                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
                     <artifactId>lifecycle-mapping</artifactId>
