@@ -1,8 +1,6 @@
 package net.minecraft.server;
 
 import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 import javax.crypto.SecretKey;
 import net.minecraft.util.com.google.common.collect.Queues;
@@ -27,8 +25,6 @@ import com.google.common.collect.ImmutableSet;
 import org.spigotmc.SpigotCompressor;
 import org.spigotmc.SpigotDecompressor;
 // Spigot end
-import org.bukkit.Bukkit;
-
 // CobelPvP start
 import org.spigotmc.CustomTimingsHandler;
 import org.bukkit.craftbukkit.SpigotTimings;
@@ -47,7 +43,6 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public static final NetworkStatistics h = new NetworkStatistics();
     private final boolean j;
     private final Queue k = Queues.newConcurrentLinkedQueue();
-    // private final Queue l = Queues.newConcurrentLinkedQueue(); // CobelPvP
     private Channel m;
     // Spigot Start
     public SocketAddress n;
@@ -143,10 +138,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     public void handle(Packet packet, GenericFutureListener... agenericfuturelistener) {
         if (this.m != null && this.m.isOpen()) {
-            // this.i(); // CobelPvP
             this.b(packet, agenericfuturelistener);
         } else {
-            // this.l.add(new QueuedPacket(packet, agenericfuturelistener)); // CobelPvP
         }
     }
 
@@ -160,32 +153,11 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         }
 
         if (this.m.eventLoop().inEventLoop()) {
-            /* CobelPvP - is done in QueuedProtocolSwitch.execute(..)
-            if (enumprotocol != enumprotocol1) {
-                this.a(enumprotocol);
-            }
-            */
-
             QueuedProtocolSwitch.execute(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener); // CobelPvP
         } else {
             this.m.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener));
         }
     }
-
-    // CobelPvP start - remove unneeded packet queue
-    /*
-    private void i() {
-        if (this.m != null && this.m.isOpen()) {
-            // PaperSpigot  start - Improve Network Manager packet handling
-            QueuedPacket queuedpacket;
-            while ((queuedpacket = (QueuedPacket) this.l.poll()) != null) {
-                this.b(QueuedPacket.a(queuedpacket), QueuedPacket.b(queuedpacket));
-            }
-            // PaperSpigot end
-        }
-    }
-    */
-    // CobelPvP end
 
     public void a() {
         // this.i(); // CobelPvP
@@ -241,7 +213,6 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         // Spigot Start
         this.preparing = false;
         this.k.clear(); // Spigot Update - 20140921a
-        // this.l.clear(); // Spigot Update - 20140921a // CobelPvP
         // Spigot End
         if (this.m.isOpen()) {
             this.m.close();
