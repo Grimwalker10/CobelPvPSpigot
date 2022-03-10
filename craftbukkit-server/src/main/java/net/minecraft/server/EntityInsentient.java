@@ -13,7 +13,7 @@ import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
 
 // Poweruser start
 import org.bukkit.craftbukkit.SpigotTimings;
-import com.cobelpvp.pathsearch.AsyncNavigation;
+import net.minecraft.optimizations.AsyncNavigation;
 // Poweruser end
 
 public abstract class EntityInsentient extends EntityLiving {

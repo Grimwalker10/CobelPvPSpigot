@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-import com.cobelpvp.pathsearch.PositionPathSearchType;
+import net.minecraft.optimizations.PositionPathSearchType;
 
 public class PathfinderGoalMoveTowardsTarget extends PathfinderGoal {
 

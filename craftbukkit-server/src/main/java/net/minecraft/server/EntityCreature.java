@@ -9,10 +9,10 @@ import org.bukkit.event.entity.EntityUnleashEvent;
 // CraftBukkit end
 
 // CobelPvP start
-import com.cobelpvp.pathsearch.jobs.PathSearchJob;
-import com.cobelpvp.pathsearch.jobs.PathSearchJobEntity;
-import com.cobelpvp.pathsearch.jobs.PathSearchJobPosition;
-import com.cobelpvp.pathsearch.jobs.PathSearchQueuingManager;
+import net.minecraft.optimizations.jobs.PathSearchJob;
+import net.minecraft.optimizations.jobs.PathSearchJobEntity;
+import net.minecraft.optimizations.jobs.PathSearchJobPosition;
+import net.minecraft.optimizations.jobs.PathSearchQueuingManager;
 // CobelPvP end
 
 public abstract class EntityCreature extends EntityInsentient {

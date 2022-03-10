@@ -1,7 +1,7 @@
 package net.minecraft.server;
 
-import com.cobelpvp.utils.worldgen.GenLayerRemoveSpawnRivers;
-import com.cobelpvp.utils.worldgen.GenLayerSpawnBiome;
+import com.cobelpvp.worldgen.GenLayerRemoveSpawnRivers;
+import com.cobelpvp.worldgen.GenLayerSpawnBiome;
 
 import java.util.concurrent.Callable;
 

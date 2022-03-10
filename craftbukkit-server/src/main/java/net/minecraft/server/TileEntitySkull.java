@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import net.minecraft.util.com.mojang.authlib.Agent;
 // Spigot end
 
-import com.cobelpvp.utils.ThreadingManager; // Poweruser
+import net.minecraft.optimizations.utils.ThreadingManager; // Poweruser
 
 public class TileEntitySkull extends TileEntity {
 

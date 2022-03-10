@@ -1,6 +1,6 @@
 package com.cobelpvp.commands;
 
-import com.cobelpvp.utils.ThreadingManager;
+import net.minecraft.optimizations.utils.ThreadingManager;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;

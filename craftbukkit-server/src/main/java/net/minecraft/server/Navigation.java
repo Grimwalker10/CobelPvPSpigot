@@ -1,10 +1,10 @@
 package net.minecraft.server;
 
 // CobelPvP start
-import com.cobelpvp.pathsearch.PositionPathSearchType;
-import com.cobelpvp.pathsearch.jobs.PathSearchJob;
-import com.cobelpvp.pathsearch.jobs.PathSearchJobNavigationEntity;
-import com.cobelpvp.pathsearch.jobs.PathSearchJobNavigationPosition;
+import net.minecraft.optimizations.PositionPathSearchType;
+import net.minecraft.optimizations.jobs.PathSearchJob;
+import net.minecraft.optimizations.jobs.PathSearchJobNavigationEntity;
+import net.minecraft.optimizations.jobs.PathSearchJobNavigationPosition;
 //CobelPvP end
 
 public class Navigation {

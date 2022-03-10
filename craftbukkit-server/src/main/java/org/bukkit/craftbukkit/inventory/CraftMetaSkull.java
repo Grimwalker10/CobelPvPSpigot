@@ -14,7 +14,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import com.google.common.collect.ImmutableMap.Builder;
 
-import com.cobelpvp.utils.ThreadingManager; // Poweruser
+import net.minecraft.optimizations.utils.ThreadingManager; // Poweruser
 
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaSkull extends CraftMetaItem implements SkullMeta {

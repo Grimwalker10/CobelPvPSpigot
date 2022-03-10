@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import javax.imageio.ImageIO;
 
-import com.cobelpvp.utils.ExtendedCustomTimingsHandler;
+import net.minecraft.optimizations.utils.ExtendedCustomTimingsHandler;
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 import net.minecraft.util.com.mojang.authlib.GameProfileRepository;
@@ -45,8 +45,8 @@ import org.bukkit.event.world.WorldSaveEvent;
 import org.spigotmc.SpigotConfig;
 
 // CobelPvP start
-import com.cobelpvp.utils.ThreadingManager;
-import com.cobelpvp.utils.automaticsave.AutomaticSave;
+import net.minecraft.optimizations.utils.ThreadingManager;
+import net.minecraft.optimizations.utils.automaticsave.AutomaticSave;
 // CobelPvP end
 
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {

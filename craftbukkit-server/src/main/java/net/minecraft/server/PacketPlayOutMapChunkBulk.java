@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-import com.cobelpvp.utils.ReusableByteArray;
+import net.minecraft.optimizations.utils.ReusableByteArray;
 
 import java.io.IOException;
 import java.util.List;

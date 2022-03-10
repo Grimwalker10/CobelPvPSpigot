@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.cobelpvp.utils.worldgen.GeneratorConfig;
+import com.cobelpvp.worldgen.GeneratorConfig;
 // PaperSpigot end
 
 // CraftBukkit start
@@ -37,12 +37,12 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 // CraftBukkit end
 
 // Poweruser start
-import com.cobelpvp.utils.LightingUpdater;
-import com.cobelpvp.utils.PlayerMap;
-import com.cobelpvp.utils.WeakChunkCache;
-import com.cobelpvp.utils.ThreadingManager;
-import com.cobelpvp.utils.ThreadingManager.TaskQueueWorker;
-import com.cobelpvp.utils.automaticsave.AutomaticSaveWorldData;
+import net.minecraft.optimizations.utils.LightingUpdater;
+import net.minecraft.optimizations.utils.PlayerMap;
+import net.minecraft.optimizations.utils.WeakChunkCache;
+import net.minecraft.optimizations.utils.ThreadingManager;
+import net.minecraft.optimizations.utils.ThreadingManager.TaskQueueWorker;
+import net.minecraft.optimizations.utils.automaticsave.AutomaticSaveWorldData;
 // Poweruser end
 
 public abstract class World implements IBlockAccess {

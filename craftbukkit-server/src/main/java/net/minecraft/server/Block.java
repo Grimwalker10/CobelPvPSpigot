@@ -6,7 +6,7 @@ import java.util.Random;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.event.block.BlockDropItemsEvent;
-import com.cobelpvp.utils.BlockAccessCache;
+import net.minecraft.optimizations.utils.BlockAccessCache;
 
 public class Block {
 

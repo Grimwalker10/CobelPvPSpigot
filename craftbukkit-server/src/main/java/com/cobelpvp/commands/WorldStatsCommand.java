@@ -7,7 +7,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.cobelpvp.utils.ThreadingManager;
+import net.minecraft.optimizations.utils.ThreadingManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldServer;
 
