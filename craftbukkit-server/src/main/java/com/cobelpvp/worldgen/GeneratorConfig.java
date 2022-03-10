@@ -104,10 +104,10 @@ public class GeneratorConfig {
         biomeMesaPlateau = getBoolean("biome.mesa-plateau", true);
 
         spawnBiome = getBiome(getString("spawn.biome", "plains"));
-        spawnBiomeRadius = getInt("spawn.radius", 0);
+        spawnBiomeRadius = getInt("spawn.radius", 500);
         spawnBiomeRivers = getBoolean("spawn.rivers", false);
 
-        cavesMultiplier = (float) getDouble("caves.multiplier", 1.2);
+        cavesMultiplier = (float) getDouble("caves.multiplier", 1.0);
 
         coalMultiplier = (float) getDouble("ores.coal.multiplier", 4.0);
         coalSize = getInt("ores.coal.size", 16);
