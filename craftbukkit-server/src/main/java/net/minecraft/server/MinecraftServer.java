@@ -139,10 +139,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.d = proxy;
         this.threadingManager = new ThreadingManager(); // CobelPvP
         this.automaticSaveManager = new AutomaticSave(); // CobelPvP
-        // this.universe = file1; // CraftBukkit
-        // this.p = new ServerConnection(this); // Spigot
         this.o = new CommandDispatcher();
-        // this.convertable = new WorldLoaderServer(file1); // CraftBukkit - moved to DedicatedServer.init
         this.T = new YggdrasilAuthenticationService(proxy, UUID.randomUUID().toString());
         this.U = this.T.createMinecraftSessionService();
         this.W = this.T.createProfileRepository();
@@ -195,23 +192,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.a(s);
         this.b("menu.loadingLevel");
         this.worldServer = new WorldServer[3];
-        // this.h = new long[this.worldServer.length][100]; // CraftBukkit - Removed ticktime arrays
-        // IDataManager idatamanager = this.convertable.a(s, true);
-        // WorldData worlddata = idatamanager.getWorldData();
-        /* CraftBukkit start - Removed worldsettings
-        WorldSettings worldsettings;
-
-        if (worlddata == null) {
-            worldsettings = new WorldSettings(i, this.getGamemode(), this.getGenerateStructures(), this.isHardcore(), worldtype);
-            worldsettings.a(s2);
-        } else {
-            worldsettings = new WorldSettings(worlddata);
-        }
-
-        if (this.L) {
-            worldsettings.a();
-        }
-        // */
         int worldCount = 3;
 
         for (int j = 0; j < worldCount; ++j) {
@@ -428,14 +408,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             if (this.worldServer != null) {
                 getLogger().info("Saving worlds");
                 this.saveChunks(false);
-            
-                /* CraftBukkit start - Handled in saveChunks
-                for (int i = 0; i < this.worldServer.length; ++i) {
-                    WorldServer worldserver = this.worldServer[i];
-
-                    worldserver.saveLevel();
-                }
-                // CraftBukkit end */
             }
 
             if (this.l.d()) {
@@ -638,26 +610,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             }
             this.automaticSaveManager.start();
         }
-        // Poweruser end
-        /*
-            SpigotTimings.worldSaveTimer.startTiming(); // Spigot
-            this.methodProfiler.a("save");
-            this.u.savePlayers();
-            // Spigot Start
-            // We replace this with saving each individual world as this.saveChunks(...) is broken,
-            // and causes the main thread to sleep for random amounts of time depending on chunk activity
-            // Also pass flag to only save modified chunks -- PaperSpigot
-            server.playerCommandState = true;
-            for (World world : worlds) {
-                world.getWorld().save(true);
-            }
-            server.playerCommandState = false;
-            // this.saveChunks(true);
-            // Spigot End
-            this.methodProfiler.b();
-            SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
-        }
-        */
 
         this.methodProfiler.a("tallying");
         this.g[this.ticks % 100] = System.nanoTime() - i;
@@ -726,20 +678,12 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         for (i = 0; i < this.worlds.size(); ++i) {
             long j = System.nanoTime();
 
-            // if (i == 0 || this.getAllowNether()) {
                 WorldServer worldserver = this.worlds.get(i);
                 if (!worldserver.checkTicking()) continue; // CobelPvP
 
                 this.methodProfiler.a(worldserver.getWorldData().getName());
                 this.methodProfiler.a("pools");
                 this.methodProfiler.b();
-                /* Drop global time updates
-                if (this.ticks % 20 == 0) {
-                    this.methodProfiler.a("timeSync");
-                    this.t.a(new PacketPlayOutUpdateTime(worldserver.getTime(), worldserver.getDayTime(), worldserver.getGameRules().getBoolean("doDaylightCycle")), worldserver.worldProvider.dimension);
-                    this.methodProfiler.b();
-                }
-                // CraftBukkit end */
 
                 this.methodProfiler.a("tick");
 
@@ -791,17 +735,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         }
 
         this.methodProfiler.c("connection");
-        // CobelPvP start - move up
-        /*
-        SpigotTimings.connectionTimer.startTiming(); // Spigot
-        this.ai().c();
-        SpigotTimings.connectionTimer.stopTiming(); // Spigot
-        this.methodProfiler.c("players");
-        SpigotTimings.playerListTimer.startTiming(); // Spigot
-        this.u.tick();
-        SpigotTimings.playerListTimer.stopTiming(); // Spigot
-        */
-        // CobelPvP end
         this.methodProfiler.c("tickables");
 
         SpigotTimings.tickablesTimer.startTiming(); // Spigot
@@ -826,79 +759,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         org.spigotmc.ProtocolInjector.inject();
 
         try {
-            /* CraftBukkit start - Replace everything
-            boolean flag = true;
-            String s = null;
-            String s1 = ".";
-            String s2 = null;
-            boolean flag1 = false;
-            boolean flag2 = false;
-            int i = -1;
-
-            for (int j = 0; j < astring.length; ++j) {
-                String s3 = astring[j];
-                String s4 = j == astring.length - 1 ? null : astring[j + 1];
-                boolean flag3 = false;
-
-                if (!s3.equals("nogui") && !s3.equals("--nogui")) {
-                    if (s3.equals("--port") && s4 != null) {
-                        flag3 = true;
-
-                        try {
-                            i = Integer.parseInt(s4);
-                        } catch (NumberFormatException numberformatexception) {
-                            ;
-                        }
-                    } else if (s3.equals("--singleplayer") && s4 != null) {
-                        flag3 = true;
-                        s = s4;
-                    } else if (s3.equals("--universe") && s4 != null) {
-                        flag3 = true;
-                        s1 = s4;
-                    } else if (s3.equals("--world") && s4 != null) {
-                        flag3 = true;
-                        s2 = s4;
-                    } else if (s3.equals("--demo")) {
-                        flag1 = true;
-                    } else if (s3.equals("--bonusChest")) {
-                        flag2 = true;
-                    }
-                } else {
-                    flag = false;
-                }
-
-                if (flag3) {
-                    ++j;
-                }
-            }
-
-            DedicatedServer dedicatedserver = new DedicatedServer(new File(s1));
-
-            if (s != null) {
-                dedicatedserver.j(s);
-            }
-
-            if (s2 != null) {
-                dedicatedserver.k(s2);
-            }
-
-            if (i >= 0) {
-                dedicatedserver.setPort(i);
-            }
-
-            if (flag1) {
-                dedicatedserver.b(true);
-            }
-
-            if (flag2) {
-                dedicatedserver.c(true);
-            }
-
-            if (flag) {
-                dedicatedserver.aD();
-            }
-            // */
-
             DedicatedServer dedicatedserver = new DedicatedServer(options);
 
             if (options.has("port")) {
