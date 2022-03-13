@@ -77,8 +77,8 @@ public class GeneratorConfig {
         oceans = getBoolean("oceans", false);
         biomePlains = getBoolean("biome.plains", true);
         biomeDesert = getBoolean("biome.desert", true);
-        biomeDesertHills = getBoolean("biome.desert-hills", true);
-        biomeExtremeHills = getBoolean("biome.extreme-hills", true);
+        biomeDesertHills = getBoolean("biome.desert-hills", false);
+        biomeExtremeHills = getBoolean("biome.extreme-hills", false);
         biomeSmallMountains = getBoolean("biome.small-mountains", true);
         biomeForest = getBoolean("biome.forest", true);
         biomeForestHills = getBoolean("biome.forest-hills", true);
@@ -87,7 +87,7 @@ public class GeneratorConfig {
         biomeSwampland = getBoolean("biome.swampland", true);
         biomeIcePlains = getBoolean("biome.ice-plains", true);
         biomeIceMountains = getBoolean("biome.ice-mountains", true);
-        biomeMushroomIsland = getBoolean("biome.mushroom-island", true);
+        biomeMushroomIsland = getBoolean("biome.mushroom-island", false);
         biomeJungle = getBoolean("biome.jungle", true);
         biomeJungleHills = getBoolean("biome.jungle-hills", true);
         biomeBirchForest = getBoolean("biome.birch-forest", true);

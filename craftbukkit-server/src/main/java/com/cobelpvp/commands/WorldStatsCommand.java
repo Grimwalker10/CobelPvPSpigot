@@ -129,7 +129,6 @@ public class WorldStatsCommand extends Command {
                 sb.append(ChatColor.RED);
                 sb.append(")  ");
                 sb.append(ChatColor.BLUE);
-                //sb.append(worldDetails.tileEntities);
                 sb.append("--");
                 sb.append(ChatColor.RED);
                 sb.append("(");
@@ -156,7 +155,6 @@ public class WorldStatsCommand extends Command {
             sb.append(overall.entities);
             sb.append("  ");
             sb.append(ChatColor.BLUE);
-            //sb.append(overall.tileEntities);
             sb.append("--");
             sb.append("  ");
             sb.append(ChatColor.DARK_PURPLE);

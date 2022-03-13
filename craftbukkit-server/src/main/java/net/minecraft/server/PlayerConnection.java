@@ -139,11 +139,6 @@ public class PlayerConnection implements PacketPlayInListener {
 
         // CraftBukkit start
         for (int spam; (spam = this.chatThrottle) > 0 && !chatSpamField.compareAndSet(this, spam, spam - 1); ) ;
-        /* Use thread-safe field access instead
-        if (this.chatThrottle > 0) {
-            --this.chatThrottle;
-        }
-        */
         // CraftBukkit end
 
         if (this.x > 0) {
@@ -792,12 +787,6 @@ public class PlayerConnection implements PacketPlayInListener {
         c.info(this.player.getName() + " lost connection: " + ichatbasecomponent.c()); // CraftBukkit - Don't toString the component
         this.minecraftServer.az();
         // CraftBukkit start - Replace vanilla quit message handling with our own.
-        /*
-        ChatMessage chatmessage = new ChatMessage("multiplayer.player.left", new Object[] { this.player.getScoreboardDisplayName()});
-
-        chatmessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
-        this.minecraftServer.getPlayerList().sendMessage(chatmessage);
-        */
 
         this.player.n();
         String quitMessage = this.minecraftServer.getPlayerList().disconnect(this.player);
@@ -1110,7 +1099,6 @@ public class PlayerConnection implements PacketPlayInListener {
             return;
         }
         org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
-        //this.minecraftServer.getCommandHandler().a(this.player, s);
         // CraftBukkit end
     }
 
@@ -1559,17 +1547,6 @@ public class PlayerConnection implements PacketPlayInListener {
                         // PaperSpigot end
                         break;
                     case DENY:
-                        /* Needs enum constructor in InventoryAction
-                        if (action.modifiesOtherSlots()) {
-
-                        } else {
-                            if (action.modifiesCursor()) {
-                                this.player.playerConnection.sendPacket(new Packet103SetSlot(-1, -1, this.player.inventory.getCarried()));
-                            }
-                            if (action.modifiesClicked()) {
-                                this.player.playerConnection.sendPacket(new Packet103SetSlot(this.player.activeContainer.windowId, packet102windowclick.slot, this.player.activeContainer.getSlot(packet102windowclick.slot).getItem()));
-                            }
-                        }*/
                         switch (action) {
                             // Modified other slots
                             case PICKUP_ALL:
@@ -1794,7 +1771,6 @@ public class PlayerConnection implements PacketPlayInListener {
                     tileentitysign1.lines = org.bukkit.craftbukkit.block.CraftSign.sanitizeLines(event.getLines());
                     tileentitysign1.isEditable = false;
                 }
-                // System.arraycopy(packetplayinupdatesign.f(), 0, tileentitysign1.lines, 0, 4);
                 // CraftBukkit end
 
                 tileentitysign1.update();
