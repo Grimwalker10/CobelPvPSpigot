@@ -58,8 +58,8 @@ public class VersionCommand extends BukkitCommand {
             }
 
             if (!found) {
-                sender.sendMessage("This server is not running any plugin by that name.");
-                sender.sendMessage("Use /plugins to get a list of plugins.");
+                sender.sendMessage(ChatColor.DARK_RED + "This server is not running any plugin by that name.");
+                sender.sendMessage(ChatColor.DARK_RED + "Use /plugins to get a list of plugins.");
             }
         }
         return true;

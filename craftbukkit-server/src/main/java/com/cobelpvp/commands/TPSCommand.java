@@ -11,7 +11,7 @@ public class TPSCommand extends Command {
 
     private int[] steps = new int[] { 20, 19, 18, 14, 9, 0};
     private String[] notes = new String[] { " > 20", " = 20", " = 19", ">= 15", ">= 10", ">=  1" };
-    private ChatColor[] colors = new ChatColor[] {ChatColor.DARK_GREEN, ChatColor.GREEN, ChatColor.GREEN, ChatColor.YELLOW, ChatColor.GOLD, ChatColor.RED };
+    private ChatColor[] colors = new ChatColor[] {ChatColor.DARK_GREEN, ChatColor.GREEN, ChatColor.GREEN, ChatColor.YELLOW, ChatColor.GOLD, ChatColor.DARK_RED };
     private StringBuilder[] builders;
 
     public TPSCommand(String name) {

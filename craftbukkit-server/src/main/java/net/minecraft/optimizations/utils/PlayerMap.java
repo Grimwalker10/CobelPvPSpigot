@@ -42,12 +42,10 @@ public class PlayerMap {
         int x = MathHelper.floor(player.locX) >> CHUNK_BITS;
         int z = MathHelper.floor(player.locZ) >> CHUNK_BITS;
 
-        // did we move?
         if (x == player.playerMapX && z == player.playerMapZ) {
             return;
         }
 
-        // do remove
         long key = xzToKey(player.playerMapX, player.playerMapZ);
         List<EntityPlayer> list = map.get(key);
         list.remove(player);
@@ -55,7 +53,6 @@ public class PlayerMap {
             map.remove(key);
         }
 
-        // do add
         key = xzToKey(x, z);
         list = map.get(key);
         if (list == null) {
@@ -71,7 +68,6 @@ public class PlayerMap {
         long key = xzToKey(player.playerMapX, player.playerMapZ);
         List<EntityPlayer> list = map.get(key);
         if (list == null) {
-            // player has not yet been added to this playermap, this happens when teleporting to another world during PlayerJoinEvent
             return;
         }
         list.remove(player);
@@ -214,7 +210,6 @@ public class PlayerMap {
                                 }
                             }
 
-                            // mojang mistake squaring maxY?
                             if ((maxY < 0.0 || dy < maxY * maxY) && playerDistSqrd < distForPlayer * distForPlayer && (bestDistanceSqrd == -1.0 || playerDistSqrd < bestDistanceSqrd)) {
                                 bestDistanceSqrd = playerDistSqrd;
                                 bestPlayer = player;
@@ -234,12 +229,10 @@ public class PlayerMap {
                 List<EntityPlayer> players = map.get(xzToKey(chunkX, chunkZ));
                 if (players != null) {
                     for (EntityPlayer player : players) {
-                        // don't send self
                         if (player == source) {
                             continue;
                         }
 
-                        // bukkit visibility api
                         if (source != null && !player.getBukkitEntity().canSee(source.getBukkitEntity())) {
                             continue;
                         }

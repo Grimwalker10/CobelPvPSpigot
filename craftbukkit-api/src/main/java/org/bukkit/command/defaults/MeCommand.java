@@ -3,6 +3,7 @@ package org.bukkit.command.defaults;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class MeCommand extends VanillaCommand {
     public MeCommand() {
@@ -14,21 +15,25 @@ public class MeCommand extends VanillaCommand {
 
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if (!testPermission(sender)) return true;
+        if (!sender.isOp())
+        {
+            sender.sendMessage(ChatColor.RED + "No permission.");
+            return false;
+        }
         if (args.length < 1)  {
             sender.sendMessage(ChatColor.RED + "Usage: " + usageMessage);
             return false;
         }
 
         StringBuilder message = new StringBuilder();
-        message.append(sender.getName());
+        message.append((sender.isOp() ? ChatColor.RED : ChatColor.GREEN) + sender.getName());
 
         for (String arg : args) {
             message.append(" ");
-            message.append(arg);
+            message.append(ChatColor.YELLOW + arg);
         }
 
-        Bukkit.broadcastMessage("* " + message.toString());
+        Bukkit.broadcastMessage(ChatColor.GOLD + "* " + message.toString());
 
         return true;
     }

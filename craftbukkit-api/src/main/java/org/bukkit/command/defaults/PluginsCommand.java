@@ -1,7 +1,6 @@
 package org.bukkit.command.defaults;
 
 import java.util.Arrays;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -18,12 +17,7 @@ public class PluginsCommand extends BukkitCommand {
 
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if (!sender.isOp()) {
-            sender.sendMessage(ChatColor.RED + "No permission.");
-            return true;
-        }
-
-        sender.sendMessage("Plugins " + getPluginList());
+        sender.sendMessage(ChatColor.GOLD + "Plugins " + ChatColor.RESET + getPluginList());
         return true;
     }
 
@@ -37,11 +31,11 @@ public class PluginsCommand extends BukkitCommand {
                 pluginList.append(", ");
             }
 
-            pluginList.append(plugin.isEnabled() ? ChatColor.GREEN : ChatColor.RED);
+            pluginList.append(plugin.isEnabled() ? ChatColor.GREEN : ChatColor.DARK_RED);
             pluginList.append(plugin.getDescription().getName());
         }
 
-        return "(" + plugins.length + "): " + pluginList.toString();
+        return ChatColor.GOLD + "(" + ChatColor.GREEN + plugins.length + ChatColor.GOLD + "): " + ChatColor.RESET + pluginList.toString();
     }
 
     // Spigot Start

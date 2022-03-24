@@ -15,7 +15,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import javax.imageio.ImageIO;
-
 import net.minecraft.optimizations.utils.ExtendedCustomTimingsHandler;
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
@@ -29,21 +28,15 @@ import net.minecraft.util.io.netty.handler.codec.base64.Base64;
 import net.minecraft.util.org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-// CraftBukkit start
 import java.io.IOException;
-
 import jline.console.ConsoleReader;
 import joptsimple.OptionSet;
-
 import org.bukkit.World.Environment;
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.world.WorldSaveEvent;
-// CraftBukkit end
 import org.spigotmc.SpigotConfig;
-
 // CobelPvP start
 import net.minecraft.optimizations.utils.ThreadingManager;
 import net.minecraft.optimizations.utils.automaticsave.AutomaticSave;
@@ -266,7 +259,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 }
 
                 IDataManager idatamanager = new ServerNBTManager(server.getWorldContainer(), name, true);
-                // world =, b0 to dimension, s1 to name, added Environment and gen
                 world = new SecondaryWorldServer(this, idatamanager, name, dimension, worldsettings, this.worlds.get(0), this.methodProfiler, Environment.getEnvironment(dimension), gen);
             }
 
@@ -487,7 +479,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 }
                 // Spigot end
             } else {
-                //this.a((CrashReport) null); // CraftBukkit - if init fails, stop the server
                 this.abnormalTermination = true; // SportBukkit
             }
         } catch (Throwable throwable) {
@@ -729,9 +720,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.methodProfiler.b();
                 this.methodProfiler.b();
                 worldserver.explosionDensityCache.clear(); // PaperSpigot - Optimize explosions
-            // } // CraftBukkit
-
-            // this.h[i][this.ticks % 100] = System.nanoTime() - j; // CraftBukkit
         }
 
         this.methodProfiler.c("connection");
@@ -777,7 +765,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             }
 
             dedicatedserver.primaryThread.start();
-            // Runtime.getRuntime().addShutdownHook(new ThreadShutdown("Server Shutdown Thread", dedicatedserver));
             // CraftBukkit end
         } catch (Exception exception) {
             getLogger().fatal("Failed to start the minecraft server", exception);
@@ -786,7 +773,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public void x() {
-        // (new ThreadServerApplication(this, "Server thread")).start(); // CraftBukkit - prevent abuse
     }
 
     public File d(String s) {
@@ -931,49 +917,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public List a(ICommandListener icommandlistener, String s) {
-        // CraftBukkit start - Allow tab-completion of Bukkit commands
-        /*
-        ArrayList arraylist = new ArrayList();
-
-        if (s.startsWith("/")) {
-            s = s.substring(1);
-            boolean flag = !s.contains(" ");
-            List list = this.o.b(icommandlistener, s);
-
-            if (list != null) {
-                Iterator iterator = list.iterator();
-
-                while (iterator.hasNext()) {
-                    String s1 = (String) iterator.next();
-
-                    if (flag) {
-                        arraylist.add("/" + s1);
-                    } else {
-                        arraylist.add(s1);
-                    }
-                }
-            }
-
-            return arraylist;
-        } else {
-            String[] astring = s.split(" ", -1);
-            String s2 = astring[astring.length - 1];
-            String[] astring1 = this.u.f();
-            int i = astring1.length;
-
-            for (int j = 0; j < i; ++j) {
-                String s3 = astring1[j];
-
-                if (CommandAbstract.a(s2, s3)) {
-                    arraylist.add(s3);
-                }
-            }
-
-            return arraylist;
-        }
-        */
         return this.server.tabComplete(icommandlistener, s);
-        // CraftBukkit end
     }
 
     public static MinecraftServer getServer() {

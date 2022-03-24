@@ -59,7 +59,7 @@ public class AutomaticSave {
             case IDLE:
                 break;
             case START:
-                MinecraftServer.getLogger().info("[CobelPvP Save] Initialized...");
+                MinecraftServer.getLogger().info("[WorldSave] Initialized...");
                 for(WorldServer world: this.saveChunksQueue) {
                     world.getAutoSaveWorldData().setLastAutosaveTimeStamp();
                 }
@@ -134,9 +134,9 @@ public class AutomaticSave {
                 this.moveToNextStep();
                 break;                
             case FINISHED:
-                MinecraftServer.getLogger().info("[CobelPvP Save] Done. Queued " + this.chunkQueuedCount + " chunks for saving. Took " + formatLongTime(this.fileioEnd - this.fileioStart) + " seconds to write them.");
+                MinecraftServer.getLogger().info("[WorldSave] Done. Queued " + this.chunkQueuedCount + " chunks for saving. Took " + formatLongTime(this.fileioEnd - this.fileioStart) + " seconds to write them.");
                 if(SpigotConfig.autoSaveClearRegionFileCache) {
-                    MinecraftServer.getLogger().info("[CobelPvP Save] Cleared " + this.regionFileCount + " cached region files in " + formatLongTime(this.regionFileCacheEnd - this.regionFileCacheStart) + " seconds.");
+                    MinecraftServer.getLogger().info("[WorldSave] Cleared " + this.regionFileCount + " cached region files in " + formatLongTime(this.regionFileCacheEnd - this.regionFileCacheStart) + " seconds.");
                 }
                 this.reset();
                 return true;

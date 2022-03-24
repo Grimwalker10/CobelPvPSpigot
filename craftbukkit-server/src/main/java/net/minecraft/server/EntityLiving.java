@@ -1087,7 +1087,7 @@ public abstract class EntityLiving extends Entity {
 
             if (!damagesource.ignoresArmor()) {
                 float armorDamage = (float) (event.getDamage() + event.getDamage(DamageModifier.BLOCKING) + event.getDamage(DamageModifier.HARD_HAT));
-                this.damageArmor(armorDamage);
+                this.damageArmor(1);
             }
 
             absorptionModifier = (float) -event.getDamage(DamageModifier.ABSORPTION);

@@ -34,9 +34,7 @@ import net.minecraft.server.Slot;
 import net.minecraft.server.World;
 import net.minecraft.server.WorldServer;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Server;
+import org.bukkit.*;
 import org.bukkit.Statistic.Type;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -81,6 +79,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.util.Vector;
 
 public class CraftEventFactory {
     public static final DamageSource MELTING = CraftDamageSource.copyOf(DamageSource.BURN);
@@ -509,6 +508,7 @@ public class CraftEventFactory {
                 throw new RuntimeException(String.format("Unhandled damage of %s by %s from %s", entity, damager.getHandle(), source.translationIndex)); // Spigot
             }
             EntityDamageEvent event = callEvent(new EntityDamageByEntityEvent(damager, entity.getBukkitEntity(), cause, modifiers, modifierFunctions));
+
             if (!event.isCancelled()) {
                 event.getEntity().setLastDamageCause(event);
             }
@@ -548,19 +548,24 @@ public class CraftEventFactory {
     }
 
     private static EntityDamageEvent callEntityDamageEvent(Entity damager, Entity damagee, DamageCause cause, Map<DamageModifier, Double> modifiers, Map<DamageModifier, Function<? super Double, Double>> modifierFunctions) {
-        EntityDamageEvent event;
-        if (damager != null) {
-            event = new EntityDamageByEntityEvent(damager.getBukkitEntity(), damagee.getBukkitEntity(), cause, modifiers, modifierFunctions);
-        } else {
-            event = new EntityDamageEvent(damagee.getBukkitEntity(), cause, modifiers, modifierFunctions);
+        EntityDamageEvent event = null;
+        if (damager != null) event = new EntityDamageByEntityEvent(damager.getBukkitEntity(), damagee.getBukkitEntity(), cause, modifiers, modifierFunctions);
+        else event = new EntityDamageEvent(damagee.getBukkitEntity(), cause, modifiers, modifierFunctions);
+        if(damager != null)
+        {
+            if(damager.getBukkitEntity() instanceof CraftPlayer && damagee.getBukkitEntity() instanceof CraftPlayer)
+            {
+                CraftPlayer craftDamager = (CraftPlayer) damager.getBukkitEntity();
+                CraftPlayer craftDamagee = (CraftPlayer) damagee.getBukkitEntity();
+                Location lineOfSight = craftDamager.getEyeLocation();
+                double distanceEye = lineOfSight.distance(craftDamagee.getLocation());
+                double distanceLocation = craftDamager.getLocation().distance(craftDamagee.getLocation());
+                double distance = distanceEye < distanceLocation ? distanceEye : distanceLocation;
+                if(distance >= 5.0d) event.setCancelled(true);
+            }
         }
-
         callEvent(event);
-
-        if (!event.isCancelled()) {
-            event.getEntity().setLastDamageCause(event);
-        }
-
+        if (!event.isCancelled()) event.getEntity().setLastDamageCause(event);
         return event;
     }
 

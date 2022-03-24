@@ -15,6 +15,7 @@ import net.minecraft.server.Item;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.TileEntitySkull;
 
+import org.bukkit.AxisAlignedBB;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,6 +26,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.craftbukkit.CraftChunk;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.ItemStack;
@@ -57,6 +59,15 @@ public class CraftBlock implements Block {
 
     public World getWorld() {
         return chunk.getWorld();
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox() {
+        net.minecraft.server.Block nms = getNMSBlock();
+        Location location = getLocation();
+        net.minecraft.server.AxisAlignedBB aabb = nms.a(((CraftWorld) location.getWorld()).getHandle(),
+                location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        return aabb == null ? null : new AxisAlignedBB(aabb.a, aabb.b, aabb.c, aabb.d, aabb.e, aabb.f);
     }
 
     public Location getLocation() {

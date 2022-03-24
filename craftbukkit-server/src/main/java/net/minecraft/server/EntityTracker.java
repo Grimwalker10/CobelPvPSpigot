@@ -4,9 +4,7 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import net.minecraft.optimizations.utils.IndexedLinkedHashSet;
 
 public class EntityTracker {
@@ -35,18 +33,6 @@ public class EntityTracker {
     public void track(Entity entity) {
         if (entity instanceof EntityPlayer) {
             this.addEntity(entity, 512, 2);
-            // CobelPvP start
-            /*
-            EntityPlayer entityplayer = (EntityPlayer) entity;
-            Iterator iterator = this.c.iterator();
-            while (iterator.hasNext()) {
-                EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
-                if (entitytrackerentry.tracker != entityplayer) {
-                    entitytrackerentry.updatePlayer(entityplayer);
-                }
-            }
-            */
-            // CobelPvP end
         } else if (entity instanceof EntityFishingHook) {
             this.addEntity(entity, 64, 5, true);
         } else if (entity instanceof EntityArrow) {
@@ -118,7 +104,6 @@ public class EntityTracker {
 
             this.c.add(entitytrackerentry);
             this.trackedEntities.a(entity.getId(), entitytrackerentry);
-            // entitytrackerentry.scanPlayers(this.world.players); // CobelPvP
             entitytrackerentry.addNearPlayers();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -198,23 +183,4 @@ public class EntityTracker {
             entitytrackerentry.clear(entityplayer);
         }
     }
-
-    // CobelPvP start - nope
-    /*
-    public void a(EntityPlayer entityplayer, Chunk chunk) {
-        // Kohi start - Optimized EntityTracker
-        for (List<Entity> slice : chunk.entitySlices) {
-            for (Entity entity : slice) {
-                if (entity != entityplayer) {
-                    EntityTrackerEntry entry = (EntityTrackerEntry) trackedEntities.get(entity.getId());
-                    if (entry != null) {
-                        entry.updatePlayer(entityplayer);
-                    }
-                }
-            }
-        }
-        // Kohi end
-    }
-    */
-
 }

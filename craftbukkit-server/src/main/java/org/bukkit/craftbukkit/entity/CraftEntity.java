@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import net.minecraft.server.*;
 
+import org.bukkit.AxisAlignedBB;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Server;
@@ -155,6 +156,27 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         else if (entity instanceof EntityFireworks) { return new CraftFirework(server, (EntityFireworks) entity); }
 
         throw new AssertionError("Unknown entity " + entity == null ? null : entity.getClass());
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox() {
+        return new AxisAlignedBB(entity.boundingBox.a, entity.boundingBox.b, entity.boundingBox.c,
+                entity.boundingBox.d, entity.boundingBox.e, entity.boundingBox.f);
+    }
+
+    @Override
+    public float getHeight() {
+        return entity.height;
+    }
+
+    @Override
+    public float getWidth() {
+        return entity.width;
+    }
+
+    @Override
+    public float getLength() {
+        return entity.length;
     }
 
     public Location getLocation() {

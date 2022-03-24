@@ -130,7 +130,6 @@ public class WrappedArrayMap implements Map<Integer, WatchableObject> {
         return set;
     }
 
-    // Clone the WatchableObjects and deep clone ItemStacks if there are any
     public WrappedArrayMap clone() {
         WrappedArrayMap wrappedArrayMap = new WrappedArrayMap();
         for (int i = 0; i < this.dataValues.length; i++) {

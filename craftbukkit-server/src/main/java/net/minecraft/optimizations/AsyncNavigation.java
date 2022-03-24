@@ -195,6 +195,5 @@ public class AsyncNavigation extends Navigation {
 
     private boolean offloadSearches() {
         return true;
-        //return Migot.getConfig().isPathSearchOffloadedFor(this.b);
     }
 }

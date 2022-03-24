@@ -22,7 +22,7 @@ public class PathfinderGoalSwell extends PathfinderGoal {
     public void d() {}
 
     public void e() {
-        EntityLiving b = this.a.getGoalTarget(); // Spigot Update - 20140921a
+        EntityLiving b = this.a.getGoalTarget();
         if (b == null) {
             this.a.a(-1);
         } else if (this.a.f(b) > 49.0D) {
