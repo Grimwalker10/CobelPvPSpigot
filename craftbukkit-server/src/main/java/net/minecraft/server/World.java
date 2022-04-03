@@ -2848,6 +2848,50 @@ public abstract class World implements IBlockAccess {
         return arraylist;
     }
 
+    // Guardian start
+    public boolean containsLiquidOrClimbable(AxisAlignedBB axisalignedbb) {
+        try {
+            int i = MathHelper.floor(axisalignedbb.a);
+            int j = MathHelper.floor(axisalignedbb.d + 1.0D);
+            int k = MathHelper.floor(axisalignedbb.b);
+            int l = MathHelper.floor(axisalignedbb.e + 1.0D);
+            int i1 = MathHelper.floor(axisalignedbb.c);
+            int j1 = MathHelper.floor(axisalignedbb.f + 1.0D);
+            if (axisalignedbb.a < 0.0D) {
+                i--;
+            }
+            if (axisalignedbb.b < 0.0D) {
+                k--;
+            }
+            if (axisalignedbb.c < 0.0D) {
+                i1--;
+            }
+            Chunk chunk = null;
+            for (int k1 = i; k1 < j; k1++) {
+                for (int i2 = i1; i2 < j1; i2++) {
+                    int chunkX = k1 >> 4;
+                    int chunkZ = i2 >> 4;
+                    if (chunk == null) {
+                        chunk = getChunkAt(chunkX, chunkZ);
+                    } else if ((chunkX != chunk.locX) || (chunkZ != chunk.locZ)) {
+                        chunk = getChunkAt(chunkX, chunkZ);
+                    }
+                    for (int l1 = k; l1 < l; l1++) {
+                        Block block = chunk.getType(k1 & 0xF, l1, i2 & 0xF);
+                        if ((block.getMaterial().isLiquid()) || (block == Blocks.LADDER) || (block == Blocks.VINE)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    // Guardian end
+
     public Entity a(Class oclass, AxisAlignedBB axisalignedbb, Entity entity) {
         List list = this.a(oclass, axisalignedbb);
         Entity entity1 = null;

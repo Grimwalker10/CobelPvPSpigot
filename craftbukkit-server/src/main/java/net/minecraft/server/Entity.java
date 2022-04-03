@@ -1994,4 +1994,14 @@ public abstract class Entity {
     }
 
     public void i(int i) {}
+
+    public static double invSqrt(double x) {
+        double xhalf = 0.5 * x;
+        long i = Double.doubleToLongBits(x);
+        i = 6910470738111508698L - (i >> 1);
+        x = Double.longBitsToDouble(i);
+        x *= 1.5 - xhalf * x * x;
+        x *= 1.5 - xhalf * x * x;
+        return x;
+    }
 }
