@@ -3,6 +3,9 @@ package net.minecraft.server;
 import java.net.SocketAddress;
 import java.util.Queue;
 import javax.crypto.SecretKey;
+
+import com.cobelpvp.CobelSpigot;
+import com.cobelpvp.handler.PacketHandler;
 import net.minecraft.util.com.google.common.collect.Queues;
 import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.util.com.mojang.authlib.properties.Property;
@@ -124,6 +127,19 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         if (this.m.isOpen() && !this.lockDownIncomingTraffic) { // Poweruser
             if (packet.a()) {
                 packet.handle(this.o);
+                if (packet instanceof PacketPlayInKeepAlive) {
+                    this.k.add(packet);
+                }
+
+                if (this.o instanceof PlayerConnection) {
+                    try {
+                        for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
+                            handler.handleReceivedPacket((PlayerConnection) this.o, packet);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             } else {
                 this.k.add(packet);
             }

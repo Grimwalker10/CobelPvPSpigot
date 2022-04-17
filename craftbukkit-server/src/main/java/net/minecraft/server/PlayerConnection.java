@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import com.cobelpvp.CobelSpigot;
+import com.cobelpvp.handler.MovementHandler;
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.google.common.collect.Lists;
 import net.minecraft.util.io.netty.buffer.Unpooled;
@@ -236,6 +238,26 @@ public class PlayerConnection implements PacketPlayInListener {
             // Prevent 40 event-calls for less than a single pixel of movement >.>
             double delta = Math.pow(this.lastPosX - to.getX(), 2) + Math.pow(this.lastPosY - to.getY(), 2) + Math.pow(this.lastPosZ - to.getZ(), 2);
             float deltaAngle = Math.abs(this.lastYaw - to.getYaw()) + Math.abs(this.lastPitch - to.getPitch());
+
+            if (packetplayinflying.hasPos && delta > 0.0D && this.checkMovement && !this.player.dead) {
+                for (MovementHandler handler : CobelSpigot.INSTANCE.getMovementHandlers()) {
+                    try {
+                        handler.handleUpdateLocation(player, to, from, packetplayinflying);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            if (packetplayinflying.hasLook && deltaAngle > 0.0F && this.checkMovement && !this.player.dead) {
+                for (MovementHandler handler : CobelSpigot.INSTANCE.getMovementHandlers()) {
+                    try {
+                        handler.handleUpdateRotation(player, to, from, packetplayinflying);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
             if ((delta > 1f / 256 || deltaAngle > 10f) && (this.checkMovement && !this.player.dead)) {
                 this.lastPosX = to.getX();
