@@ -1,42 +1,47 @@
 package com.cobelpvp.packets;
 
+import net.minecraft.server.Packet;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.player.PlayerEvent;
 
-public class PacketReceiveEvent extends Event implements Cancellable {
-    private static final HandlerList handlers = new HandlerList();
-    private Player player;
-    private Object packet;
-    private boolean canceled;
+public class PacketReceiveEvent extends PlayerEvent implements Cancellable
+{
+    private static final HandlerList handlers;
+    private Packet packet;
+    private boolean cancelled;
 
-    public PacketReceiveEvent(Player player, Object packet) {
-        this.player = player;
+    static {
+        handlers = new HandlerList();
+    }
+
+    public PacketReceiveEvent(final Player cheater, final Packet packet) {
+        super(cheater);
         this.packet = packet;
+        this.cancelled = false;
     }
 
-    public Player getPlayer() {
-        return this.player;
-    }
-
-    public Object getPacket() {
-        return this.packet;
-    }
-
-    public boolean isCancelled() {
-        return this.canceled;
-    }
-
-    public void setCancelled(boolean cancel) {
-        this.canceled = cancel;
-    }
-
+    @Override
     public HandlerList getHandlers() {
-        return handlers;
+        return PacketReceiveEvent.handlers;
     }
 
     public static HandlerList getHandlerList() {
-        return handlers;
+        return PacketReceiveEvent.handlers;
+    }
+
+    public Packet getPacket() {
+        return this.packet;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
+
+    @Override
+    public void setCancelled(final boolean cancel) {
+        this.cancelled = cancel;
     }
 }
