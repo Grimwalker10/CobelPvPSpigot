@@ -52,6 +52,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public java.util.UUID spoofedUUID;
     public Property[] spoofedProfile;
     public boolean preparing = true;
+    private Channel channel;
     // Spigot End
     private PacketListener o;
     private EnumProtocol p;
