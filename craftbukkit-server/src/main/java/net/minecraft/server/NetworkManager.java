@@ -3,7 +3,7 @@ package net.minecraft.server;
 import java.net.SocketAddress;
 import java.util.Queue;
 import javax.crypto.SecretKey;
-
+import java.util.Queue;
 import com.cobelpvp.CobelSpigot;
 import com.cobelpvp.handler.PacketHandler;
 import com.cobelpvp.packets.PacketSendEvent;
@@ -44,12 +44,13 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public static final Marker c = MarkerManager.getMarker("NETWORK_STAT", a);
     public static final AttributeKey protocolAttribute = new AttributeKey("protocol");
     public static final AttributeKey d = protocolAttribute;
+    private final Queue<QueuedPacket> queue;
+    private final Queue<Packet> k;
     public static final AttributeKey e = new AttributeKey("receivable_packets");
     public static final AttributeKey f = new AttributeKey("sendable_packets");
     public static final NioEventLoopGroup g = new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Client IO #%d").setDaemon(true).build());
     public static final NetworkStatistics h = new NetworkStatistics();
     private final boolean j;
-    private final Queue k = Queues.newConcurrentLinkedQueue();
     private Channel m;
     public SocketAddress remoteAddress;
     // Spigot Start
@@ -64,6 +65,17 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     private PacketListener o;
     private EnumProtocol p;
     private IChatBaseComponent q;
+    private long[] limitTimes;
+    public long lastTickNetworkProcessed;
+    public long ticksSinceLastPacket;
+    public long currentTime;
+    public long lastVehicleTick;
+    public int numOfFlyingPacketsInARow;
+    public boolean stopReadingPackets;
+    private Packet[] packets;
+    private int numOfH;
+    private int numOfI;
+    private long lastKTick;
     private boolean r;
     // Spigot Start
     public static final AttributeKey<Integer> protocolVersion = new AttributeKey<Integer>("protocol_version");
@@ -99,6 +111,28 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     public NetworkManager(boolean flag) {
         this.j = flag;
+        this.queue = com.google.common.collect.Queues.newConcurrentLinkedQueue();
+        this.k = net.minecraft.util.com.google.common.collect.Queues.newConcurrentLinkedQueue();
+        this.stopReadingPackets = false;
+        this.packets = new Packet[10];
+        this.limitTimes = new long[12];
+        this.lastTickNetworkProcessed = (long)MinecraftServer.currentTick;
+        this.ticksSinceLastPacket = -1L;
+        this.currentTime = System.currentTimeMillis();
+        this.lastVehicleTick = -1L;
+        this.numOfFlyingPacketsInARow = 0;
+        this.limitTimes[0] = 4000L;
+        this.limitTimes[1] = 4000L;
+        this.limitTimes[2] = 4000L;
+        this.limitTimes[3] = 4000L;
+        this.limitTimes[4] = 5000L;
+        this.limitTimes[5] = 6000L;
+        this.limitTimes[6] = 7000L;
+        this.limitTimes[7] = 7000L;
+        this.limitTimes[8] = 7000L;
+        this.limitTimes[9] = 7000L;
+        this.limitTimes[10] = 7000L;
+        this.limitTimes[11] = 7000L;
     }
 
     public void channelActive(ChannelHandlerContext channelhandlercontext) throws Exception {
