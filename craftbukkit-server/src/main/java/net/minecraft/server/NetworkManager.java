@@ -52,6 +52,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public SocketAddress remoteAddress;
     // Spigot Start
     public SocketAddress n;
+    private EnumProtocol lastProtocol;
     public java.util.UUID spoofedUUID;
     public Property[] spoofedProfile;
     public boolean preparing = true;
