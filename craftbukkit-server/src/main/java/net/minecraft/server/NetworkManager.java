@@ -47,6 +47,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     private final boolean j;
     private final Queue k = Queues.newConcurrentLinkedQueue();
     private Channel m;
+    public SocketAddress remoteAddress;
     // Spigot Start
     public SocketAddress n;
     public java.util.UUID spoofedUUID;
@@ -234,7 +235,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public SocketAddress getSocketAddress() {
-        return this.n;
+        return this.remoteAddress;
     }
 
     public void close(IChatBaseComponent ichatbasecomponent) {
@@ -286,12 +287,9 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         return nm.channel;
     }
 
-    // Spigot Start
-    public SocketAddress getRawAddress()
-    {
-        return this.m.remoteAddress();
+    public SocketAddress getRawAddress() {
+        return this.channel.remoteAddress();
     }
-    // Spigot End
 
 
     // Spigot start - protocol patch
