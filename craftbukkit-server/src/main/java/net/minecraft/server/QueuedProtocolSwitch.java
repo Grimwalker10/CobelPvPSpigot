@@ -2,7 +2,6 @@ package net.minecraft.server;
 
 import net.minecraft.util.io.netty.channel.ChannelFuture;
 import net.minecraft.util.io.netty.channel.ChannelFutureListener;
-import net.minecraft.util.io.netty.channel.ChannelPromise; // CobelPvP
 import net.minecraft.util.io.netty.util.concurrent.GenericFutureListener;
 
 public class QueuedProtocolSwitch implements Runnable {

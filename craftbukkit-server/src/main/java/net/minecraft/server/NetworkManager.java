@@ -106,6 +106,10 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         i.debug("Enabled auto read");
     }
 
+    public EnumProtocol getProtocol() {
+        return (EnumProtocol)this.channel.attr(protocolAttribute).get();
+    }
+
     public void channelInactive(ChannelHandlerContext channelhandlercontext) {
         this.close(new ChatMessage("disconnect.endOfStream", new Object[0]));
     }
