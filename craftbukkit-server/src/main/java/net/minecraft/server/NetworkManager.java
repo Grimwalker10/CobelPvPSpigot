@@ -66,6 +66,11 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         Integer ver = attr.attr( protocolVersion ).get();
         return ( ver != null ) ? ver : CURRENT_VERSION;
     }
+
+    public Channel getChannel() {
+        return this.channel;
+    }
+
     public int getVersion()
     {
         return getVersion( this.m );
@@ -88,21 +93,23 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         this.j = flag;
     }
 
-    public void channelActive(ChannelHandlerContext channelhandlercontext) throws Exception { // CraftBukkit - throws Exception
+    public void channelActive(ChannelHandlerContext channelhandlercontext) throws Exception {
         super.channelActive(channelhandlercontext);
-        this.m = channelhandlercontext.channel();
-        this.n = this.m.remoteAddress();
-        // Spigot Start
+        this.channel = channelhandlercontext.channel();
+        this.remoteAddress = this.channel.remoteAddress();
         this.preparing = false;
-        // Spigot End
-        this.a(EnumProtocol.HANDSHAKING);
+        this.setProtocol(EnumProtocol.HANDSHAKING);
     }
 
     public void a(EnumProtocol enumprotocol) {
-        this.p = (EnumProtocol) this.m.attr(d).getAndSet(enumprotocol);
-        this.m.attr(e).set(enumprotocol.a(this.j));
-        this.m.attr(f).set(enumprotocol.b(this.j));
-        this.m.config().setAutoRead(true);
+        this.setProtocol(enumprotocol);
+    }
+
+    public void setProtocol(EnumProtocol enumprotocol) {
+        this.lastProtocol = (EnumProtocol)this.channel.attr(protocolAttribute).getAndSet(enumprotocol);
+        this.channel.attr(e).set(enumprotocol.a(this.j));
+        this.channel.attr(f).set(enumprotocol.b(this.j));
+        this.channel.config().setAutoRead(true);
         i.debug("Enabled auto read");
     }
 
@@ -272,6 +279,10 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     static Channel a(NetworkManager networkmanager) {
         return networkmanager.m;
+    }
+
+    public static Channel getChannel(NetworkManager nm) {
+        return nm.channel;
     }
 
     // Spigot Start
