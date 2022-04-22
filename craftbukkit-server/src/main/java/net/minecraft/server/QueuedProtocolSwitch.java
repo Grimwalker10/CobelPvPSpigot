@@ -1,40 +1,40 @@
 package net.minecraft.server;
 
+import net.minecraft.util.io.netty.channel.ChannelFuture;
 import net.minecraft.util.io.netty.channel.ChannelFutureListener;
 import net.minecraft.util.io.netty.channel.ChannelPromise; // CobelPvP
 import net.minecraft.util.io.netty.util.concurrent.GenericFutureListener;
 
-public class QueuedProtocolSwitch implements Runnable { // CobelPvP - public
+public class QueuedProtocolSwitch implements Runnable {
+    private final EnumProtocol packetProtocol;
+    private final Packet packet;
+    private final GenericFutureListener[] genericFutureListeners;
+    private final NetworkManager networkManager;
 
-    final EnumProtocol a;
-    final EnumProtocol b;
-    final Packet c;
-    final GenericFutureListener[] d;
-    final NetworkManager e;
+    QueuedProtocolSwitch(NetworkManager e, EnumProtocol a, Packet c, GenericFutureListener[] d) {
+        this.networkManager = e;
+        this.packetProtocol = a;
+        this.packet = c;
+        this.genericFutureListeners = d;
+    }
 
-    QueuedProtocolSwitch(NetworkManager networkmanager, EnumProtocol enumprotocol, EnumProtocol enumprotocol1, Packet packet, GenericFutureListener[] agenericfuturelistener) {
-        this.e = networkmanager;
-        this.a = enumprotocol;
-        this.b = enumprotocol1;
-        this.c = packet;
-        this.d = agenericfuturelistener;
+    QueuedProtocolSwitch(NetworkManager e, EnumProtocol a, Packet c) {
+        this.networkManager = e;
+        this.packetProtocol = a;
+        this.packet = c;
+        this.genericFutureListeners = null;
     }
 
     public void run() {
-    // CobelPvP start
-        execute(this.e, this.a, this.b, this.c, this.d);
-    }
-
-    public static void execute(NetworkManager networkmanager, EnumProtocol enumprotocol, EnumProtocol enumprotocol1, Packet packet, GenericFutureListener[] agenericfuturelistener) {
-        if (enumprotocol != enumprotocol1) {
-            networkmanager.a(enumprotocol);
+        if (this.packetProtocol != this.networkManager.getProtocol()) {
+            this.networkManager.setProtocol(this.packetProtocol);
         }
 
-        if(agenericfuturelistener == null || agenericfuturelistener.length == 0) {
-            NetworkManager.a(networkmanager).writeAndFlush(packet, NetworkManager.a(networkmanager).voidPromise());
-        } else {
-            NetworkManager.a(networkmanager).writeAndFlush(packet).addListeners(agenericfuturelistener).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-        }
+        ChannelFuture future = NetworkManager.getChannel(this.networkManager).writeAndFlush(this.packet);
+        this.addGenericFutureListeners(future).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
     }
-    // CobelPvP end
+
+    private ChannelFuture addGenericFutureListeners(ChannelFuture cf) {
+        return this.genericFutureListeners == null ? cf : cf.addListeners(this.genericFutureListeners);
+    }
 }
