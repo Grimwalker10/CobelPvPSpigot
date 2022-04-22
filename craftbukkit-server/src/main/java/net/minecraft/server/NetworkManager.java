@@ -10,6 +10,7 @@ import net.minecraft.util.com.google.common.collect.Queues;
 import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.util.com.mojang.authlib.properties.Property;
 import net.minecraft.util.io.netty.channel.Channel;
+import net.minecraft.util.io.netty.channel.ChannelFutureListener;
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
 import net.minecraft.util.io.netty.channel.SimpleChannelInboundHandler;
 import net.minecraft.util.io.netty.channel.local.LocalChannel;
@@ -39,7 +40,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public static final Marker a = MarkerManager.getMarker("NETWORK");
     public static final Marker b = MarkerManager.getMarker("NETWORK_PACKETS", a);
     public static final Marker c = MarkerManager.getMarker("NETWORK_STAT", a);
-    public static final AttributeKey d = new AttributeKey("protocol");
+    public static final AttributeKey protocolAttribute = new AttributeKey("protocol");
+    public static final AttributeKey d = protocolAttribute;
     public static final AttributeKey e = new AttributeKey("receivable_packets");
     public static final AttributeKey f = new AttributeKey("sendable_packets");
     public static final NioEventLoopGroup g = new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Client IO #%d").setDaemon(true).build());
@@ -172,20 +174,26 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         }
     }
 
-    private void b(Packet packet, GenericFutureListener[] agenericfuturelistener) {
-        EnumProtocol enumprotocol = EnumProtocol.a(packet);
-        EnumProtocol enumprotocol1 = (EnumProtocol) this.m.attr(d).get();
+    public void handle(Packet packet) {
+        if (this.channel != null && this.channel.isOpen()) {
+            EnumProtocol enumprotocol = EnumProtocol.a(packet);
+            EnumProtocol enumprotocol1 = (EnumProtocol)this.channel.attr(protocolAttribute).get();
+            if (enumprotocol1 != enumprotocol) {
+                i.debug("Disabled auto read");
+                this.channel.config().setAutoRead(false);
+            }
 
-        if (enumprotocol1 != enumprotocol) {
-            i.debug("Disabled auto read");
-            this.m.config().setAutoRead(false);
+            if (this.channel.eventLoop().inEventLoop()) {
+                if (enumprotocol != enumprotocol1) {
+                    this.setProtocol(enumprotocol);
+                }
+
+                this.channel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+            } else {
+                this.channel.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, packet));
+            }
         }
 
-        if (this.m.eventLoop().inEventLoop()) {
-            QueuedProtocolSwitch.execute(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener); // CobelPvP
-        } else {
-            this.m.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener));
-        }
     }
 
     public void a() {
