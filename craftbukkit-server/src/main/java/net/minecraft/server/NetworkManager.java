@@ -121,6 +121,16 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         i.debug("Enabled auto read");
     }
 
+    private void queuePacket() {
+        QueuedPacket queuedPacket;
+        if (this.channel != null && this.channel.isOpen()) {
+            while((queuedPacket = (QueuedPacket)this.queue.poll()) != null) {
+                this.writePacket(queuedPacket.getPacket(), queuedPacket.getListeners());
+            }
+        }
+
+    }
+
     public EnumProtocol getProtocol() {
         return (EnumProtocol)this.channel.attr(protocolAttribute).get();
     }
