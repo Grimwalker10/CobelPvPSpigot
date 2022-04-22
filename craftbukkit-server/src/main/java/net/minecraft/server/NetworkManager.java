@@ -199,6 +199,26 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     }
 
+    private void writePacket(Packet packet, GenericFutureListener[] agenericfuturelistener) {
+        EnumProtocol enumprotocol = EnumProtocol.a(packet);
+        EnumProtocol enumprotocol1 = (EnumProtocol)this.channel.attr(protocolAttribute).get();
+        if (enumprotocol1 != enumprotocol) {
+            i.debug("Disabled auto read");
+            this.channel.config().setAutoRead(false);
+        }
+
+        if (this.channel.eventLoop().inEventLoop()) {
+            if (enumprotocol != enumprotocol1) {
+                this.setProtocol(enumprotocol);
+            }
+
+            this.channel.writeAndFlush(packet).addListeners(agenericfuturelistener).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        } else {
+            this.channel.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, packet, agenericfuturelistener));
+        }
+
+    }
+
     public void handle(Packet packet) {
         if (this.channel != null && this.channel.isOpen()) {
             EnumProtocol enumprotocol = EnumProtocol.a(packet);
