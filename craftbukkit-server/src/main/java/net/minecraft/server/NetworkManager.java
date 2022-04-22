@@ -6,6 +6,7 @@ import javax.crypto.SecretKey;
 
 import com.cobelpvp.CobelSpigot;
 import com.cobelpvp.handler.PacketHandler;
+import com.cobelpvp.packets.PacketSendEvent;
 import net.minecraft.util.com.google.common.collect.Queues;
 import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.util.com.mojang.authlib.properties.Property;
@@ -26,6 +27,7 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 // Spigot start
 import com.google.common.collect.ImmutableSet;
+import org.bukkit.Bukkit;
 import org.spigotmc.SpigotCompressor;
 import org.spigotmc.SpigotDecompressor;
 // Spigot end
@@ -51,6 +53,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     private Channel m;
     public SocketAddress remoteAddress;
     // Spigot Start
+    private PacketListener packetListener;
     public SocketAddress n;
     private EnumProtocol lastProtocol;
     public java.util.UUID spoofedUUID;
@@ -169,10 +172,21 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void handle(Packet packet, GenericFutureListener... agenericfuturelistener) {
-        if (this.m != null && this.m.isOpen()) {
-            this.b(packet, agenericfuturelistener);
-        } else {
+        if (this.packetListener instanceof PlayerConnection) {
+            PacketSendEvent event = new PacketSendEvent(((PlayerConnection)this.packetListener).getPlayer(), packet);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                return;
+            }
         }
+
+        if (this.channel != null && this.channel.isOpen()) {
+            this.queuePacket();
+            this.writePacket(packet, agenericfuturelistener);
+        } else {
+            this.queue.add(new QueuedPacket(packet, agenericfuturelistener));
+        }
+
     }
 
     public void handle(Packet packet) {
