@@ -2,28 +2,22 @@ package net.minecraft.server;
 
 import net.minecraft.util.io.netty.util.concurrent.GenericFutureListener;
 
+// CraftBukkit - imported class because the methods are package private
 class QueuedPacket {
-    private final Packet packet;
-    private final GenericFutureListener[] listeners;
-    private final boolean hasListeners;
+
+    private final Packet a;
+    private final GenericFutureListener[] b;
 
     public QueuedPacket(Packet packet, GenericFutureListener... agenericfuturelistener) {
-        this.packet = packet;
-        this.listeners = agenericfuturelistener;
-        this.hasListeners = true;
+        this.a = packet;
+        this.b = agenericfuturelistener;
     }
 
-    public QueuedPacket(Packet packet) {
-        this.packet = packet;
-        this.listeners = null;
-        this.hasListeners = false;
+    static Packet a(QueuedPacket queuedpacket) {
+        return queuedpacket.a;
     }
 
-    public Packet getPacket() {
-        return this.packet;
-    }
-
-    public GenericFutureListener[] getListeners() {
-        return this.listeners;
+    static GenericFutureListener[] b(QueuedPacket queuedpacket) {
+        return queuedpacket.b;
     }
 }

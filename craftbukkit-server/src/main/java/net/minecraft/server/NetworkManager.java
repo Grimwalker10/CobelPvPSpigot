@@ -3,15 +3,13 @@ package net.minecraft.server;
 import java.net.SocketAddress;
 import java.util.Queue;
 import javax.crypto.SecretKey;
-import java.util.Queue;
+
 import com.cobelpvp.CobelSpigot;
 import com.cobelpvp.handler.PacketHandler;
-import com.cobelpvp.packets.PacketSendEvent;
 import net.minecraft.util.com.google.common.collect.Queues;
 import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.util.com.mojang.authlib.properties.Property;
 import net.minecraft.util.io.netty.channel.Channel;
-import net.minecraft.util.io.netty.channel.ChannelFutureListener;
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
 import net.minecraft.util.io.netty.channel.SimpleChannelInboundHandler;
 import net.minecraft.util.io.netty.channel.local.LocalChannel;
@@ -27,7 +25,6 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 // Spigot start
 import com.google.common.collect.ImmutableSet;
-import org.bukkit.Bukkit;
 import org.spigotmc.SpigotCompressor;
 import org.spigotmc.SpigotDecompressor;
 // Spigot end
@@ -42,40 +39,23 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public static final Marker a = MarkerManager.getMarker("NETWORK");
     public static final Marker b = MarkerManager.getMarker("NETWORK_PACKETS", a);
     public static final Marker c = MarkerManager.getMarker("NETWORK_STAT", a);
-    public static final AttributeKey protocolAttribute = new AttributeKey("protocol");
-    public static final AttributeKey d = protocolAttribute;
-    private final Queue<QueuedPacket> queue;
-    private final Queue<Packet> k;
+    public static final AttributeKey d = new AttributeKey("protocol");
     public static final AttributeKey e = new AttributeKey("receivable_packets");
     public static final AttributeKey f = new AttributeKey("sendable_packets");
     public static final NioEventLoopGroup g = new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Client IO #%d").setDaemon(true).build());
     public static final NetworkStatistics h = new NetworkStatistics();
     private final boolean j;
+    private final Queue k = Queues.newConcurrentLinkedQueue();
     private Channel m;
-    public SocketAddress remoteAddress;
     // Spigot Start
-    private PacketListener packetListener;
     public SocketAddress n;
-    private EnumProtocol lastProtocol;
     public java.util.UUID spoofedUUID;
     public Property[] spoofedProfile;
     public boolean preparing = true;
-    private Channel channel;
     // Spigot End
     private PacketListener o;
     private EnumProtocol p;
     private IChatBaseComponent q;
-    private long[] limitTimes;
-    public long lastTickNetworkProcessed;
-    public long ticksSinceLastPacket;
-    public long currentTime;
-    public long lastVehicleTick;
-    public int numOfFlyingPacketsInARow;
-    public boolean stopReadingPackets;
-    private Packet[] packets;
-    private int numOfH;
-    private int numOfI;
-    private long lastKTick;
     private boolean r;
     // Spigot Start
     public static final AttributeKey<Integer> protocolVersion = new AttributeKey<Integer>("protocol_version");
@@ -86,11 +66,6 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         Integer ver = attr.attr( protocolVersion ).get();
         return ( ver != null ) ? ver : CURRENT_VERSION;
     }
-
-    public Channel getChannel() {
-        return this.channel;
-    }
-
     public int getVersion()
     {
         return getVersion( this.m );
@@ -111,62 +86,24 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     public NetworkManager(boolean flag) {
         this.j = flag;
-        this.queue = com.google.common.collect.Queues.newConcurrentLinkedQueue();
-        this.k = net.minecraft.util.com.google.common.collect.Queues.newConcurrentLinkedQueue();
-        this.stopReadingPackets = false;
-        this.packets = new Packet[10];
-        this.limitTimes = new long[12];
-        this.lastTickNetworkProcessed = (long)MinecraftServer.currentTick;
-        this.ticksSinceLastPacket = -1L;
-        this.currentTime = System.currentTimeMillis();
-        this.lastVehicleTick = -1L;
-        this.numOfFlyingPacketsInARow = 0;
-        this.limitTimes[0] = 4000L;
-        this.limitTimes[1] = 4000L;
-        this.limitTimes[2] = 4000L;
-        this.limitTimes[3] = 4000L;
-        this.limitTimes[4] = 5000L;
-        this.limitTimes[5] = 6000L;
-        this.limitTimes[6] = 7000L;
-        this.limitTimes[7] = 7000L;
-        this.limitTimes[8] = 7000L;
-        this.limitTimes[9] = 7000L;
-        this.limitTimes[10] = 7000L;
-        this.limitTimes[11] = 7000L;
     }
 
-    public void channelActive(ChannelHandlerContext channelhandlercontext) throws Exception {
+    public void channelActive(ChannelHandlerContext channelhandlercontext) throws Exception { // CraftBukkit - throws Exception
         super.channelActive(channelhandlercontext);
-        this.channel = channelhandlercontext.channel();
-        this.remoteAddress = this.channel.remoteAddress();
+        this.m = channelhandlercontext.channel();
+        this.n = this.m.remoteAddress();
+        // Spigot Start
         this.preparing = false;
-        this.setProtocol(EnumProtocol.HANDSHAKING);
+        // Spigot End
+        this.a(EnumProtocol.HANDSHAKING);
     }
 
     public void a(EnumProtocol enumprotocol) {
-        this.setProtocol(enumprotocol);
-    }
-
-    public void setProtocol(EnumProtocol enumprotocol) {
-        this.lastProtocol = (EnumProtocol)this.channel.attr(protocolAttribute).getAndSet(enumprotocol);
-        this.channel.attr(e).set(enumprotocol.a(this.j));
-        this.channel.attr(f).set(enumprotocol.b(this.j));
-        this.channel.config().setAutoRead(true);
+        this.p = (EnumProtocol) this.m.attr(d).getAndSet(enumprotocol);
+        this.m.attr(e).set(enumprotocol.a(this.j));
+        this.m.attr(f).set(enumprotocol.b(this.j));
+        this.m.config().setAutoRead(true);
         i.debug("Enabled auto read");
-    }
-
-    private void queuePacket() {
-        QueuedPacket queuedPacket;
-        if (this.channel != null && this.channel.isOpen()) {
-            while((queuedPacket = (QueuedPacket)this.queue.poll()) != null) {
-                this.writePacket(queuedPacket.getPacket(), queuedPacket.getListeners());
-            }
-        }
-
-    }
-
-    public EnumProtocol getProtocol() {
-        return (EnumProtocol)this.channel.attr(protocolAttribute).get();
     }
 
     public void channelInactive(ChannelHandlerContext channelhandlercontext) {
@@ -216,63 +153,26 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void handle(Packet packet, GenericFutureListener... agenericfuturelistener) {
-        if (this.packetListener instanceof PlayerConnection) {
-            PacketSendEvent event = new PacketSendEvent(((PlayerConnection)this.packetListener).getPlayer(), packet);
-            Bukkit.getPluginManager().callEvent(event);
-            if (event.isCancelled()) {
-                return;
-            }
-        }
-
-        if (this.channel != null && this.channel.isOpen()) {
-            this.queuePacket();
-            this.writePacket(packet, agenericfuturelistener);
+        if (this.m != null && this.m.isOpen()) {
+            this.b(packet, agenericfuturelistener);
         } else {
-            this.queue.add(new QueuedPacket(packet, agenericfuturelistener));
         }
-
     }
 
-    private void writePacket(Packet packet, GenericFutureListener[] agenericfuturelistener) {
+    private void b(Packet packet, GenericFutureListener[] agenericfuturelistener) {
         EnumProtocol enumprotocol = EnumProtocol.a(packet);
-        EnumProtocol enumprotocol1 = (EnumProtocol)this.channel.attr(protocolAttribute).get();
+        EnumProtocol enumprotocol1 = (EnumProtocol) this.m.attr(d).get();
+
         if (enumprotocol1 != enumprotocol) {
             i.debug("Disabled auto read");
-            this.channel.config().setAutoRead(false);
+            this.m.config().setAutoRead(false);
         }
 
-        if (this.channel.eventLoop().inEventLoop()) {
-            if (enumprotocol != enumprotocol1) {
-                this.setProtocol(enumprotocol);
-            }
-
-            this.channel.writeAndFlush(packet).addListeners(agenericfuturelistener).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+        if (this.m.eventLoop().inEventLoop()) {
+            QueuedProtocolSwitch.execute(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener); // CobelPvP
         } else {
-            this.channel.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, packet, agenericfuturelistener));
+            this.m.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener));
         }
-
-    }
-
-    public void handle(Packet packet) {
-        if (this.channel != null && this.channel.isOpen()) {
-            EnumProtocol enumprotocol = EnumProtocol.a(packet);
-            EnumProtocol enumprotocol1 = (EnumProtocol)this.channel.attr(protocolAttribute).get();
-            if (enumprotocol1 != enumprotocol) {
-                i.debug("Disabled auto read");
-                this.channel.config().setAutoRead(false);
-            }
-
-            if (this.channel.eventLoop().inEventLoop()) {
-                if (enumprotocol != enumprotocol1) {
-                    this.setProtocol(enumprotocol);
-                }
-
-                this.channel.writeAndFlush(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-            } else {
-                this.channel.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, packet));
-            }
-        }
-
     }
 
     public void a() {
@@ -322,7 +222,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public SocketAddress getSocketAddress() {
-        return this.remoteAddress;
+        return this.n;
     }
 
     public void close(IChatBaseComponent ichatbasecomponent) {
@@ -370,13 +270,12 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         return networkmanager.m;
     }
 
-    public static Channel getChannel(NetworkManager nm) {
-        return nm.channel;
+    // Spigot Start
+    public SocketAddress getRawAddress()
+    {
+        return this.m.remoteAddress();
     }
-
-    public SocketAddress getRawAddress() {
-        return this.channel.remoteAddress();
-    }
+    // Spigot End
 
 
     // Spigot start - protocol patch
