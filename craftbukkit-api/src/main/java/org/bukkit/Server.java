@@ -905,6 +905,27 @@ public interface Server extends PluginMessageRecipient {
      */
     public int getIdleTimeout();
 
+    // Guardian start
+
+    /**
+     * @return Whether Guardian is enabled or not.
+     */
+    public boolean isGuardianEnabled();
+
+    /**
+     * Set whether Guardian is enabled or not.
+     *
+     * @param enabled - The new state to set to
+     */
+    public void setGuardianEnabled(boolean enabled);
+
+    /**
+     * @return Whether Guardian should do checks in the server's
+     * current conditions or not.
+     */
+    public boolean shouldGuardianAct();
+    // Guardian end
+
     /**
      * @see UnsafeValues
      */
