@@ -29,7 +29,7 @@ public class VersionCommand extends BukkitCommand {
         if (!testPermission(sender)) return true;
 
         if (args.length == 0) {
-            sender.sendMessage("This server is running " + Bukkit.getName() + " version " + Bukkit.getVersion() + " (Implementing API version " + Bukkit.getBukkitVersion() + ")");
+            sender.sendMessage(ChatColor.GOLD + "This server is running CobelPvP CraftBukkit 1.7.2");
         } else {
             StringBuilder name = new StringBuilder();
 
