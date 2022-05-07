@@ -12,7 +12,7 @@ public class PvPArmorCommand extends Command {
     public PvPArmorCommand(String name) {
         super(name);
         this.usageMessage = ChatColor.DARK_AQUA + ("PvPArmor Gived");
-        this.setPermission(("spigot.pvparmor"));
+        this.setPermission((""));
     }
 
     public boolean execute(CommandSender sender, String commandLabel, String[] args) {
@@ -27,6 +27,7 @@ public class PvPArmorCommand extends Command {
             leg.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
             ItemStack boot = new ItemStack(Material.DIAMOND_BOOTS);
             boot.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+            boot.addEnchantment(Enchantment.PROTECTION_FALL,4);
             ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
             sword.addEnchantment(Enchantment.DAMAGE_ALL, 3);
             sword.addEnchantment(Enchantment.FIRE_ASPECT, 2);
