@@ -746,29 +746,6 @@ public final class Bukkit {
         return server.getIdleTimeout();
     }
 
-    // Guardian start
-    /**
-     * @see Server#isGuardianEnabled()
-     */
-    public static boolean isGuardianEnabled() {
-        return server.isGuardianEnabled();
-    }
-
-    /**
-     * @see Server#setGuardianEnabled(boolean)
-     */
-    public static void setGuardianEnabled(boolean enabled) {
-        server.setGuardianEnabled(enabled);
-    }
-
-    /**
-     * @see Server#shouldGuardianAct()
-     */
-    public static boolean shouldGuardianAct() {
-        return server.shouldGuardianAct();
-    }
-    // Guardian end
-
     /**
      * @see Server#getUnsafe()
      */
