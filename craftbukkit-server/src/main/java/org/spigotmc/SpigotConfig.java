@@ -1,9 +1,6 @@
 package org.spigotmc;
 
-import com.cobelpvp.commands.NoTrackCommand;
-import com.cobelpvp.commands.SetViewDistanceCommand;
-import com.cobelpvp.commands.TPSCommand;
-import com.cobelpvp.commands.WorldStatsCommand;
+import com.cobelpvp.commands.*;
 import com.google.common.base.Throwables;
 import java.io.File;
 import java.io.IOException;
@@ -220,6 +217,7 @@ public class SpigotConfig
         restartScript = getString( "settings.restart-script", restartScript );
         restartMessage = transform( getString( "messages.restart", "Server is restarting" ) );
         commands.put( "restart", new RestartCommand( "restart" ) );
+        commands.put("pvparmor", new PvPArmorCommand("pvparmor"));
         WatchdogThread.doStart( timeoutTime, restartOnCrash );
     }
 

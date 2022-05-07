@@ -178,7 +178,7 @@ public class PaperSpigotConfig
     public static int maxPacketsPerPlayer;
     private static void maxPacketsPerPlayer()
     {
-        maxPacketsPerPlayer = getInt( "max-packets-per-player", 700 );
+        maxPacketsPerPlayer = getInt( "max-packets-per-player", 1000 );
     }
 
     public static boolean stackableLavaBuckets;
