@@ -5,7 +5,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.crypto.SecretKey;
-
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 import net.minecraft.util.com.mojang.authlib.properties.Property;
@@ -14,10 +13,7 @@ import net.minecraft.util.io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.util.org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-// Pweruser start
 import net.minecraft.optimizations.utils.ThreadingManager;
-// Poweruser end
 
 public class LoginListener implements PacketLoginInListener {
 
@@ -111,14 +107,6 @@ public class LoginListener implements PacketLoginInListener {
     // Spigot end
 
     public void c() {
-        // Spigot start - Moved to initUUID
-        /*
-        if (!this.i.isComplete()) {
-            this.i = this.a(this.i);
-        }
-        */
-        // Spigot end
-
         // CraftBukkit start - fire PlayerLoginEvent
         EntityPlayer s = this.server.getPlayerList().attemptLogin(this, this.i, this.hostname);
 
@@ -171,19 +159,6 @@ public class LoginListener implements PacketLoginInListener {
 
     public void a(PacketLoginInEncryptionBegin packetlogininencryptionbegin) {
         Validate.validState(this.g == EnumProtocolState.KEY, "Unexpected key packet", new Object[0]);
-
-        /*
-        PrivateKey privatekey = this.server.K().getPrivate();
-
-        if (!Arrays.equals(this.e, packetlogininencryptionbegin.b(privatekey))) {
-            throw new IllegalStateException("Invalid nonce!");
-        } else {
-            this.loginKey = packetlogininencryptionbegin.a(privatekey);
-            this.g = EnumProtocolState.AUTHENTICATING;
-            this.networkManager.a(this.loginKey);
-            ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // Poweruser
-        }
-        */
         ThreadingManager.execute(new ThreadPlayerLookupUUID(this, packetlogininencryptionbegin)); // Poweruser
     }
 

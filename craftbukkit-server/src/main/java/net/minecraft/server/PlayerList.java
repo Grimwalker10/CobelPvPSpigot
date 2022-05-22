@@ -168,18 +168,6 @@ public abstract class PlayerList {
         entityplayer.getStatisticManager().updateStatistics(entityplayer);
         this.sendScoreboard((ScoreboardServer) worldserver.getScoreboard(), entityplayer);
         this.server.az();
-        /* CraftBukkit start - login message is handled in the event
-        ChatMessage chatmessage;
-
-        if (!entityplayer.getName().equalsIgnoreCase(s)) {
-            chatmessage = new ChatMessage("multiplayer.player.joined.renamed", new Object[] { entityplayer.getScoreboardDisplayName(), s});
-        } else {
-            chatmessage = new ChatMessage("multiplayer.player.joined", new Object[] { entityplayer.getScoreboardDisplayName()});
-        }
-
-        chatmessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
-        this.sendMessage(chatmessage);
-        // CraftBukkit end */
         this.c(entityplayer);
         worldserver = this.server.getWorldServer(entityplayer.dimension); // CraftBukkit - Update in case join event changed it
         playerconnection.a(entityplayer.locX, entityplayer.locY, entityplayer.locZ, entityplayer.yaw, entityplayer.pitch);
