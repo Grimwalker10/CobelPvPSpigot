@@ -979,7 +979,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
         try {
             // Loop through cancellable handlers first
-            for (PacketHandler handler : HylistSpigot.INSTANCE.getPacketHandlers()) {
+            for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
                 try {
                     if (!handler.handleSentPacketCancellable(this, packet)) {
                         return;
@@ -990,7 +990,7 @@ public class PlayerConnection implements PacketPlayInListener {
             }
 
             // Loop through normal handlers
-            for (PacketHandler handler : HylistSpigot.INSTANCE.getPacketHandlers()) {
+            for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
                 handler.handleSentPacket(this, packet);
             }
 
@@ -1354,6 +1354,13 @@ public class PlayerConnection implements PacketPlayInListener {
             this.player.setSneaking(false);
         } else if (packetplayinentityaction.d() == 4) {
             this.player.setSprinting(true);
+            this.player.setSneaking(false); // MineHQ
+
+            // Anticheat start
+            if (this.player.isBlocking()) {
+                this.player.bA(); // stopUsingItem
+            }
+            // Anticheat end
         } else if (packetplayinentityaction.d() == 5) {
             this.player.setSprinting(false);
         } else if (packetplayinentityaction.d() == 3) {
@@ -1431,6 +1438,12 @@ public class PlayerConnection implements PacketPlayInListener {
                         this.minecraftServer.warning("Player " + this.player.getName() + " tried to attack an invalid entity");
                         return;
                     }
+
+                    // Anticheat start
+                    if (this.player.isBlocking()) {
+                        this.player.bA(); // stopUsingItem
+                    }
+                    // Anticheat end
 
                     this.player.attack(entity);
 
@@ -1960,6 +1973,19 @@ public class PlayerConnection implements PacketPlayInListener {
     }
 
     public void a(PacketPlayInKeepAlive packetplayinkeepalive) {
+        // Anticheat start
+        this.lastKeepAlivePacketReceived = networkManager.currentTime; // change this logic
+
+        this.packetsNotReceived -= 1;
+
+        if ((this.player.isAlive()) && (!this.player.sleeping) && (this.lastKAPacketTick + 20L > MinecraftServer.currentTick) && (this.lastKAMovementPacket + 100L < MinecraftServer.currentTick) &&
+                (this.lastNotificationTick + 20L < MinecraftServer.currentTick)) {
+            this.lastNotificationTick = MinecraftServer.currentTick;
+        }
+
+        this.lastKAPacketTick = MinecraftServer.currentTick;
+        // Anticheat end
+
         if (packetplayinkeepalive.c() == this.h) {
             int i = (int) (this.d() - this.i);
 
