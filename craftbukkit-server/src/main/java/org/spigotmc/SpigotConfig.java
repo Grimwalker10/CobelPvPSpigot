@@ -434,12 +434,12 @@ public class SpigotConfig
     // Anticheat start
     public static boolean anticheatEnabled;
     private static void anticheatEnabled() {
-        anticheatEnabled = getBoolean("settings.guardian.enabled", true);
+        anticheatEnabled = getBoolean("settings.anticheat.enabled", true);
     }
 
     public static boolean anticheatTesting;
-    private static void guardianTesting() {
-        anticheatTesting = getBoolean("settings.guardian.testing", false);
+    private static void anticheatTesting() {
+        anticheatTesting = getBoolean("settings.anticheat.testing", false);
     }
     // Anticheat end
 

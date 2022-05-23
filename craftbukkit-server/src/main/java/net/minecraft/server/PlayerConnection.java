@@ -76,6 +76,43 @@ public class PlayerConnection implements PacketPlayInListener {
     private double offsetDistanceSum = 0.0D;
     // Poweruser end
 
+    // Anticheat start
+    public int packetsNotReceived = 0;
+    public long lastKeepAlivePacketReceived = -1;
+
+    public LinkedList<Packet> lastPacketsQueue = new LinkedList<>();
+
+    public Set<Integer> keepAlives = new HashSet<>();
+
+    public long lastMotionTick = 0L;
+    public int antiKBViolations = 0;
+
+    public long lastKAPacketTick = MinecraftServer.currentTick;
+    public long lastKAMovementPacket = MinecraftServer.currentTick;
+    public long lastNotificationTick = MinecraftServer.currentTick;
+    public long lastAttackPlayerTime = 0L;
+
+    public boolean isDigging = false;
+    public int digHorizontalMovement = 0;
+
+    public final List<PacketPlayOutEntityVelocity> velocitiesSent = new ArrayList<PacketPlayOutEntityVelocity>();
+    public final List<Long> velocitySentTimes = new ArrayList<Long>();
+    public long positionSentTime = System.currentTimeMillis();
+
+    private long lastKickedForFly;
+
+
+    private double nextExpectedYDelta = 0.0D;
+    public int lastVelocitySentTick = Integer.MIN_VALUE;
+
+    private int gGoodTicks = 0;
+
+    long lastDismounted;
+
+    private int flyModuleGAmount;
+    private int fastFallModuleGAmount;
+    // Anticheat end
+
     // Alfie start
     private static Set<Block> glitchBlocks = Sets.newHashSet(Block.getById(13), 
             Block.getById(94),
@@ -133,16 +170,32 @@ public class PlayerConnection implements PacketPlayInListener {
         this.g = false;
         ++this.e;
         this.minecraftServer.methodProfiler.a("keepAlive");
-        if ((long) this.e - this.k > 40L) {
+        if ((long) this.e - this.k > 10L) { // Anticheat: 40L -> 10L
             this.k = (long) this.e;
             this.i = this.d();
             this.h = (int) this.i;
+
+            // Anticheat start
+            packetsNotReceived++;
+            keepAlives.add(h);
+
+            if (keepAlives.size() > 240 && Bukkit.shouldAnticheatAct()) {
+                disconnect("Disconnected due to lag");
+                return;
+            }
+            // Anticheat end
+
             this.sendPacket(new PacketPlayOutKeepAlive(this.h));
         }
 
-        // CraftBukkit start
+        // Anticheat start
+        if (packetsNotReceived >= 240 && Bukkit.shouldAnticheatAct()) {
+            disconnect("Disconnected due to lag");
+            return;
+        }
+        // Anticheat end
+
         for (int spam; (spam = this.chatThrottle) > 0 && !chatSpamField.compareAndSet(this, spam, spam - 1); ) ;
-        // CraftBukkit end
 
         if (this.x > 0) {
             --this.x;
@@ -206,6 +259,8 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
             }
 
+            this.lastKAMovementPacket = MinecraftServer.currentTick; // Anticheat
+
             // CraftBukkit start - fire PlayerMoveEvent
             Player player = this.getPlayer();
             // Spigot Start
@@ -260,12 +315,21 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
             }
 
+            // Anticheat start
+            float f4 = 0.0625F;
+            AxisAlignedBB axisalignedbb = this.player.boundingBox.clone().grow(f4, f4, f4).a(0.0D, -0.55D, 0.0D);
+            // Anticheat end
+
             if ((delta > 1f / 256 || deltaAngle > 10f) && (this.checkMovement && !this.player.dead)) {
                 this.lastPosX = to.getX();
                 this.lastPosY = to.getY();
                 this.lastPosZ = to.getZ();
                 this.lastYaw = to.getYaw();
                 this.lastPitch = to.getPitch();
+
+                if (((this.isDigging) && (to.getX() != this.player.locX)) || (to.getZ() != this.player.locZ)) {
+                    this.digHorizontalMovement += 1;
+                }
 
                 // Skip the first time we do this
                 if (true) { // Spigot - don't skip any move events
@@ -350,17 +414,18 @@ public class PlayerConnection implements PacketPlayInListener {
                 float f2 = this.player.yaw;
                 float f3 = this.player.pitch;
 
+                boolean onGround = this.player.onGround; // Anticheat
+
                 if (packetplayinflying.j() && packetplayinflying.d() == -999.0D && packetplayinflying.f() == -999.0D) {
                     packetplayinflying.a(false);
                 }
 
-                double d4;
-
+                // has pos
                 if (packetplayinflying.j()) {
                     d1 = packetplayinflying.c();
                     d2 = packetplayinflying.d();
                     d3 = packetplayinflying.e();
-                    d4 = packetplayinflying.f() - packetplayinflying.d();
+                    double d4 = packetplayinflying.f() - packetplayinflying.d();
                     if (!this.player.isSleeping() && (d4 > 1.65D || d4 < 0.1D)) {
                         this.disconnect("Illegal stance");
                         c.warn(this.player.getName() + " had an illegal stance: " + d4);
@@ -385,13 +450,15 @@ public class PlayerConnection implements PacketPlayInListener {
                     return;
                 }
 
-                d4 = d1 - this.player.locX;
-                double d5 = d2 - this.player.locY;
-                double d6 = d3 - this.player.locZ;
+                // Anticheat start: Rename for readability
+                double xDelta = d1 - this.player.locX;
+                double yDelta = d2 - this.player.locY;
+                double zDelta = d3 - this.player.locZ;
+                // Anticheat end
                 // CraftBukkit start - min to max
-                double d7 = Math.max(Math.abs(d4), Math.abs(this.player.motX));
-                double d8 = Math.max(Math.abs(d5), Math.abs(this.player.motY));
-                double d9 = Math.max(Math.abs(d6), Math.abs(this.player.motZ));
+                double d7 = Math.max(Math.abs(xDelta), Math.abs(this.player.motX));
+                double d8 = Math.max(Math.abs(yDelta), Math.abs(this.player.motY));
+                double d9 = Math.max(Math.abs(zDelta), Math.abs(this.player.motZ));
                 // CraftBukkit end
                 double d10 = d7 * d7 + d8 * d8 + d9 * d9;
 
@@ -401,6 +468,10 @@ public class PlayerConnection implements PacketPlayInListener {
                 if(this.movedTooQuicklyViolations > 0 && violationDelayPassed) {
                     c.warn(this.player.getName() + " moved too quickly! Violations: " + this.movedTooQuicklyViolations);
                     this.movedTooQuicklyViolations = 0;
+
+                    if (this.movedTooQuicklyViolations > 10) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "ban " + this.player.getName() + " Suspicious movement");
+                    }
                 }
                 if (d10 > org.spigotmc.SpigotConfig.movedTooQuicklyThreshold && this.checkMovement && (!this.minecraftServer.N() || !this.minecraftServer.M().equals(this.player.getName()))) { // CraftBukkit - Added this.checkMovement condition to solve this check being triggered by teleports
                     this.movedTooQuicklyViolations++;
@@ -412,26 +483,25 @@ public class PlayerConnection implements PacketPlayInListener {
 
                 SpigotTimings.connectionTimer_PacketFlying_move.startTiming(); // Poweruser
 
-                float f4 = 0.0625F;
                 boolean flag = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
 
-                if (this.player.onGround && !packetplayinflying.i() && d5 > 0.0D) {
+                if (this.player.onGround && !packetplayinflying.i() && yDelta > 0.0D) {
                     this.player.bj();
                 }
 
-                this.player.move(d4, d5, d6);
+                this.player.move(xDelta, yDelta, zDelta);
                 this.player.onGround = packetplayinflying.i();
-                this.player.checkMovement(d4, d5, d6);
-                double d11 = d5;
+                this.player.checkMovement(xDelta, yDelta, zDelta);
+                double d11 = yDelta;
 
-                d4 = d1 - this.player.locX;
-                d5 = d2 - this.player.locY;
-                if (d5 > -0.5D || d5 < 0.5D) {
-                    d5 = 0.0D;
+                xDelta = d1 - this.player.locX;
+                yDelta = d2 - this.player.locY;
+                if (yDelta > -0.5D || yDelta < 0.5D) {
+                    yDelta = 0.0D;
                 }
 
-                d6 = d3 - this.player.locZ;
-                d10 = d4 * d4 + d5 * d5 + d6 * d6;
+                zDelta = d3 - this.player.locZ;
+                d10 = xDelta * xDelta + yDelta * yDelta + zDelta * zDelta;
                 boolean flag1 = false;
 
                 // Spigot: make "moved wrongly" limit configurable
@@ -466,26 +536,50 @@ public class PlayerConnection implements PacketPlayInListener {
                 this.player.setLocation(calculatedX, calculatedY, calculatedZ, f2, f3);
 
                 SpigotTimings.connectionTimer_PacketFlying_move.stopTiming(); // Poweruser
-
-                if (flag1 || (!this.player.isSleeping() && flag && !flag2) || rayTraceCollision) {
-                    if(!rayTraceCollision && !flag && e % 3 != 0) {
-                        this.player.setPosition(this.y, this.z, this.q);
-                    } else {
-                        this.a(this.y, this.z, this.q, f2, f3);
-                    }
-                    return;
-                }
                 // Poweruser end
 
-                AxisAlignedBB axisalignedbb = this.player.boundingBox.clone().grow((double) f4, (double) f4, (double) f4).a(0.0D, -0.55D, 0.0D);
+                if (this.player.vehicle != null) {
+                    networkManager.lastVehicleTime = networkManager.currentTime;
+                }
+
+                boolean phasing = !this.player.isSleeping() && flag && !flag2;
+
+                // Poweruser start
+                if (!phasing || !this.player.allowServerSidePhase) {
+                    if (flag1 || phasing || rayTraceCollision) {
+                        if (!rayTraceCollision && !flag && e % 3 != 0) {
+                            this.player.setPosition(this.y, this.z, this.q);
+                        } else {
+                            this.a(this.y, this.z, this.q, f2, f3);
+                        }
+
+                        return;
+                    }
+                }
+                // Poweruser end
+                // joeleoli end
 
                 if (!this.minecraftServer.getAllowFlight() && !this.player.abilities.canFly && !worldserver.c(axisalignedbb)) { // CraftBukkit - check abilities instead of creative mode
                     if (d11 >= -0.03125D) {
                         ++this.f;
                         if (this.f > 80) {
-                            c.warn(this.player.getName() + " was kicked for floating too long!");
-                            this.disconnect("Flying is not enabled on this server");
-                            return;
+                            if (Bukkit.shouldAnticheatAct() && lastKickedForFly + TimeUnit.MINUTES.toMillis(1) < networkManager.currentTime) { // Anticheat - Only kick them if we are currently doing checks, add a delay between kicks
+                                lastKickedForFly = networkManager.currentTime;
+
+                                if (!player.isOp()) { // Anticheat: Only kick if they're not opped
+                                    this.disconnect("Flying is not enabled on this server");
+                                    c.warn(this.player.getName() + " was kicked for flying!");
+                                }
+
+                                // Anticheat start
+                                String message = String.format("%s was caught flying (Module V) at %.1f %.1f %.1f", this.player.getName(), this.player.locX, this.player.locY, this.player.locZ);
+
+                                Bukkit.getPluginManager().callEvent(
+                                        new AnticheatEvent(player, AnticheatEvent.Cheat.FLY_HACKS, "V", AnticheatEvent.DisplayLevel.HIGH, message, new Location(player.getWorld(), this.player.locX, this.player.locY, this.player.locZ))
+                                );
+                                // Anticheat end
+                                return;
+                            }
                         }
                     }
                 } else {

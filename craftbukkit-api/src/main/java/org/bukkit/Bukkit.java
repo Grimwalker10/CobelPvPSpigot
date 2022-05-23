@@ -750,21 +750,21 @@ public final class Bukkit {
     /**
      * @see Server#isAnticheatEnabled()
      */
-    public static boolean isGuardianEnabled() {
+    public static boolean isAnticheatEnabled() {
         return server.isAnticheatEnabled();
     }
 
     /**
      * @see Server#setAnticheatEnabled(boolean)
      */
-    public static void setGuardianEnabled(boolean enabled) {
+    public static void setAnticheatEnabled(boolean enabled) {
         server.setAnticheatEnabled(enabled);
     }
 
     /**
      * @see Server#shouldAnticheatAct()
      */
-    public static boolean shouldGuardianAct() {
+    public static boolean shouldAnticheatAct() {
         return server.shouldAnticheatAct();
     }
     // CobelAnticheat end
