@@ -1860,6 +1860,23 @@ public final class CraftServer implements Server {
         return console.getIdleTimeout();
     }
 
+    // Anticheat start
+    @Override
+    public boolean isAnticheatEnabled() {
+        return SpigotConfig.anticheatEnabled;
+    }
+
+    @Override
+    public void setAnticheatEnabled(boolean enabled) {
+        SpigotConfig.anticheatEnabled = enabled;
+    }
+
+    @Override
+    public boolean shouldAnticheatAct() {
+        return isAnticheatEnabled() && spigot().getTPS()[0] >= 19.0D;
+    }
+    // Anticheat end
+
     @Deprecated
     @Override
     public UnsafeValues getUnsafe() {
