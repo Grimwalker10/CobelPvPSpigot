@@ -661,6 +661,17 @@ public class PlayerConnection implements PacketPlayInListener {
         if (this.player.dead) return; // CraftBukkit
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
 
+        // Anticheat start
+        if (!this.player.abilities.canInstantlyBuild) {
+            if (packetplayinblockdig.g() == 0) {
+                this.isDigging = true;
+                this.digHorizontalMovement = 0;
+            } else if ((packetplayinblockdig.g() == 1) || (packetplayinblockdig.g() == 2)) {
+                this.isDigging = false;
+            }
+        }
+        // Anticheat end
+
         this.player.v();
         if (packetplayinblockdig.g() == 4) {
             // CraftBukkit start - limit how quickly items can be dropped
@@ -672,7 +683,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 // Else we increment the drop count and check the amount.
                 this.dropCount++;
                 if (this.dropCount >= 20) {
-                    this.c.warn(this.player.getName() + " dropped their items too quickly!");
+                    PlayerConnection.c.warn(this.player.getName() + " dropped their items too quickly!");
                     this.disconnect("You dropped your items too quickly (Hacking?)");
                     return;
                 }
@@ -968,7 +979,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
         try {
             // Loop through cancellable handlers first
-            for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
+            for (PacketHandler handler : HylistSpigot.INSTANCE.getPacketHandlers()) {
                 try {
                     if (!handler.handleSentPacketCancellable(this, packet)) {
                         return;
@@ -979,7 +990,7 @@ public class PlayerConnection implements PacketPlayInListener {
             }
 
             // Loop through normal handlers
-            for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
+            for (PacketHandler handler : HylistSpigot.INSTANCE.getPacketHandlers()) {
                 handler.handleSentPacket(this, packet);
             }
 
@@ -997,7 +1008,41 @@ public class PlayerConnection implements PacketPlayInListener {
             this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.x, packet6.y, packet6.z);
         }
         // CraftBukkit end
+
+        // Anticheat start
+        if (((packet instanceof PacketPlayOutEntityVelocity)) && (((PacketPlayOutEntityVelocity)packet).a == this.player.getId())) {
+            this.velocitiesSent.add((PacketPlayOutEntityVelocity) packet);
+            this.velocitySentTimes.add(System.currentTimeMillis());
+            this.lastVelocitySentTick = MinecraftServer.currentTick;
+        }
+
+        if ((packet instanceof PacketPlayOutPosition)) {
+            this.positionSentTime = System.currentTimeMillis();
+        }
+        // Anticheat end
     }
+
+    // Anticheat start
+    public void handleKeepAliveSync(PacketPlayInKeepAlive packet)  {
+        this.keepAlives.remove(packet.c());
+
+        long latency = 1000 + this.keepAlives.size() * 1000;
+
+        Iterator it = this.velocitySentTimes.iterator();
+        int i = 0;
+        while (it.hasNext()) {
+            long ts = (Long) it.next();
+
+            if (this.networkManager.currentTime - ts > latency) {
+                it.remove();
+                this.velocitiesSent.remove(i);
+            } else {
+                i++;
+            }
+        }
+
+    }
+    // Anticheat end
 
     public void a(PacketPlayInHeldItemSlot packetplayinhelditemslot) {
         // CraftBukkit start
