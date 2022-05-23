@@ -1,6 +1,8 @@
 package net.minecraft.server;
 
 import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import javax.crypto.SecretKey;
 
@@ -81,6 +83,21 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         return oldValue;
     }
     // CobelPvP end
+
+    // Anticheat start
+    private Packet[] packets = new Packet[10];
+    private long[] limitTimes = new long[12];
+    public long lastTickNetworkProcessed = MinecraftServer.currentTick;
+    public long ticksSinceLastPacket = -1L;
+    private int numOfKillAuraB = 0;
+    private List<Long> numOfKillAuraBLogs = new ArrayList<Long>();
+    private int numOfT = 0;
+    private List<Long> numOfKillAuraTLogs = new ArrayList<Long>();
+    private long lastKillAuraKTick = MinecraftServer.currentTick;
+    public long currentTime = System.currentTimeMillis();
+    public long lastVehicleTime = -1L;
+    public int numOfFlyingPacketsInARow = 0;
+    // Anticheat end
 
     public static final GenericFutureListener[] emptyListenerArray = new GenericFutureListener[0]; // CobelPvP
 
