@@ -117,6 +117,8 @@ public class PlayerInteractManager {
                 if (tileentity != null) {
                     this.player.playerConnection.sendPacket(tileentity.getUpdatePacket());
                 }
+
+                this.player.playerConnection.isDigging = false; // Anticheat
                 return;
             }
             // CraftBukkit end
@@ -152,6 +154,8 @@ public class PlayerInteractManager {
                     if (f > 1.0f) {
                         ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, this.world));
                     }
+
+                    this.player.playerConnection.isDigging = false; // Anticheat
                     return;
                 }
                 org.bukkit.event.block.BlockDamageEvent blockEvent = CraftEventFactory.callBlockDamageEvent(this.player, i, j, k, this.player.inventory.getItemInHand(), f >= 1.0f);
@@ -168,6 +172,8 @@ public class PlayerInteractManager {
                 // CraftBukkit end
 
                 if (block.getMaterial() != Material.AIR && f >= 1.0F) {
+                    this.player.playerConnection.isDigging = false; // Anticheat
+
                     this.breakBlock(i, j, k);
                 } else {
                     this.d = true;
