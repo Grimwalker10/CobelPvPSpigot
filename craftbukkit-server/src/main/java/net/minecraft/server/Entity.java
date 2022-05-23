@@ -39,6 +39,8 @@ public abstract class Entity {
 
     // CraftBukkit start
     private static final int CURRENT_LEVEL = 2;
+    public int inWebTick; // Anticheat
+    public int inPistonTick; // Anticheat
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
     }
@@ -1810,6 +1812,7 @@ public abstract class Entity {
     public void as() {
         this.I = true;
         this.fallDistance = 0.0F;
+        this.inWebTick = MinecraftServer.currentTick; // Anticheat
     }
 
     public String getName() {
