@@ -27,6 +27,8 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 // Spigot start
 import com.google.common.collect.ImmutableSet;
+import org.bukkit.Bukkit;
+import org.bukkit.event.player.AnticheatEvent;
 import org.spigotmc.SpigotCompressor;
 import org.spigotmc.SpigotDecompressor;
 // Spigot end
@@ -103,6 +105,21 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     public NetworkManager(boolean flag) {
         this.j = flag;
+
+        // Anticheat start
+        this.limitTimes[0] = 4000L;
+        this.limitTimes[1] = 4000L;
+        this.limitTimes[2] = 4000L;
+        this.limitTimes[3] = 4000L;
+        this.limitTimes[4] = 5000L;
+        this.limitTimes[5] = 6000L;
+        this.limitTimes[6] = 7000L;
+        this.limitTimes[7] = 7000L;
+        this.limitTimes[8] = 7000L;
+        this.limitTimes[9] = 7000L;
+        this.limitTimes[10] = 7000L;
+        this.limitTimes[11] = 7000L;
+        // Anticheat end
     }
 
     public void channelActive(ChannelHandlerContext channelhandlercontext) throws Exception { // CraftBukkit - throws Exception
@@ -193,7 +210,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void a() {
-        // this.i(); // CobelPvP
+        // this.i(); // MineHQ
         EnumProtocol enumprotocol = (EnumProtocol) this.m.attr(d).get();
 
         if (this.p != enumprotocol) {
@@ -205,6 +222,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         }
 
         if (this.o != null) {
+            boolean processed = false; // Anticheat
             // PaperSpigot start - Improve Network Manager packet handling - Configurable packets per player per tick processing
             Packet packet;
             for (int i = org.github.paperspigot.PaperSpigotConfig.maxPacketsPerPlayer; (packet = (Packet) this.k.poll()) != null && i >= 0; --i) {
@@ -221,6 +239,39 @@ public class NetworkManager extends SimpleChannelInboundHandler {
                     this.k.clear();
                     break;
                 }
+                // Poweruser end
+
+                // Anticheat start
+                if (!processed) {
+                    this.ticksSinceLastPacket = (MinecraftServer.currentTick - this.lastTickNetworkProcessed);
+                    this.lastTickNetworkProcessed = MinecraftServer.currentTick;
+                    this.currentTime = System.currentTimeMillis();
+                    processed = true;
+                }
+
+                if (o instanceof PlayerConnection) {
+                    PlayerConnection connection = (PlayerConnection) o;
+
+                    if ((packet instanceof PacketPlayInKeepAlive)) {
+                        ((PlayerConnection)this.o).handleKeepAliveSync((PacketPlayInKeepAlive)packet);
+                        continue;
+                    }
+
+                    if (((packet instanceof PacketPlayInChat)) || ((packet instanceof PacketPlayInCustomPayload))) {
+                        packet.handle(this.o);
+
+                        try {
+                            for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
+                                handler.handleReceivedPacket((PlayerConnection) this.o, packet);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        continue;
+                    }
+                }
+                // Anticheat end
 
                 // Poweruser start
                 CustomTimingsHandler packetHandlerTimer = SpigotTimings.getPacketHandlerTimings(packet);
@@ -241,6 +292,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
                     }
                 }
                 // Poweruser end
+
+
             }
 
             this.o.a();
@@ -248,6 +301,18 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
         this.m.flush();
     }
+
+    // Anticheat start
+    private void runSync(final AnticheatEvent event) {
+        MinecraftServer.getServer().processQueue.add(new Runnable() {
+
+            public void run() {
+                Bukkit.getPluginManager().callEvent(event);
+            }
+
+        });
+    }
+    // Anticheat end
 
     public SocketAddress getSocketAddress() {
         return this.n;
