@@ -905,6 +905,27 @@ public interface Server extends PluginMessageRecipient {
      */
     public int getIdleTimeout();
 
+    // CobelAnticheat start
+
+    /**
+     * @return Whether Anticheat is enabled or not.
+     */
+    public boolean isAnticheatEnabled();
+
+    /**
+     * Set whether Anticheat is enabled or not.
+     *
+     * @param enabled - The new state to set to
+     */
+    public void setAnticheatEnabled(boolean enabled);
+
+    /**
+     * @return Whether Anticheat should do checks in the server's
+     * current conditions or not.
+     */
+    public boolean shouldAnticheatAct();
+    // CobelAnticheat end
+
     /**
      * @see UnsafeValues
      */

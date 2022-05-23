@@ -746,6 +746,29 @@ public final class Bukkit {
         return server.getIdleTimeout();
     }
 
+    // CobelAnticheat start
+    /**
+     * @see Server#isAnticheatEnabled()
+     */
+    public static boolean isGuardianEnabled() {
+        return server.isAnticheatEnabled();
+    }
+
+    /**
+     * @see Server#setAnticheatEnabled(boolean)
+     */
+    public static void setGuardianEnabled(boolean enabled) {
+        server.setAnticheatEnabled(enabled);
+    }
+
+    /**
+     * @see Server#shouldAnticheatAct()
+     */
+    public static boolean shouldGuardianAct() {
+        return server.shouldAnticheatAct();
+    }
+    // CobelAnticheat end
+
     /**
      * @see Server#getUnsafe()
      */
