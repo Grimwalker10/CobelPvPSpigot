@@ -431,6 +431,18 @@ public class SpigotConfig
         autoSaveChunksPerTick = getInt( "settings.autosave.chunks-per-tick" , 200 );
     }
 
+    // Anticheat start
+    public static boolean anticheatEnabled;
+    private static void anticheatEnabled() {
+        anticheatEnabled = getBoolean("settings.guardian.enabled", true);
+    }
+
+    public static boolean anticheatTesting;
+    private static void guardianTesting() {
+        anticheatTesting = getBoolean("settings.guardian.testing", false);
+    }
+    // Anticheat end
+
     public static boolean autoSaveFireWorldSaveEvent;
     private static void autoSaveFireWorldSaveEvent() {
         autoSaveFireWorldSaveEvent = getBoolean ( "settings.autosave.fire-WorldSaveEvent", false);
