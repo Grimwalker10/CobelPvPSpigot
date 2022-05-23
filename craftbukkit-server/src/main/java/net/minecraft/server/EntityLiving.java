@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Sets;
+import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.util.CraftPotionUtils;
@@ -12,6 +13,7 @@ import org.bukkit.event.entity.PotionEffectAddEvent;
 import org.bukkit.event.entity.PotionEffectExpireEvent;
 import org.bukkit.event.entity.PotionEffectExtendEvent;
 import org.bukkit.event.entity.PotionEffectRemoveEvent;
+import org.bukkit.event.player.PlayerAttackEvent;
 import org.spigotmc.ActivationRange;
 import org.spigotmc.SpigotConfig;
 import com.google.common.base.Function;
@@ -20,7 +22,7 @@ import java.util.*;
 public abstract class EntityLiving extends Entity {
 
     private static final UUID b = UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D");
-    private static final AttributeModifier c = (new AttributeModifier(b, "Sprinting speed boost", 0.30000001192092896D, 2)).a(false);
+    public static final AttributeModifier c = (new AttributeModifier(b, "Sprinting speed boost", 0.30000001192092896D, 2)).a(false);
     private AttributeMapBase d;
     public CombatTracker combatTracker = new CombatTracker(this);
     private final Map<Integer, MobEffect> effects = new HashMap<>();
@@ -672,6 +674,12 @@ public abstract class EntityLiving extends Entity {
     }
 
     public boolean damageEntity(DamageSource damagesource, float f) {
+        // Anticheat start
+        if (damagesource.getEntity() instanceof EntityPlayer) {
+            Bukkit.getPluginManager().callEvent(new PlayerAttackEvent(((EntityPlayer) damagesource.getEntity()).getBukkitEntity(), getBukkitEntity()));
+        }
+        // Anticheat end
+
         if (this.isInvulnerable()) {
             return false;
         } else if (this.world.isStatic) {
@@ -691,9 +699,26 @@ public abstract class EntityLiving extends Entity {
 
                 this.aF = 1.5F;
                 boolean flag = true;
+                boolean noDamage = true;
 
-                if ((float) this.noDamageTicks > (float) this.maxNoDamageTicks / 2.0F) {
-                    if (f <= this.lastDamage) {
+                //CobelPvP start
+                if(lastDamageSource != null){
+                    if((damagesource instanceof EntityDamageSourceIndirect)){
+                        EntityDamageSourceIndirect sourceIndirect = (EntityDamageSourceIndirect) damagesource;
+                        if(sourceIndirect.i() instanceof EntityArrow){
+                            noDamage = false;
+                        }
+                    } else if(lastDamageSource.o() &&
+                            (damagesource instanceof EntityDamageSource)){
+                        noDamage = false;
+                    }
+                }
+                //CobelPvP end
+
+                if (noDamage && (float) this.noDamageTicks > (float) this.maxNoDamageTicks / 2.0F) {
+                    return false;
+                    /*if (f <= this.lastDamage) {
+                        this.forceExplosionKnockback = true; // CraftBukkit - SPIGOT-949 - for vanilla consistency, cooldown does not prevent explosion knockback
                         return false;
                     }
 
@@ -703,7 +728,7 @@ public abstract class EntityLiving extends Entity {
                     }
                     // CraftBukkit end
                     this.lastDamage = f;
-                    flag = false;
+                    flag = false;*/
                 } else {
                     // CraftBukkit start
                     float previousHealth = this.getHealth();
@@ -718,6 +743,18 @@ public abstract class EntityLiving extends Entity {
                     // Kohi - activate for twice the no damage time
                     this.activatedTick = MinecraftServer.currentTick + (this.maxNoDamageTicks * 2);
                 }
+                lastDamageSource = damagesource;
+
+                // Guardian start
+                if ((damagesource.getEntity() instanceof EntityPlayer)) {
+                    EntityPlayer player = (EntityPlayer) damagesource.getEntity();
+
+                    long now = System.currentTimeMillis();
+                    if ((this instanceof EntityPlayer)) {
+                        player.playerConnection.lastAttackPlayerTime = now;
+                    }
+                }
+                // Guardian end
 
                 this.az = 0.0F;
                 Entity entity = damagesource.getEntity();
