@@ -1006,6 +1006,10 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                                 attackedPlayer.playerConnection.sendPacket(new PacketPlayOutEntityVelocity(attackedPlayer));
                             }
 
+                            // Anticheat start
+                            attackedPlayer.playerConnection.lastMotionTick = MinecraftServer.currentTick;
+                            // Anticheat end
+
                             attackedPlayer.velocityChanged = false;
                             attackedPlayer.motX = victimMotX;
                             attackedPlayer.motY = victimMotY;
