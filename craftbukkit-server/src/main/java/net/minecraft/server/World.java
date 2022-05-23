@@ -2848,7 +2848,7 @@ public abstract class World implements IBlockAccess {
         return arraylist;
     }
 
-    // Guardian start
+    // Anticheat start
     public boolean containsLiquidOrClimbable(AxisAlignedBB axisalignedbb) {
         try {
             int i = MathHelper.floor(axisalignedbb.a);
@@ -2890,7 +2890,7 @@ public abstract class World implements IBlockAccess {
             return false;
         }
     }
-    // Guardian end
+    // Anticheat end
 
     public Entity a(Class oclass, AxisAlignedBB axisalignedbb, Entity entity) {
         List list = this.a(oclass, axisalignedbb);
