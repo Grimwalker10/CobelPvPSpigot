@@ -717,18 +717,6 @@ public abstract class EntityLiving extends Entity {
 
                 if (noDamage && (float) this.noDamageTicks > (float) this.maxNoDamageTicks / 2.0F) {
                     return false;
-                    /*if (f <= this.lastDamage) {
-                        this.forceExplosionKnockback = true; // CraftBukkit - SPIGOT-949 - for vanilla consistency, cooldown does not prevent explosion knockback
-                        return false;
-                    }
-
-                    // CraftBukkit start
-                    if (!this.d(damagesource, f - this.lastDamage)) {
-                        return false;
-                    }
-                    // CraftBukkit end
-                    this.lastDamage = f;
-                    flag = false;*/
                 } else {
                     // CraftBukkit start
                     float previousHealth = this.getHealth();
@@ -745,7 +733,7 @@ public abstract class EntityLiving extends Entity {
                 }
                 lastDamageSource = damagesource;
 
-                // Guardian start
+                // Anticheat start
                 if ((damagesource.getEntity() instanceof EntityPlayer)) {
                     EntityPlayer player = (EntityPlayer) damagesource.getEntity();
 
@@ -754,7 +742,7 @@ public abstract class EntityLiving extends Entity {
                         player.playerConnection.lastAttackPlayerTime = now;
                     }
                 }
-                // Guardian end
+                // Anticheat end
 
                 this.az = 0.0F;
                 Entity entity = damagesource.getEntity();
