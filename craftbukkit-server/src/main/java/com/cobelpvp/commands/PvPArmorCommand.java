@@ -12,7 +12,7 @@ public class PvPArmorCommand extends Command {
     public PvPArmorCommand(String name) {
         super(name);
         this.usageMessage = ChatColor.DARK_AQUA + ("PvPArmor Gived");
-        this.setPermission((""));
+        this.setPermission(("spigot.pvparmor"));
     }
 
     public boolean execute(CommandSender sender, String commandLabel, String[] args) {
