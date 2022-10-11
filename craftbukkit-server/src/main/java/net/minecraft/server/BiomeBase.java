@@ -263,7 +263,7 @@ public abstract class BiomeBase {
         for (int l1 = 255; l1 >= 0; --l1) {
             int i2 = (j1 * 16 + i1) * k1 + l1;
 
-            if (l1 <= 0 + random.nextInt(5)) {
+            if (l1 <= (world.paperSpigotConfig.generateFlatBedrock ? 0 : random.nextInt(5))) { // PaperSpigot - Configurable flat bedrock worldgen
                 ablock[i2] = Blocks.BEDROCK;
             } else {
                 Block block2 = ablock[i2];

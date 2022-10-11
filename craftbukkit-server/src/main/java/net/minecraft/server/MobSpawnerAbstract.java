@@ -50,70 +50,53 @@ public abstract class MobSpawnerAbstract {
     }
 
     public void g() {
-        if (this.f()) {
-            double d0;
+        if (this.spawnDelay == -1) {
+            this.j();
+        }
 
-            if (this.a().isStatic) {
-                double d1 = (double) ((float) this.b() + this.a().random.nextFloat());
-                double d2 = (double) ((float) this.c() + this.a().random.nextFloat());
+        // Kohi - check spawn delay before player distance
+        if (this.spawnDelay > 0) {
+            --this.spawnDelay;
+            return;
+        }
 
-                d0 = (double) ((float) this.d() + this.a().random.nextFloat());
-                this.a().addParticle("smoke", d1, d2, d0, 0.0D, 0.0D, 0.0D);
-                this.a().addParticle("flame", d1, d2, d0, 0.0D, 0.0D, 0.0D);
-                if (this.spawnDelay > 0) {
-                    --this.spawnDelay;
-                }
+        if (!this.f()) {
+            this.j();
+            return;
+        }
 
-                this.d = this.c;
-                this.c = (this.c + (double) (1000.0F / ((float) this.spawnDelay + 200.0F))) % 360.0D;
-            } else {
-                if (this.spawnDelay == -1) {
-                    this.j();
-                }
+        for (int i = 0; i < this.spawnCount; ++i) {
+            Entity entity = EntityTypes.createEntityByName(this.getMobName(), this.a());
 
-                if (this.spawnDelay > 0) {
-                    --this.spawnDelay;
-                    return;
-                }
+            if (entity == null) {
+                return;
+            }
 
-                boolean flag = false;
+            int j = this.a().a(entity.getClass(), AxisAlignedBB.a((double) this.b(), (double) this.c(), (double) this.d(), (double) (this.b() + 1), (double) (this.c() + 1), (double) (this.d() + 1)).grow((double) (this.spawnRange * 2), 4.0D, (double) (this.spawnRange * 2))).size();
 
-                for (int i = 0; i < this.spawnCount; ++i) {
-                    Entity entity = EntityTypes.createEntityByName(this.getMobName(), this.a());
+            if (j >= this.maxNearbyEntities) {
+                this.j();
+                return;
+            }
 
-                    if (entity == null) {
-                        return;
-                    }
+            double d0 = (double) this.b() + (this.a().random.nextDouble() - this.a().random.nextDouble()) * (double) this.spawnRange;
+            double d3 = (double) (this.c() + this.a().random.nextInt(3) - 1);
+            double d4 = (double) this.d() + (this.a().random.nextDouble() - this.a().random.nextDouble()) * (double) this.spawnRange;
+            EntityInsentient entityinsentient = entity instanceof EntityInsentient ? (EntityInsentient) entity : null;
 
-                    int j = this.a().a(entity.getClass(), AxisAlignedBB.a((double) this.b(), (double) this.c(), (double) this.d(), (double) (this.b() + 1), (double) (this.c() + 1), (double) (this.d() + 1)).grow((double) (this.spawnRange * 2), 4.0D, (double) (this.spawnRange * 2))).size();
+            entity.setPositionRotation(d0, d3, d4, this.a().random.nextFloat() * 360.0F, 0.0F);
 
-                    if (j >= this.maxNearbyEntities) {
-                        this.j();
-                        return;
-                    }
+            if (entityinsentient == null || entityinsentient.canSpawn()) {
+                this.a(entity);
+                this.a().triggerEffect(2004, this.b(), this.c(), this.d(), 0);
 
-                    d0 = (double) this.b() + (this.a().random.nextDouble() - this.a().random.nextDouble()) * (double) this.spawnRange;
-                    double d3 = (double) (this.c() + this.a().random.nextInt(3) - 1);
-                    double d4 = (double) this.d() + (this.a().random.nextDouble() - this.a().random.nextDouble()) * (double) this.spawnRange;
-                    EntityInsentient entityinsentient = entity instanceof EntityInsentient ? (EntityInsentient) entity : null;
-
-                    entity.setPositionRotation(d0, d3, d4, this.a().random.nextFloat() * 360.0F, 0.0F);
-                    if (entityinsentient == null || entityinsentient.canSpawn()) {
-                        this.a(entity);
-                        this.a().triggerEffect(2004, this.b(), this.c(), this.d(), 0);
-                        if (entityinsentient != null) {
-                            entityinsentient.s();
-                        }
-
-                        flag = true;
-                    }
-                }
-
-                if (flag) {
-                    this.j();
+                if (entityinsentient != null) {
+                    entityinsentient.s();
                 }
             }
         }
+
+        this.j();
     }
 
     public Entity a(Entity entity) {

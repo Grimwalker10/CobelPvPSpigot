@@ -62,6 +62,7 @@ public abstract class StructureGenerator extends WorldGenBase {
     }
 
     public boolean b(int i, int j, int k) {
+        if (this.c == null) return false; // PaperSpigot
         this.a(this.c);
         return this.c(i, j, k) != null;
     }
@@ -89,6 +90,7 @@ public abstract class StructureGenerator extends WorldGenBase {
     }
 
     public boolean d(int i, int j, int k) {
+        if (this.c == null) return false; // PaperSpigot
         this.a(this.c);
         Iterator iterator = this.d.values().iterator();
 

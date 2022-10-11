@@ -3,6 +3,7 @@ package org.github.paperspigot;
 import com.google.common.base.Throwables;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -10,8 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -161,6 +164,60 @@ public class PaperSpigotConfig
         interactLimitEnabled = getBoolean( "settings.limit-player-interactions", true );
         if (!interactLimitEnabled) {
             Bukkit.getLogger().log( Level.INFO, "Disabling player interaction limiter, your server may be more vulnerable to malicious users" );
+        }
+    }
+
+    public static double strengthEffectModifier;
+    public static double weaknessEffectModifier;
+    private static void effectModifiers()
+    {
+        strengthEffectModifier = getDouble( "effect-modifiers.strength", 0.5D );
+        weaknessEffectModifier = getDouble( "effect-modifiers.weakness", -0.5D );
+    }
+
+    public static int maxPacketsPerPlayer;
+    private static void maxPacketsPerPlayer()
+    {
+        maxPacketsPerPlayer = getInt( "max-packets-per-player", 1000 );
+    }
+
+    public static boolean stackableLavaBuckets;
+    public static boolean stackableWaterBuckets;
+    public static boolean stackableMilkBuckets;
+    private static void stackableBuckets()
+    {
+        stackableLavaBuckets = getBoolean( "stackable-buckets.lava", false );
+        stackableWaterBuckets = getBoolean( "stackable-buckets.water", false );
+        stackableMilkBuckets = getBoolean( "stackable-buckets.milk", false );
+
+        Field maxStack;
+
+        try {
+            maxStack = Material.class.getDeclaredField("maxStack");
+            maxStack.setAccessible(true);
+
+            Field modifiers = Field.class.getDeclaredField("modifiers");
+            modifiers.setAccessible(true);
+            modifiers.setInt(maxStack, maxStack.getModifiers() & ~Modifier.FINAL);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        try {
+            if (stackableLavaBuckets) {
+                maxStack.set(Material.LAVA_BUCKET, Material.BUCKET.getMaxStackSize());
+            }
+
+            if (stackableWaterBuckets) {
+                maxStack.set(Material.WATER_BUCKET, Material.BUCKET.getMaxStackSize());
+            }
+
+            if (stackableMilkBuckets) {
+                maxStack.set(Material.MILK_BUCKET, Material.BUCKET.getMaxStackSize());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

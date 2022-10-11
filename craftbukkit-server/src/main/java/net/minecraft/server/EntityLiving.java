@@ -91,6 +91,7 @@ public abstract class EntityLiving extends Entity {
         ++this.aU; // Above all the floats
     }
     // Spigot end
+    public double knockbackReduction; // Kohi
 
     public EntityLiving(World world) {
         super(world);
@@ -806,8 +807,10 @@ public abstract class EntityLiving extends Entity {
                     }
                 }
 
+                int exp = this.getExpReward() * (1 + this.random.nextInt(1 + i)); // Kohi - Caculate xp here and not in the event factory
+
                 // CraftBukkit start - Call death event
-                CraftEventFactory.callEntityDeathEvent(this, this.drops);
+                CraftEventFactory.callEntityDeathEvent(this, this.drops, exp); // Kohi - Specify the exp to drop
                 this.drops = null;
             } else {
                 CraftEventFactory.callEntityDeathEvent(this);
@@ -826,14 +829,20 @@ public abstract class EntityLiving extends Entity {
             float f1 = MathHelper.sqrt(d0 * d0 + d1 * d1);
             float f2 = 0.4F;
 
-            this.motX /= 2.0D;
-            this.motY /= 2.0D;
-            this.motZ /= 2.0D;
+            // Kohi start
+            double friction = 2.0d - knockbackReduction;
+            f2 *= (1d - knockbackReduction);
+
+            this.motX /= friction;
+            this.motY /= friction;
+            this.motZ /= friction;
+            // Kohi end
+
             this.motX -= d0 / (double) f1 * (double) f2;
             this.motY += (double) f2;
             this.motZ -= d1 / (double) f1 * (double) f2;
-            if (this.motY > 0.4000000059604645D) {
-                this.motY = 0.4000000059604645D;
+            if (this.motY > 0.4000000059604645D * (1d - knockbackReduction)) {
+                this.motY = 0.4000000059604645D * (1d - knockbackReduction);
             }
         }
     }

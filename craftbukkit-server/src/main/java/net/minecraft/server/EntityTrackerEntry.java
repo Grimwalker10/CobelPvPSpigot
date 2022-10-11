@@ -1,10 +1,6 @@
 package net.minecraft.server;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -132,7 +128,7 @@ public class EntityTrackerEntry {
                 // CraftBukkit end
 
                 if (this.m > 0 || this.tracker instanceof EntityArrow) {
-                    if (j1 >= -128 && j1 < 128 && k1 >= -128 && k1 < 128 && l1 >= -128 && l1 < 128 && this.v <= 400 && !this.x) {
+                    if (j1 >= -128 && j1 < 128 && k1 >= -128 && k1 < 128 && l1 >= -128 && l1 < 128 && this.v <= 50 && !this.x) { // Kohi - greatly reduce forced teleport interval
                         if (flag && flag1) {
                             object = new PacketPlayOutRelEntityMoveLook(this.tracker.getId(), (byte) j1, (byte) k1, (byte) l1, (byte) l, (byte) i1, tracker.onGround); // Spigot - protocol patch
                         } else if (flag) {
@@ -244,7 +240,19 @@ public class EntityTrackerEntry {
         DataWatcher datawatcher = this.tracker.getDataWatcher();
 
         if (datawatcher.a()) {
-            this.broadcastIncludingSelf(new PacketPlayOutEntityMetadata(this.tracker.getId(), datawatcher, false));
+            // MineHQ start
+            List changedMetadata = datawatcher.b();
+            if (this.doHealthObfuscation()) {
+                PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(this.tracker.getId(), new ArrayList(changedMetadata), false).obfuscateHealth();
+                if (!metadataPacket.didFindHealth() || 1 < metadataPacket.getMetadata().size()) this.broadcast(metadataPacket);
+            } else {
+                this.broadcast(new PacketPlayOutEntityMetadata(this.tracker.getId(), changedMetadata, false));
+            }
+
+            if (this.tracker instanceof EntityPlayer) {
+                ((EntityPlayer) this.tracker).playerConnection.sendPacket(new PacketPlayOutEntityMetadata(this.tracker.getId(), changedMetadata, false));
+            }
+            // MineHQ end
         }
 
         if (this.tracker instanceof EntityLiving) {
@@ -332,9 +340,19 @@ public class EntityTrackerEntry {
                     // Spigot end
 
                     entityplayer.playerConnection.sendPacket(packet);
+
                     if (!this.tracker.getDataWatcher().d()) {
-                        entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityMetadata(this.tracker.getId(), this.tracker.getDataWatcher(), true));
+                        // MineHQ start
+                        PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(this.tracker.getId(), this.tracker.getDataWatcher(), true);
+
+                        if (this.doHealthObfuscation()) {
+                            metadataPacket.obfuscateHealth();
+                        }
+
+                        entityplayer.playerConnection.sendPacket(metadataPacket);
+                        // MineHQ end
                     }
+                    // MineHQ end
 
                     if (this.tracker instanceof EntityLiving) {
                         AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).getAttributeMap();
@@ -533,4 +551,9 @@ public class EntityTrackerEntry {
             entityplayer.d(this.tracker);
         }
     }
+
+    public boolean doHealthObfuscation() {
+        return this.tracker.isAlive() && (this.tracker instanceof EntityPlayer);
+    }
+
 }

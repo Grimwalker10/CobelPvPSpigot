@@ -23,7 +23,10 @@ public class PacketPlayOutMultiBlockChange extends Packet {
 
     public PacketPlayOutMultiBlockChange(int i, short[] ashort, Chunk chunk) {
         // Spigot start
-        this.ashort = ashort;
+        // PaperSpigot start - Fix race condition in PacketPlayOutMultiBlockChange
+        this.ashort = new short[ashort.length];
+        System.arraycopy(ashort, 0, this.ashort, 0, ashort.length);
+        // PaperSpigot end
         this.chunk = chunk;
         // Spigot end
         this.b = new ChunkCoordIntPair(chunk.locX, chunk.locZ);

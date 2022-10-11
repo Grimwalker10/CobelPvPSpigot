@@ -252,8 +252,6 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
             this.bw.h();
             this.bw.setPositionRotation(this.locX - (double) (f12 * 4.5F), this.locY + 2.0D, this.locZ - (double) (f11 * 4.5F), 0.0F, 0.0F);
             if (!this.world.isStatic && this.hurtTicks == 0) {
-                this.a(this.world.getEntities(this, this.bv.boundingBox.grow(4.0D, 2.0D, 4.0D).d(0.0D, -2.0D, 0.0D)));
-                this.a(this.world.getEntities(this, this.bw.boundingBox.grow(4.0D, 2.0D, 4.0D).d(0.0D, -2.0D, 0.0D)));
                 this.b(this.world.getEntities(this, this.bq.boundingBox.grow(1.0D, 1.0D, 1.0D)));
             }
 
@@ -341,30 +339,14 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
         }
     }
 
-    private void a(List list) {
-        double d0 = (this.br.boundingBox.a + this.br.boundingBox.d) / 2.0D;
-        double d1 = (this.br.boundingBox.c + this.br.boundingBox.f) / 2.0D;
-        Iterator iterator = list.iterator();
-
-        while (iterator.hasNext()) {
-            Entity entity = (Entity) iterator.next();
-
-            if (entity instanceof EntityLiving) {
-                double d2 = entity.locX - d0;
-                double d3 = entity.locZ - d1;
-                double d4 = d2 * d2 + d3 * d3;
-
-                entity.g(d2 / d4 * 4.0D, 0.20000000298023224D, d3 / d4 * 4.0D);
-            }
-        }
-    }
-
     private void b(List list) {
         for (int i = 0; i < list.size(); ++i) {
             Entity entity = (Entity) list.get(i);
 
             if (entity instanceof EntityLiving) {
-                entity.damageEntity(DamageSource.mobAttack(this), 10.0F);
+                if (entity.damageEntity(DamageSource.mobAttack(this), 10.0F)) {
+                     entity.g((double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * 3.0F), 0.8D, (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * 3.0F));
+                }
             }
         }
     }

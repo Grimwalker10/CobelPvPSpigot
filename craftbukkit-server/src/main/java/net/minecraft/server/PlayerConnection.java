@@ -59,6 +59,8 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.util.NumberConversions;
 // CraftBukkit end
 
+import org.github.paperspigot.PaperSpigotConfig; // PaperSpigot
+
 public class PlayerConnection implements PacketPlayInListener {
 
     private static final Logger c = LogManager.getLogger();
@@ -408,8 +410,9 @@ public class PlayerConnection implements PacketPlayInListener {
 
                 this.player.setLocation(d1, d2, d3, f2, f3);
                 boolean flag2 = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
+                boolean rayTraceCollision = delta > 0.3 && worldserver.rayTrace(Vec3D.a(this.y, this.z + 1.0, this.q), Vec3D.a(d1, d2 + 1.0, d3), false, true, false) != null;
 
-                if (flag && (flag1 || !flag2) && !this.player.isSleeping()) {
+                if (flag && (flag1 || !flag2 || rayTraceCollision) && !this.player.isSleeping()) {
                     this.a(this.y, this.z, this.q, f2, f3);
                     return;
                 }
@@ -1262,6 +1265,7 @@ public class PlayerConnection implements PacketPlayInListener {
         if (this.player.dead) return; // CraftBukkit
 
         this.player.v();
+        if (!this.player.activeContainer.a(this.player)) return; // PaperSpigot - check if player is able to use this container
         if (this.player.activeContainer.windowId == packetplayinwindowclick.c() && this.player.activeContainer.c(this.player)) {
             // CraftBukkit start - Call InventoryClickEvent
             if (packetplayinwindowclick.d() < -1 && packetplayinwindowclick.d() != -999) {
@@ -1481,6 +1485,19 @@ public class PlayerConnection implements PacketPlayInListener {
                     case ALLOW:
                     case DEFAULT:
                         itemstack = this.player.activeContainer.clickItem(packetplayinwindowclick.d(), packetplayinwindowclick.e(), packetplayinwindowclick.h(), this.player);
+                        // PaperSpigot start - Stackable Buckets
+                        if (itemstack != null &&
+                                ((itemstack.getItem() == Items.LAVA_BUCKET && PaperSpigotConfig.stackableLavaBuckets) ||
+                                (itemstack.getItem() == Items.WATER_BUCKET && PaperSpigotConfig.stackableWaterBuckets) ||
+                                (itemstack.getItem() == Items.MILK_BUCKET && PaperSpigotConfig.stackableMilkBuckets))) {
+                            if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+                                this.player.updateInventory(this.player.activeContainer);
+                            } else {
+                                this.player.playerConnection.sendPacket(new PacketPlayOutSetSlot(-1, -1, this.player.inventory.getCarried()));
+                                this.player.playerConnection.sendPacket(new PacketPlayOutSetSlot(this.player.activeContainer.windowId, packetplayinwindowclick.d(), this.player.activeContainer.getSlot(packetplayinwindowclick.d()).getItem()));
+                            }
+                        }
+                        // PaperSpigot end
                         break;
                     case DENY:
                         /* Needs enum constructor in InventoryAction
@@ -1653,6 +1670,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
     public void a(PacketPlayInTransaction packetplayintransaction) {
         if (this.player.dead) return; // CraftBukkit
+        if (!this.player.activeContainer.a(this.player)) return; // PaperSpigot - check if player is able to use this container
         Short oshort = (Short) this.n.get(this.player.activeContainer.windowId);
 
         if (oshort != null && packetplayintransaction.d() == oshort.shortValue() && this.player.activeContainer.windowId == packetplayintransaction.c() && !this.player.activeContainer.c(this.player)) {

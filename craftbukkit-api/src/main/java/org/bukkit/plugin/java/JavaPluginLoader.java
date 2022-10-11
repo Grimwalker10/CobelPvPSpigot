@@ -76,9 +76,9 @@ public final class JavaPluginLoader implements PluginLoader {
         }
 
         final File parentFile = file.getParentFile();
-        final File dataFolder = new File(parentFile, description.getName());
+        final File dataFolder = new File("config", description.getName()); // MineHQ
         @SuppressWarnings("deprecation")
-        final File oldDataFolder = new File(parentFile, description.getRawName());
+        final File oldDataFolder = new File("config", description.getRawName()); // MineHQ
 
         // Found old data folder
         if (dataFolder.equals(oldDataFolder)) {

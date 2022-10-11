@@ -41,6 +41,7 @@ public class NBTTagList extends NBTBase {
 
             for (int k = 0; k < j; ++k) {
                 NBTBase nbtbase = NBTBase.createTag(this.type);
+                nbtreadlimiter.a(8); // PaperSpigot - backport security fix
 
                 nbtbase.load(datainput, i + 1, nbtreadlimiter);
                 this.list.add(nbtbase);

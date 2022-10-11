@@ -188,4 +188,97 @@ public class PaperSpigotWorldConfig
         removeUnloadedTNTEntities = getBoolean( "remove-unloaded.tnt-entities", true );
         removeUnloadedFallingBlocks = getBoolean( "remove-unloaded.falling-blocks", true );
     }
+
+    public boolean boatsDropBoats;
+    public boolean lessPickyTorches;
+    public boolean disablePlayerCrits;
+    private void mechanicsChanges()
+    {
+        boatsDropBoats = getBoolean( "game-mechanics.boats-drop-boats", false );
+        lessPickyTorches = getBoolean( "game-mechanics.less-picky-torch-placement", false );
+        disablePlayerCrits = getBoolean( "game-mechanics.disable-player-crits", false);
+    }
+
+    public int tickNextTickListCap;
+    public boolean tickNextTickListCapIgnoresRedstone;
+    private void tickNextTickListCap()
+    {
+        tickNextTickListCap = getInt( "tick-next-tick-list-cap", 10000 ); // Higher values will be friendlier to vanilla style mechanics (to a point) but may hurt performance
+        tickNextTickListCapIgnoresRedstone = getBoolean("tick-next-tick-list-cap-ignores-redstone", false); // Redstone TickNextTicks will always bypass the preceding cap.
+        log( "WorldServer TickNextTickList cap set at " + tickNextTickListCap );
+        log( "WorldServer TickNextTickList cap always processes redstone: " + tickNextTickListCapIgnoresRedstone );
+    }
+
+    public boolean useAsyncLighting;
+    private void useAsyncLighting()
+    {
+        useAsyncLighting = getBoolean( "use-async-lighting", true );
+        log( "World async lighting: " + useAsyncLighting );
+    }
+
+    public boolean generateCanyon;
+    public boolean generateCaves;
+    public boolean generateDungeon;
+    public boolean generateFortress;
+    public boolean generateMineshaft;
+    public boolean generateStronghold;
+    public boolean generateTemple;
+    public boolean generateVillage;
+    public boolean generateFlatBedrock;
+    private void generatorSettings()
+    {
+        generateCanyon = getBoolean( "generator-settings.canyon", true );
+        generateCaves = getBoolean( "generator-settings.caves", true );
+        generateDungeon = getBoolean( "generator-settings.dungeon", true );
+        generateFortress = getBoolean( "generator-settings.fortress", true );
+        generateMineshaft = getBoolean( "generator-settings.mineshaft", true );
+        generateStronghold = getBoolean( "generator-settings.stronghold", true );
+        generateTemple = getBoolean( "generator-settings.temple", true );
+        generateVillage = getBoolean( "generator-settings.village", true );
+        generateFlatBedrock = getBoolean( "generator-settings.flat-bedrock", true );
+    }
+
+    public boolean loadUnloadedEnderPearls;
+    public boolean loadUnloadedTNTEntities;
+    public boolean loadUnloadedFallingBlocks;
+    private void loadUnloaded()
+    {
+        loadUnloadedEnderPearls = getBoolean( "load-chunks.enderpearls", true );
+        loadUnloadedTNTEntities = getBoolean( "load-chunks.tnt-entities", false );
+        loadUnloadedFallingBlocks = getBoolean( "load-chunks.falling-blocks", false );
+    }
+
+    public boolean fallingBlocksCollideWithSigns;
+    private void fallingBlocksCollideWithSigns()
+    {
+        fallingBlocksCollideWithSigns = getBoolean( "falling-blocks-collide-with-signs", false );
+    }
+
+    public boolean disableEndCredits;
+    private void disableEndCredits()
+    {
+        disableEndCredits = getBoolean( "game-mechanics.disable-end-credits", true );
+    }
+
+    public boolean optimizeExplosions;
+    private void optimizeExplosions()
+    {
+        optimizeExplosions = getBoolean( "optimize-explosions", true );
+    }
+
+    public boolean fastDrainLava;
+    public boolean fastDrainWater;
+    private void fastDraining()
+    {
+        fastDrainLava = getBoolean( "fast-drain.lava", false );
+        fastDrainWater = getBoolean( "fast-drain.water", false );
+    }
+
+    public int lavaFlowSpeedNormal;
+    public int lavaFlowSpeedNether;
+    private void lavaFlowSpeed()
+    {
+        lavaFlowSpeedNormal = getInt( "lava-flow-speed.normal", 30 );
+        lavaFlowSpeedNether = getInt( "lava-flow-speed.nether", 10 );
+    }
 }

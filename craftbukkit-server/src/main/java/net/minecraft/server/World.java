@@ -11,6 +11,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+// PaperSpigot start
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.HashMap;
+import java.util.Map;
+import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.bukkit.craftbukkit.CraftChunk;
+// PaperSpigot end
+
 // CraftBukkit start
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
@@ -27,6 +36,10 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 // CraftBukkit end
+
+// Poweruser start
+import net.frozenorb.LightingUpdater;
+// Poweruser end
 
 public abstract class World implements IBlockAccess {
 
@@ -114,6 +127,18 @@ public abstract class World implements IBlockAccess {
     public static boolean haveWeSilencedAPhysicsCrash;
     public static String blockLocation;
     public List<TileEntity> triggerHoppersList = new ArrayList<TileEntity>(); // Spigot, When altHopperTicking, tile entities being added go through here.
+    // Poweruser start - only one thread, and with lower priority. Instead of one for each world
+    private static ExecutorService lightingExecutor; // PaperSpigot - Asynchronous lighting updates
+    private LightingUpdater lightingUpdater = new LightingUpdater();
+
+    public static ExecutorService getLightingExecutor() {
+        if(lightingExecutor == null) {
+            lightingExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setPriority(Thread.NORM_PRIORITY - 1).setNameFormat("PaperSpigot - Lighting Thread").build());
+        }
+        return lightingExecutor;
+    }
+    // Poweruser end
+    public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<Explosion.CacheKey, Float>(); // PaperSpigot - Optimize explosions
 
     public static long chunkToKey(int x, int z)
     {
@@ -614,7 +639,7 @@ public abstract class World implements IBlockAccess {
 
         if (!this.worldProvider.g) {
             for (i1 = k; i1 <= l; ++i1) {
-                this.c(EnumSkyBlock.SKY, i, i1, j);
+                this.updateLight(EnumSkyBlock.SKY, i, i1, j); // PaperSpigot - Asynchronous lighting updates
             }
         }
 
@@ -1265,7 +1290,15 @@ public abstract class World implements IBlockAccess {
                             Block block = chunk.getType(x - cx, y, z - cz );
                             if ( block != null )
                             {
-                                block.a( this, x, y, z, axisalignedbb, this.L, entity );
+                                // PaperSpigot start - FallingBlocks and TNT collide with specific non-collidable blocks
+                                if (entity.world.paperSpigotConfig.fallingBlocksCollideWithSigns && (entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock) &&
+                                        (block instanceof BlockSign || block instanceof BlockFenceGate || block instanceof BlockTorch || block instanceof BlockButtonAbstract || block instanceof BlockLever || block instanceof BlockTripwireHook || block instanceof BlockTripwire)) {
+                                    AxisAlignedBB aabb = AxisAlignedBB.a(x, y, z, x + 1.0, y + 1.0, z + 1.0);
+                                    if (axisalignedbb.b(aabb)) this.L.add(aabb);
+                                } else {
+                                    block.a( this, x, y, z, axisalignedbb, this.L, entity );
+                                }
+                                // PaperSpigot end
                             }
                         }
                     }
@@ -1464,10 +1497,19 @@ public abstract class World implements IBlockAccess {
                     this.playerJoinedWorld(entity);
                     SpigotTimings.tickEntityTimer.stopTiming(); // Spigot
                 } catch (Throwable throwable1) {
+                    // PaperSpigot start
+                    SpigotTimings.tickEntityTimer.stopTiming(); // Spigot
+                    System.err.println("Entity threw exception at " + entity.world.getWorld().getName()+":"+entity.locX +"," + entity.locY+","+entity.locZ);
+                    throwable1.printStackTrace();
+                    entity.dead = true;
+                    continue;
+                    /*
                     crashreport = CrashReport.a(throwable1, "Ticking entity");
                     crashreportsystemdetails = crashreport.a("Entity being ticked");
                     entity.a(crashreportsystemdetails);
                     throw new ReportedException(crashreport);
+                    */
+                    // PaperSpigot end
                 }
             }
 
@@ -1520,11 +1562,19 @@ public abstract class World implements IBlockAccess {
                     tileentity.h();
                     tileentity.tickTimer.stopTiming(); // Spigot
                 } catch (Throwable throwable2) {
+                    // PaperSpigot start
                     tileentity.tickTimer.stopTiming(); // Spigot
+                    System.err.println("TileEntity threw exception at " + tileentity.world.getWorld().getName()+":"+tileentity.x +"," + tileentity.y+","+tileentity.z);
+                    throwable2.printStackTrace();
+                    iterator.remove();
+                    continue;
+                    /*
                     crashreport = CrashReport.a(throwable2, "Ticking block entity");
                     crashreportsystemdetails = crashreport.a("Block entity being ticked");
                     tileentity.a(crashreportsystemdetails);
                     throw new ReportedException(crashreport);
+                    */
+                    // PaperSpigot end
                 }
             }
 
@@ -1662,6 +1712,7 @@ public abstract class World implements IBlockAccess {
             int i1 = MathHelper.floor(entity.locZ / 16.0D);
 
             if (!entity.ag || entity.ah != k || entity.ai != l || entity.aj != i1) {
+                if (entity.loadChunks) entity.loadChunks(); // PaperSpigot - Force load chunks
                 if (entity.ag && this.isChunkLoaded(entity.ah, entity.aj)) {
                     this.getChunkAt(entity.ah, entity.aj).a(entity, entity.ai);
                 }
@@ -2383,10 +2434,10 @@ public abstract class World implements IBlockAccess {
         boolean flag = false;
 
         if (!this.worldProvider.g) {
-            flag |= this.c(EnumSkyBlock.SKY, i, j, k);
+            flag |= this.updateLight(EnumSkyBlock.SKY, i, j, k); // PaperSpigot - Asynchronous lighting updates
         }
 
-        flag |= this.c(EnumSkyBlock.BLOCK, i, j, k);
+        flag |= this.updateLight(EnumSkyBlock.BLOCK, i, j, k); // PaperSpigot - Asynchronous lighting updates
         return flag;
     }
 
@@ -2431,10 +2482,10 @@ public abstract class World implements IBlockAccess {
         }
     }
 
-    public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k) {
+    public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k, Chunk chunk, List<Chunk> neighbors) { // PaperSpigot
         // CraftBukkit start - Use neighbor cache instead of looking up
-        Chunk chunk = this.getChunkIfLoaded(i >> 4, k >> 4);
-        if (chunk == null || !chunk.areNeighborsLoaded(1) /* !this.areChunksLoaded(i, j, k, 17)*/) {
+        //Chunk chunk = this.getChunkIfLoaded(i >> 4, k >> 4);
+        if (chunk == null /*|| !chunk.areNeighborsLoaded(1)*/ /* !this.areChunksLoaded(i, j, k, 17)*/) {
             // CraftBukkit end
             return false;
         } else {
@@ -2539,10 +2590,73 @@ public abstract class World implements IBlockAccess {
                 }
             }
 
+            // PaperSpigot start - Asynchronous light updates
+            if (chunk.world.paperSpigotConfig.useAsyncLighting) {
+                chunk.pendingLightUpdates.decrementAndGet();
+                if (neighbors != null) {
+                    for (Chunk neighbor : neighbors) {
+                        neighbor.pendingLightUpdates.decrementAndGet();
+                    }
+                }
+            }
+            // PaperSpigot end
             this.methodProfiler.b();
             return true;
         }
     }
+
+    // PaperSpigot start - Asynchronous lighting updates
+    public boolean updateLight(final EnumSkyBlock enumskyblock, final int x, final int y, final int z) {
+        final Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
+        if (chunk == null || !chunk.areNeighborsLoaded(2)) { // Poweruser - radius 2
+            return false;
+        }
+
+        if (!chunk.world.paperSpigotConfig.useAsyncLighting) {
+            return this.c(enumskyblock, x, y, z, chunk, null);
+        }
+
+        chunk.pendingLightUpdates.incrementAndGet();
+        chunk.lightUpdateTime = chunk.world.getTime();
+
+        final List<Chunk> neighbors = new ArrayList<Chunk>();
+        // Poweruser start
+        int chunkx = chunk.locX;
+        int chunkz = chunk.locZ;
+        int radius = 2;
+        for (int cx = chunkx - radius; cx <= chunkx + radius; ++cx) {
+            for (int cz = chunkz - radius; cz <= chunkz + radius; ++cz) {
+                if(cx != chunkx || cz != chunkz) {
+        // Poweruser end
+                    Chunk neighbor = this.getChunkIfLoaded(cx, cz);
+                    if (neighbor != null) {
+                        neighbor.pendingLightUpdates.incrementAndGet();
+                        neighbor.lightUpdateTime = chunk.world.getTime();
+                        neighbors.add(neighbor);
+                    }
+                }
+            }
+        }
+
+        if (!Bukkit.isPrimaryThread()) {
+            return this.c(enumskyblock, x, y, z, chunk, neighbors);
+        }
+
+        // Poweruser start
+        getLightingExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    World.this.lightingUpdater.c(enumskyblock, x, y, z, chunk, neighbors);
+                } catch (Exception e) {
+                    MinecraftServer.getLogger().error("Thread " + Thread.currentThread().getName() + " encountered an exception: " + e.getMessage(), e);
+                }
+            }
+        });
+        // Poweruser end
+        return true;
+    }
+    // PaperSpigot end
 
     public boolean a(boolean flag) {
         return false;
@@ -2797,8 +2911,8 @@ public abstract class World implements IBlockAccess {
         double d4 = -1.0D;
         EntityHuman entityhuman = null;
 
-        for (int i = 0; i < this.players.size(); ++i) {
-            EntityHuman entityhuman1 = (EntityHuman) this.players.get(i);
+        for (Object o : a(EntityHuman.class, AxisAlignedBB.a(d0 - d3, d1 - d3, d2 - d3, d0 + d3, d1 + d3, d2 + d3))) {
+            EntityHuman entityhuman1 = (EntityHuman) o;
             // CraftBukkit start - Fixed an NPE
             if (entityhuman1 == null || entityhuman1.dead) {
                 continue;
@@ -2823,8 +2937,8 @@ public abstract class World implements IBlockAccess {
         double d4 = -1.0D;
         EntityHuman entityhuman = null;
 
-        for (int i = 0; i < this.players.size(); ++i) {
-            EntityHuman entityhuman1 = (EntityHuman) this.players.get(i);
+        for (Object o : a(EntityHuman.class, AxisAlignedBB.a(d0 - d3, d1 - d3, d2 - d3, d0 + d3, d1 + d3, d2 + d3))) {
+            EntityHuman entityhuman1 = (EntityHuman) o;
             // CraftBukkit start - Fixed an NPE
             if (entityhuman1 == null || entityhuman1.dead) {
                 continue;

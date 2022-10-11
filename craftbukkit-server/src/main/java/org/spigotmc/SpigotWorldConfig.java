@@ -355,4 +355,12 @@ public class SpigotWorldConfig
     {
         hangingTickFrequency = getInt( "hanging-tick-frequency", 100 );
     }
+
+    public int expDespawnRate;
+
+    private void expDespawnRate() {
+        expDespawnRate = getInt( "exp-despawn-rate", 6000 );
+        log( "Experience Orb Despawn Rate: " + expDespawnRate );
+    }
+
 }

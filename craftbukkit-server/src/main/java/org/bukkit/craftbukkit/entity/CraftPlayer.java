@@ -49,16 +49,14 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
-import org.bukkit.event.player.PlayerRegisterChannelEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerUnregisterChannelEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.InventoryView.Property;
 import org.bukkit.map.MapView;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.util.Vector;
 
 @DelegateDeserialization(CraftOfflinePlayer.class)
 public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -77,6 +75,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         super(server, entity);
 
         firstPlayed = System.currentTimeMillis();
+    }
+
+    @Override
+    public void setVelocity(Vector vel) {
+      // To be consistent with old behavior, set the velocity before firing the event
+        this.setVelocityDirect(vel);
+
+        PlayerVelocityEvent event = new PlayerVelocityEvent(this, vel.clone());
+        this.getServer().getPluginManager().callEvent(event);
+
+        if (!event.isCancelled()) {
+            // Set the velocity again in case it was changed by event handlers
+            this.setVelocityDirect(event.getVelocity());
+
+            // Send the new velocity to the player's client immediately, so it isn't affected by
+            // any movement packets from this player that may be processed before the end of the tick.
+            // Without this, player velocity changes tend to be very inconsistent.
+            this.getHandle().playerConnection.sendPacket(new PacketPlayOutEntityVelocity(this.getHandle()));
+        }
+
+        // Note that cancelling the event does not restore the old velocity, it only prevents
+        // the packet from sending. Again, this is to be consistent with old behavior.
+    }
+
+    public void setVelocityDirect(Vector vel) {
+        entity.motX = vel.getX();
+        entity.motY = vel.getY();
+        entity.motZ = vel.getZ();
     }
 
     public GameProfile getProfile() {
@@ -102,13 +128,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public boolean isOnline() {
-        for (Object obj : server.getHandle().players) {
-            EntityPlayer player = (EntityPlayer) obj;
-            if (player.getName().equalsIgnoreCase(getName())) {
-                return true;
-            }
-        }
-        return false;
+        return server.getHandle().uuidMap.get(getUniqueId()) != null; // PaperSpigot  - replace whole method
     }
 
     public InetSocketAddress getAddress() {
@@ -1176,12 +1196,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void setFlying(boolean value) {
+        boolean needsUpdate = getHandle().abilities.canFly != value; // PaperSpigot - Only refresh abilities if needed
         if (!getAllowFlight() && value) {
             throw new IllegalArgumentException("Cannot make player fly if getAllowFlight() is false");
         }
 
         getHandle().abilities.isFlying = value;
-        getHandle().updateAbilities();
+        if (needsUpdate) getHandle().updateAbilities(); // PaperSpigot - Only refresh abilities if needed
     }
 
     public boolean getAllowFlight() {

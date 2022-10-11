@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.bukkit.WeatherType;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.util.LongHash;
+import org.bukkit.craftbukkit.util.HashTreeSet; // PaperSpigot
 
 import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
@@ -30,8 +31,7 @@ public class WorldServer extends World {
     private final MinecraftServer server;
     public EntityTracker tracker; // CraftBukkit - private final -> public
     private final PlayerChunkMap manager;
-    private Set M;
-    private TreeSet N;
+    private HashTreeSet<NextTickListEntry> N; // PaperSpigot
     public ChunkProviderServer chunkProviderServer;
     public boolean savingDisabled;
     private boolean O;
@@ -60,12 +60,8 @@ public class WorldServer extends World {
             this.entitiesById = new IntHashMap();
         }
 
-        if (this.M == null) {
-            this.M = new HashSet();
-        }
-
         if (this.N == null) {
-            this.N = new TreeSet();
+            this.N = new HashTreeSet<NextTickListEntry>(); // PaperSpigot
         }
 
         this.Q = new org.bukkit.craftbukkit.CraftTravelAgent(this); // CraftBukkit
@@ -483,8 +479,7 @@ public class WorldServer extends World {
                 nextticklistentry.a(i1);
             }
 
-            if (!this.M.contains(nextticklistentry)) {
-                this.M.add(nextticklistentry);
+            if (!this.N.contains(nextticklistentry)) { // PaperSpigot
                 this.N.add(nextticklistentry);
             }
         }
@@ -498,8 +493,7 @@ public class WorldServer extends World {
             nextticklistentry.a((long) l + this.worldData.getTime());
         }
 
-        if (!this.M.contains(nextticklistentry)) {
-            this.M.add(nextticklistentry);
+        if (!this.N.contains(nextticklistentry)) { // PaperSpigot
             this.N.add(nextticklistentry);
         }
     }
@@ -524,9 +518,10 @@ public class WorldServer extends World {
     public boolean a(boolean flag) {
         int i = this.N.size();
 
-        if (i != this.M.size()) {
+        if (false) { // PaperSpigot
             throw new IllegalStateException("TickNextTick list out of synch");
         } else {
+            /* PaperSpigot start - Fix redstone lag issues
             if (i > 1000) {
                 // CraftBukkit start - If the server has too much to process over time, try to alleviate that
                 if (i > 20 * 1000) {
@@ -535,7 +530,12 @@ public class WorldServer extends World {
                     i = 1000;
                 }
                 // CraftBukkit end
+            } */
+
+            if (i > paperSpigotConfig.tickNextTickListCap) {
+                i = paperSpigotConfig.tickNextTickListCap;
             }
+            // PaperSpigot end
 
             this.methodProfiler.a("cleaning");
 
@@ -548,9 +548,25 @@ public class WorldServer extends World {
                 }
 
                 this.N.remove(nextticklistentry);
-                this.M.remove(nextticklistentry);
                 this.V.add(nextticklistentry);
             }
+
+            // PaperSpigot start - Allow redstone ticks to bypass the tickNextTickListCap
+            if (paperSpigotConfig.tickNextTickListCapIgnoresRedstone) {
+                Iterator<NextTickListEntry> iterator = this.N.iterator();
+                while (iterator.hasNext()) {
+                    NextTickListEntry next = iterator.next();
+                    if (!flag && next.d > this.worldData.getTime()) {
+                        break;
+                    }
+
+                    if (next.a().isPowerSource() || next.a() instanceof IContainer) {
+                        iterator.remove();
+                        this.V.add(next);
+                    }
+                }
+            }
+            // PaperSpigot end
 
             this.methodProfiler.b();
             this.methodProfiler.a("ticking");
@@ -619,7 +635,6 @@ public class WorldServer extends World {
 
                 if (nextticklistentry.a >= i && nextticklistentry.a < j && nextticklistentry.c >= k && nextticklistentry.c < l) {
                     if (flag) {
-                        this.M.remove(nextticklistentry);
                         iterator.remove();
                     }
 
@@ -704,12 +719,8 @@ public class WorldServer extends World {
             this.entitiesById = new IntHashMap();
         }
 
-        if (this.M == null) {
-            this.M = new HashSet();
-        }
-
         if (this.N == null) {
-            this.N = new TreeSet();
+            this.N = new HashTreeSet<NextTickListEntry>(); // PaperSpigot
         }
 
         this.b(worldsettings);

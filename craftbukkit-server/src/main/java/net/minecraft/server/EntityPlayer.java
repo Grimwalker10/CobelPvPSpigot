@@ -114,6 +114,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         // this.canPickUpLoot = true; TODO
         this.maxHealthCache = this.getMaxHealth();
         // CraftBukkit end
+
+        this.knockbackReduction = 0.1D; // Kohi
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -473,11 +475,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void b(int i) {
-        if (this.dimension == 1 && i == 1) {
+        // PaperSpigot start - Allow configurable end portal credits
+        boolean endPortal = this.dimension == 1 && i == 1;
+        if (endPortal) {
             this.a((Statistic) AchievementList.D);
-            this.world.kill(this);
-            this.viewingCredits = true;
-            this.playerConnection.sendPacket(new PacketPlayOutGameStateChange(4, 0.0F));
+            if (!world.paperSpigotConfig.disableEndCredits) {
+                this.world.kill(this);
+                this.viewingCredits = true;
+                this.playerConnection.sendPacket(new PacketPlayOutGameStateChange(4, 0.0F));
+            }
+        // PaperSpigot end
         } else {
             if (this.dimension == 0 && i == 1) {
                 this.a((Statistic) AchievementList.C);
@@ -495,15 +502,19 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             } else {
                 this.a((Statistic) AchievementList.y);
             }
+        }
 
+        // PaperSpigot start - Allow configurable end portal credits
+        if (!endPortal || world.paperSpigotConfig.disableEndCredits) {
             // CraftBukkit start
-            TeleportCause cause = (this.dimension == 1 || i == 1) ? TeleportCause.END_PORTAL : TeleportCause.NETHER_PORTAL;
+            TeleportCause cause = (endPortal || (this.dimension == 1 || i == 1)) ? TeleportCause.END_PORTAL : TeleportCause.NETHER_PORTAL;
             this.server.getPlayerList().changeDimension(this, i, cause);
             // CraftBukkit end
             this.lastSentExp = -1;
             this.bQ = -1.0F;
             this.bR = -1;
         }
+        // PaperSpigot end
     }
 
     private void b(TileEntity tileentity) {

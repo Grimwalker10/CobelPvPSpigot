@@ -82,6 +82,12 @@ public class PacketPlayOutPlayerInfo extends Packet {
     }
 
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
+        // PaperSpigot start - Fix scoreboard prefix and suffix in tab list
+        String username = this.username;
+        if (packetdataserializer.version >= 47 && action == ADD_PLAYER && username != null && username.equals(player.getName())) {
+            username = null;
+        }
+        // PaperSpigot end
         if ( packetdataserializer.version >= 20 )
         {
             packetdataserializer.b( action );

@@ -81,6 +81,12 @@ public class NBTCompressedStreamTools {
 
     public static NBTTagCompound a(DataInput datainput, NBTReadLimiter nbtreadlimiter) {
         try {
+        // PaperSpigot start - backport security fix
+        if ( datainput instanceof net.minecraft.util.io.netty.buffer.ByteBufInputStream )
+        {
+            datainput = new DataInputStream( new org.spigotmc.LimitStream( (InputStream) datainput, nbtreadlimiter ) );
+        }
+        // PaperSpigot end
         NBTBase nbtbase = a(datainput, 0, nbtreadlimiter);
 
         if (nbtbase instanceof NBTTagCompound) {
