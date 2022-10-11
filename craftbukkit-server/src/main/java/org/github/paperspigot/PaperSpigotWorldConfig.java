@@ -74,4 +74,27 @@ public class PaperSpigotWorldConfig
         config.addDefault( "world-settings.default." + path, def );
         return config.getString( "world-settings." + worldName + "." + path, config.getString( "world-settings.default." + path ) );
     }
+
+    public boolean allowUndeadHorseLeashing;
+    private void allowUndeadHorseLeashing()
+    {
+        allowUndeadHorseLeashing = getBoolean( "allow-undead-horse-leashing", true );
+        log( "Allow undead horse types to be leashed: " + allowUndeadHorseLeashing );
+    }
+
+    public double squidMinSpawnHeight;
+    public double squidMaxSpawnHeight;
+    private void squidSpawnHeight()
+    {
+        squidMinSpawnHeight = getDouble( "squid-spawn-height.minimum", 45.0D );
+        squidMaxSpawnHeight = getDouble( "squid-spawn-height.maximum", 63.0D );
+        log( "Squids will spawn between Y: " + squidMinSpawnHeight + " and Y: " + squidMaxSpawnHeight);
+    }
+
+    public float playerBlockingDamageMultiplier;
+    private void playerBlockingDamageMultiplier()
+    {
+        playerBlockingDamageMultiplier = getFloat( "player-blocking-damage-multiplier", 0.5F );
+        log( "Player blocking damage multiplier set to " + playerBlockingDamageMultiplier);
+    }
 }
