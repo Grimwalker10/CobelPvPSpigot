@@ -114,6 +114,13 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public final double[] recentTps = new double[ 3 ];
     // Spigot end
 
+    // Kohi start
+    public int entities;
+    public int activeEntities;
+    // Kohi end
+
+    public float lastTickTime = 0F; // MineHQ
+
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
         net.minecraft.util.io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
         this.X = new UserCache(this, a);
@@ -630,6 +637,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.methodProfiler.b();
         org.spigotmc.WatchdogThread.tick(); // Spigot
         SpigotTimings.serverTickTimer.stopTiming(); // Spigot
+        this.lastTickTime = (System.nanoTime() - i) / 1000000F;
         org.spigotmc.CustomTimingsHandler.tick(); // Spigot
     }
 
@@ -664,6 +672,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
         int i;
 
+        entities = 0;
+        activeEntities = 0;
         for (i = 0; i < this.worlds.size(); ++i) {
             long j = System.nanoTime();
 
