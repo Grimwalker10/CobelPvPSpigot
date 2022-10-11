@@ -16,6 +16,14 @@ import net.minecraft.util.org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+// Pweruser start
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import net.frozenorb.NamePriorityThreadFactory;
+import net.frozenorb.ThreadingManager;
+// Poweruser end
+
 public class LoginListener implements PacketLoginInListener {
 
     private static final AtomicInteger b = new AtomicInteger(0);
@@ -39,7 +47,29 @@ public class LoginListener implements PacketLoginInListener {
         random.nextBytes(this.e);
     }
 
+    // Poweruser start
+    private IllegalStateException authenticationException;
+
+    protected void caughtAuthenticationException(Exception e) {
+        this.authenticationException = new IllegalStateException(e.getMessage(), e);
+    }
+
+    protected boolean compareRandomConnectionKey(byte[] array) {
+        return Arrays.equals(this.e, array);
+    }
+
+    protected void setLoginKey(SecretKey loginKey) {
+        this.loginKey = loginKey;
+    }
+
     public void a() {
+        if(this.authenticationException != null) {
+            IllegalStateException exception = this.authenticationException;
+            this.authenticationException = null;
+            throw exception;
+        }
+    // Poweruser end
+
         if (this.g == EnumProtocolState.READY_TO_ACCEPT) {
             this.c();
         }
@@ -51,10 +81,10 @@ public class LoginListener implements PacketLoginInListener {
 
     public void disconnect(String s) {
         try {
-            c.info("Disconnecting " + this.getName() + ": " + s);
+            c.info("Disconnecting " + this.i.getName() + ": " + s);
             ChatComponentText chatcomponenttext = new ChatComponentText(s);
 
-            this.networkManager.handle(new PacketLoginOutDisconnect(chatcomponenttext), new GenericFutureListener[0]);
+            this.networkManager.handle(new PacketLoginOutDisconnect(chatcomponenttext), NetworkManager.emptyListenerArray); // Poweruser
             this.networkManager.close(chatcomponenttext);
         } catch (Exception exception) {
             c.error("Error whilst disconnecting player", exception);
@@ -115,13 +145,13 @@ public class LoginListener implements PacketLoginInListener {
                 } );
             }
             // Spigot end
-            this.networkManager.handle(new PacketLoginOutSuccess(this.i), new GenericFutureListener[0]);
+            this.networkManager.handle(new PacketLoginOutSuccess(this.i), NetworkManager.emptyListenerArray); // Poweruser
             this.server.getPlayerList().a(this.networkManager, this.server.getPlayerList().processLogin(this.i, s)); // CraftBukkit - add player reference
         }
     }
 
     public void a(IChatBaseComponent ichatbasecomponent) {
-        c.info(this.getName() + " lost connection: " + ichatbasecomponent.c());
+        c.info((this.i != null ? this.i.getName() : this.networkManager.getSocketAddress()) + " lost connection: " + ichatbasecomponent.c());
     }
 
     public String getName() {
@@ -138,14 +168,16 @@ public class LoginListener implements PacketLoginInListener {
         this.i = packetlogininstart.c();
         if (this.server.getOnlineMode() && !this.networkManager.c()) {
             this.g = EnumProtocolState.KEY;
-            this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.K().getPublic(), this.e), new GenericFutureListener[0]);
+            this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.K().getPublic(), this.e), NetworkManager.emptyListenerArray); // Poweruser
         } else {
-            (new ThreadPlayerLookupUUID(this, "User Authenticator #" + b.incrementAndGet())).start(); // Spigot
+            ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // Poweruser
         }
     }
 
     public void a(PacketLoginInEncryptionBegin packetlogininencryptionbegin) {
         Validate.validState(this.g == EnumProtocolState.KEY, "Unexpected key packet", new Object[0]);
+
+        /*
         PrivateKey privatekey = this.server.K().getPrivate();
 
         if (!Arrays.equals(this.e, packetlogininencryptionbegin.b(privatekey))) {
@@ -154,8 +186,10 @@ public class LoginListener implements PacketLoginInListener {
             this.loginKey = packetlogininencryptionbegin.a(privatekey);
             this.g = EnumProtocolState.AUTHENTICATING;
             this.networkManager.a(this.loginKey);
-            (new ThreadPlayerLookupUUID(this, "User Authenticator #" + b.incrementAndGet())).start();
+            ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // Poweruser
         }
+        */
+        ThreadingManager.execute(new ThreadPlayerLookupUUID(this, packetlogininencryptionbegin)); // Poweruser
     }
 
     protected GameProfile a(GameProfile gameprofile) {

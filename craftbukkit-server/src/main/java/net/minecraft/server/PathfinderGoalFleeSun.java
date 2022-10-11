@@ -44,7 +44,7 @@ public class PathfinderGoalFleeSun extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a(this.b, this.c, this.d, this.e);
+        this.a.getNavigation().a(net.frozenorb.pathsearch.PositionPathSearchType.FLEESUN, this.b, this.c, this.d, this.e); // Poweruser
     }
 
     private Vec3D f() {

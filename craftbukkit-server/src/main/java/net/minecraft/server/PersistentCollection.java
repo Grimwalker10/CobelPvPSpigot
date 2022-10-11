@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.frozenorb.ThreadingManager; // Poweruser
+
 public class PersistentCollection {
 
     private IDataManager a;
@@ -99,10 +101,14 @@ public class PersistentCollection {
                     NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 
                     nbttagcompound1.set("data", nbttagcompound);
+                    /* Poweruser start
                     FileOutputStream fileoutputstream = new FileOutputStream(file1);
 
                     NBTCompressedStreamTools.a(nbttagcompound1, (OutputStream) fileoutputstream);
                     fileoutputstream.close();
+                    */
+                    ThreadingManager.saveNBTFileStatic((NBTTagCompound) nbttagcompound1.clone(), file1);
+                    // Poweruser end
                 }
             } catch (Exception exception) {
                 exception.printStackTrace();

@@ -363,4 +363,28 @@ public class SpigotWorldConfig
         log( "Experience Orb Despawn Rate: " + expDespawnRate );
     }
 
+    public boolean mobsEnabled;
+
+    private void mobsEnabled() {
+        mobsEnabled = getBoolean("mobs-enabled", true);
+        log("Mobs enabled: " + mobsEnabled);
+    }
+
+    // Poweruser start
+    public boolean enderPearlsCanPassNonSolidBlocks;
+    private void enderPearlsCanPassNonSolidBlocks() {
+        enderPearlsCanPassNonSolidBlocks = getBoolean("enderPearlsCanPassNonSolidBlocks", false);
+        log("Enderpearls can pass non-solid blocks: " + enderPearlsCanPassNonSolidBlocks);
+    }
+
+    public boolean updateMapItemsInPlayerInventory;
+    private void dontUpdateMapItemsInPlayerInventory() {
+        updateMapItemsInPlayerInventory = getBoolean( "updateMapItemsInPlayerInventory" , false);
+    }
+
+    public boolean useAlternateEndSpawn;
+    private void useAlternateEndSpawn() {
+        useAlternateEndSpawn = getBoolean( "useAlternateEndSpawn", true);
+    }
+    // Poweruser end
 }

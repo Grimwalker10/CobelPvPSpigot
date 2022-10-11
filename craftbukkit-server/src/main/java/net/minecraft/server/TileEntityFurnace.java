@@ -187,7 +187,7 @@ public class TileEntityFurnace extends TileEntity implements IWorldInventory {
         }
 
         if (!this.world.isStatic) {
-            if (this.burnTime != 0 || this.items[1] != null && this.items[0] != null) {
+            if (this.burnTime != 0 || (this.items[1] != null && this.items[1].getItem() != Items.BUCKET) && this.items[0] != null) { // Poweruser - check for an empty bucket
                 // CraftBukkit start - Handle multiple elapsed ticks
                 if (this.burnTime <= 0 && this.canBurn()) { // CraftBukkit - == to <=
                     CraftItemStack fuel = CraftItemStack.asCraftMirror(this.items[1]);

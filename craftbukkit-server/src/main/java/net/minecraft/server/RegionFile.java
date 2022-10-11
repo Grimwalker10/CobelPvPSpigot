@@ -14,7 +14,7 @@ import java.util.zip.InflaterInputStream;
 
 public class RegionFile {
 
-    private static final byte[] a = new byte[4096];
+    private static final byte[] a = new byte[4096]; // Spigot - note: if this ever changes to not be 4096 bytes, update constructor! // PAIL: empty 4k block
     private final File b;
     private RandomAccessFile c;
     private final int[] d = new int[1024];
@@ -22,6 +22,25 @@ public class RegionFile {
     private ArrayList f;
     private int g;
     private long h;
+
+    // Poweruser start
+    private Boolean[] existingChunkCache = new Boolean[1024];
+
+    private boolean isExistingChunkCacheEntrySet(int i, int j) {
+        return this.existingChunkCache[i + j * 32] != null;
+    }
+
+    private boolean checkExistingChunkCache(int i, int j) {
+        return this.existingChunkCache[i + j * 32].booleanValue();
+    }
+
+    private void addCoordinatesToCache(int i, int j, boolean result) {
+        Boolean a = this.existingChunkCache[i + j * 32];
+        if(a == null || a.booleanValue() != result) {
+            this.existingChunkCache[i + j * 32] = new Boolean(result);
+        }
+    }
+    // Poweruser end
 
     public RegionFile(File file1) {
         this.b = file1;
@@ -36,13 +55,10 @@ public class RegionFile {
             int i;
 
             if (this.c.length() < 4096L) {
-                for (i = 0; i < 1024; ++i) {
-                    this.c.writeInt(0);
-                }
-
-                for (i = 0; i < 1024; ++i) {
-                    this.c.writeInt(0);
-                }
+                // Spigot start - more effecient chunk zero'ing
+                this.c.write(RegionFile.a);
+                this.c.write(RegionFile.a);
+                // Spigot end
 
                 this.g += 8192;
             }
@@ -88,10 +104,16 @@ public class RegionFile {
     }
 
     // CraftBukkit start - This is a copy (sort of) of the method below it, make sure they stay in sync
-    public synchronized boolean chunkExists(int i, int j) {
+    public boolean chunkExists(int i, int j) { // Poweruser - move synchronization inside method
         if (this.d(i, j)) {
             return false;
         } else {
+            // Poweruser start
+            if(this.isExistingChunkCacheEntrySet(i, j)) {
+                return this.checkExistingChunkCache(i, j);
+            }
+            synchronized(this) {
+            // Poweruser end
             try {
                 int k = this.e(i, j);
 
@@ -113,16 +135,17 @@ public class RegionFile {
                     }
 
                     byte b0 = this.c.readByte();
-                    if (b0 == 1 || b0 == 2) {
-                        return true;
-                    }
+                    // Poweruser start
+                    boolean foundChunk = (b0 == 1 || b0 == 2);
+                    this.addCoordinatesToCache(i, j, foundChunk);
+                    return foundChunk;
+                    // Poweruser end
                 }
             } catch (IOException ioexception) {
                 return false;
             }
+            }
         }
-
-        return false;
     }
     // CraftBukkit end
 
@@ -154,14 +177,17 @@ public class RegionFile {
                             byte[] abyte;
 
                             if (b0 == 1) {
+                                this.addCoordinatesToCache(i, j, true); // Poweruser
                                 abyte = new byte[j1 - 1];
                                 this.c.read(abyte);
                                 return new DataInputStream(new BufferedInputStream(new GZIPInputStream(new ByteArrayInputStream(abyte))));
                             } else if (b0 == 2) {
+                                this.addCoordinatesToCache(i, j, true); // Poweruser
                                 abyte = new byte[j1 - 1];
                                 this.c.read(abyte);
                                 return new DataInputStream(new BufferedInputStream(new InflaterInputStream(new ByteArrayInputStream(abyte))));
                             } else {
+                                this.addCoordinatesToCache(i, j, false); // Poweruser
                                 return null;
                             }
                         }
@@ -174,7 +200,7 @@ public class RegionFile {
     }
 
     public DataOutputStream b(int i, int j) {
-        return this.d(i, j) ? null : new DataOutputStream(new DeflaterOutputStream(new ChunkBuffer(this, i, j)));
+        return this.d(i, j) ? null : new DataOutputStream(new java.io.BufferedOutputStream(new DeflaterOutputStream(new ChunkBuffer(this, i, j)))); // Spigot - use a BufferedOutputStream to greatly improve file write performance
     }
 
     protected synchronized void a(int i, int j, byte[] abyte, int k) {
@@ -245,6 +271,7 @@ public class RegionFile {
             }
 
             this.b(i, j, (int) (MinecraftServer.ar() / 1000L));
+            this.addCoordinatesToCache(i, j, true); // Poweruser
         } catch (IOException ioexception) {
             ioexception.printStackTrace();
         }

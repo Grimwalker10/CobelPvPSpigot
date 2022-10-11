@@ -46,6 +46,6 @@ public class PathfinderGoalMoveTowardsTarget extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a(this.c, this.d, this.e, this.f);
+        this.a.getNavigation().a(net.frozenorb.pathsearch.PositionPathSearchType.MOVETOWARDSTARGET, this.c, this.d, this.e, this.f); // Poweruser
     }
 }

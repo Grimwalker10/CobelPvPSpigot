@@ -12,16 +12,47 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
 // CraftBukkit end
 
-class ThreadPlayerLookupUUID extends Thread {
+// Poweruser start
+import java.security.PrivateKey;
+import java.util.Arrays;
+// Poweruser end
+
+class ThreadPlayerLookupUUID implements Runnable { // Poweruser
 
     final LoginListener a;
 
-    ThreadPlayerLookupUUID(LoginListener loginlistener, String s) {
-        super(s);
+    // Poweruser start
+    final PacketLoginInEncryptionBegin packetlogininencryptionbegin;
+
+    ThreadPlayerLookupUUID(LoginListener loginlistener, PacketLoginInEncryptionBegin packetlogininencryptionbegin) { // Poweruser
         this.a = loginlistener;
+        this.packetlogininencryptionbegin = packetlogininencryptionbegin;
     }
 
+    public ThreadPlayerLookupUUID(LoginListener loginlistener) {
+        this(loginlistener, null);
+    }
+    // Poweruser end
+
     public void run() {
+        // Poweruser start
+        if (this.packetlogininencryptionbegin != null) {
+            try {
+                PrivateKey privatekey = MinecraftServer.getServer().K().getPrivate();
+                if (this.a.compareRandomConnectionKey(this.packetlogininencryptionbegin.b(privatekey))) {
+                    this.a.setLoginKey(packetlogininencryptionbegin.a(privatekey));
+                    LoginListener.a(this.a, EnumProtocolState.AUTHENTICATING);
+                    this.a.networkManager.a(LoginListener.d(this.a));
+                } else {
+                    throw new IllegalStateException("Invalid nonce!");
+                }
+            } catch (Exception e) {
+                this.a.caughtAuthenticationException(e);
+                return;
+            }
+        }
+        // Poweruser end
+
         GameProfile gameprofile = LoginListener.a(this.a);
 
         try {
@@ -103,7 +134,7 @@ class ThreadPlayerLookupUUID extends Thread {
         }
         // CraftBukkit end
 
-        LoginListener.e().info("UUID of player " + LoginListener.a(this.a).getName() + " is " + LoginListener.a(this.a).getId());
+        //LoginListener.e().info("UUID of player " + LoginListener.a(this.a).getName() + " is " + LoginListener.a(this.a).getId());
         LoginListener.a(this.a, EnumProtocolState.READY_TO_ACCEPT);
     }
 }

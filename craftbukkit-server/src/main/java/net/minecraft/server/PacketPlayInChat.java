@@ -2,6 +2,9 @@ package net.minecraft.server;
 
 import java.io.IOException; // CraftBukkit
 
+import net.frozenorb.ThreadingManager; // Poweruser
+import net.frozenorb.ThreadingManager.TaskQueueWorker; // Poweruser
+
 public class PacketPlayInChat extends Packet {
 
     private String message;
@@ -43,14 +46,20 @@ public class PacketPlayInChat extends Packet {
     }
     // CraftBukkit end
 
+    private static TaskQueueWorker taskQueue; // Poweruser
     // Spigot Start
-    private static final java.util.concurrent.ExecutorService executors = java.util.concurrent.Executors.newCachedThreadPool(
-            new com.google.common.util.concurrent.ThreadFactoryBuilder().setDaemon( true ).setNameFormat( "Async Chat Thread - #%d" ).build() );
     public void handle(final PacketListener packetlistener)
     {
         if ( a() )
         {
-            executors.submit( new Runnable()
+            // Poweruser start
+            TaskQueueWorker worker = taskQueue;
+            if(worker == null) {
+                taskQueue = worker = ThreadingManager.createTaskQueue();
+            }
+
+            worker.queueTask(new Runnable() // Poweruser
+            // Poweruser end
             {
 
                 @Override

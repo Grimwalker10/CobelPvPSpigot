@@ -81,7 +81,7 @@ public class PathfinderGoalPlay extends PathfinderGoal {
                 return;
             }
 
-            this.a.getNavigation().a(vec3d.a, vec3d.b, vec3d.c, this.c);
+            this.a.getNavigation().a(net.frozenorb.pathsearch.PositionPathSearchType.PLAY, vec3d.a, vec3d.b, vec3d.c, this.c); // Poweruser
         }
     }
 }

@@ -10,6 +10,10 @@ public class WorldData {
     private int spawnX;
     private int spawnY;
     private int spawnZ;
+    // Poweruser start
+    private float spawnYaw;
+    private float spawnPitch;
+    // Poweruser end
     private long time;
     private long dayTime;
     private long lastPlayed;
@@ -71,6 +75,10 @@ public class WorldData {
         this.spawnX = nbttagcompound.getInt("SpawnX");
         this.spawnY = nbttagcompound.getInt("SpawnY");
         this.spawnZ = nbttagcompound.getInt("SpawnZ");
+        // Poweruser start
+        this.spawnYaw = nbttagcompound.getFloat("SpawnYaw");
+        this.spawnPitch = nbttagcompound.getFloat("SpawnPitch");
+        // Poweruser end
         this.time = nbttagcompound.getLong("Time");
         if (nbttagcompound.hasKeyOfType("DayTime", 99)) {
             this.dayTime = nbttagcompound.getLong("DayTime");
@@ -136,6 +144,10 @@ public class WorldData {
         this.spawnX = worlddata.spawnX;
         this.spawnY = worlddata.spawnY;
         this.spawnZ = worlddata.spawnZ;
+        // Poweruser start
+        this.spawnYaw = worlddata.spawnYaw;
+        this.spawnPitch = worlddata.spawnPitch;
+        // Poweruser end
         this.time = worlddata.time;
         this.dayTime = worlddata.dayTime;
         this.lastPlayed = worlddata.lastPlayed;
@@ -178,6 +190,10 @@ public class WorldData {
         nbttagcompound.setInt("SpawnX", this.spawnX);
         nbttagcompound.setInt("SpawnY", this.spawnY);
         nbttagcompound.setInt("SpawnZ", this.spawnZ);
+        // Poweruser start
+        nbttagcompound.setFloat("SpawnYaw", this.spawnYaw);
+        nbttagcompound.setFloat("SpawnPitch", this.spawnPitch);
+        // Poweruser end
         nbttagcompound.setLong("Time", this.time);
         nbttagcompound.setLong("DayTime", this.dayTime);
         nbttagcompound.setLong("SizeOnDisk", this.sizeOnDisk);
@@ -242,6 +258,22 @@ public class WorldData {
         this.spawnY = j;
         this.spawnZ = k;
     }
+
+    // Poweruser start
+    public void setSpawn(int i, int j, int k, float yaw, float pitch) {
+        this.setSpawn(i, j, k);
+        this.spawnYaw = yaw;
+        this.spawnPitch = pitch;
+    }
+
+    public float getSpawnYaw() {
+        return this.spawnYaw;
+    }
+
+    public float getSpawnPitch() {
+        return this.spawnPitch;
+    }
+    // Poweruser end
 
     public String getName() {
         return this.name;

@@ -23,6 +23,39 @@ public class EntityEnderPearl extends EntityProjectile {
             movingobjectposition.entity.damageEntity(DamageSource.projectile(this, this.getShooter()), 0.0F);
         }
 
+        // Poweruser start
+        if(this.world.spigotConfig.enderPearlsCanPassNonSolidBlocks && movingobjectposition.type == EnumMovingObjectType.BLOCK) {
+            double maxMotionVectorComponent = Math.max(Math.max(Math.abs(this.motX), Math.abs(this.motY)), Math.abs(this.motZ));
+            if(maxMotionVectorComponent > 0.001D &&
+               !this.world.getType(movingobjectposition.b, movingobjectposition.c, movingobjectposition.d).getMaterial().isSolid()) {
+                double factor = 0.20D / maxMotionVectorComponent;
+                double shortendMotionX = this.motX * factor;
+                double shortendMotionY = this.motY * factor;
+                double shortendMotionZ = this.motZ * factor;
+                double tempPositionX = movingobjectposition.b + 0.5D;
+                double tempPositionY = movingobjectposition.c + 0.5D;
+                double tempPositionZ = movingobjectposition.d + 0.5D;
+                int nextBlockPositionX;
+                int nextBlockPositionY;
+                int nextBlockPositionZ;
+                do {
+                    tempPositionX += shortendMotionX;
+                    tempPositionY += shortendMotionY;
+                    tempPositionZ += shortendMotionZ;
+                    nextBlockPositionX = MathHelper.floor(tempPositionX);
+                    nextBlockPositionY = (int)(tempPositionY);
+                    nextBlockPositionZ = MathHelper.floor(tempPositionZ);
+                } while (nextBlockPositionX == movingobjectposition.b &&
+                         nextBlockPositionY == movingobjectposition.c &&
+                         nextBlockPositionZ == movingobjectposition.d);
+                Block nextBlock = this.world.getType(nextBlockPositionX, nextBlockPositionY, nextBlockPositionZ);
+                if(!nextBlock.getMaterial().isSolid()) {
+                    return;
+                }
+            }
+        }
+        // Poweruser end
+
         // PaperSpigot start - Remove entities in unloaded chunks
         if (inUnloadedChunk && world.paperSpigotConfig.removeUnloadedEnderPearls) {
             die();

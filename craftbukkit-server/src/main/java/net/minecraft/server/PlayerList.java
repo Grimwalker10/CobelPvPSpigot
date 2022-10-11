@@ -41,10 +41,12 @@ import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 public abstract class PlayerList {
 
-    public static final File a = new File("banned-players.json");
-    public static final File b = new File("banned-ips.json");
-    public static final File c = new File("ops.json");
-    public static final File d = new File("whitelist.json");
+    // MineHQ start - Dedicated config directory
+    public static final File a = new File("config/misc", "banned-players.json");
+    public static final File b = new File("config/misc", "banned-ips.json");
+    public static final File c = new File("config/misc", "ops.json");
+    public static final File d = new File("config/misc", "whitelist.json");
+    // MineHQ end
     private static final Logger g = LogManager.getLogger();
     private static final SimpleDateFormat h = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
     private final MinecraftServer server;
@@ -211,7 +213,7 @@ public abstract class PlayerList {
         }
 
         // CraftBukkit - Moved from above, added world
-        g.info(entityplayer.getName() + "[" + s1 + "] logged in with entity id " + entityplayer.getId() + " at ([" + entityplayer.world.worldData.getName() + "] " + entityplayer.locX + ", " + entityplayer.locY + ", " + entityplayer.locZ + ")");
+        g.info(entityplayer.getName() + " logged in at (" + entityplayer.world.worldData.getName() + ", " + String.format("%.1f", entityplayer.locX) + ", " + String.format("%.1f", entityplayer.locY) + ", " + String.format("%.1f", entityplayer.locZ) + ")");
     }
 
     public void sendScoreboard(ScoreboardServer scoreboardserver, EntityPlayer entityplayer) { // CraftBukkit - protected -> public
@@ -279,6 +281,7 @@ public abstract class PlayerList {
     }
 
     protected void b(EntityPlayer entityplayer) {
+        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
         this.playerFileData.save(entityplayer);
         ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) this.n.get(entityplayer.getUniqueID());
 
@@ -554,7 +557,8 @@ public abstract class PlayerList {
             if (location == null) {
                 cworld = (CraftWorld) this.server.server.getWorlds().get(0);
                 chunkcoordinates = cworld.getHandle().getSpawn();
-                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5);
+
+                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5, cworld.getHandle().getWorldData().getSpawnYaw(), cworld.getHandle().getWorldData().getSpawnPitch()); // Poweruser
             }
 
             Player respawnPlayer = this.cserver.getPlayer(entityplayer1);
@@ -744,14 +748,22 @@ public abstract class PlayerList {
                 worldserver1 = this.server.worlds.get(0);
                 chunkcoordinates = worldserver1.getSpawn();
             } else {
-                chunkcoordinates = worldserver1.getDimensionSpawn();
+                // Poweruser start
+                if(worldserver1.spigotConfig.useAlternateEndSpawn) {
+                    chunkcoordinates = worldserver1.getSpawn();
+                } else {
+                    chunkcoordinates = worldserver1.getDimensionSpawn();
+                }
+                // Poweruser end
             }
 
             d0 = (double) chunkcoordinates.x;
             y = (double) chunkcoordinates.y;
             d1 = (double) chunkcoordinates.z;
-            yaw = 90.0F;
-            pitch = 0.0F;
+            // Poweruser start
+            yaw = worldserver1.getWorldData().getSpawnYaw();
+            pitch = worldserver1.getWorldData().getSpawnPitch();
+            // Poweruser end
             /*
             entity.setPositionRotation(d0, entity.locY, d1, 90.0F, 0.0F);
             if (entity.isAlive()) {
@@ -1147,6 +1159,7 @@ public abstract class PlayerList {
     }
 
     public void savePlayers() {
+        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
         for (int i = 0; i < this.players.size(); ++i) {
             this.b((EntityPlayer) this.players.get(i));
         }

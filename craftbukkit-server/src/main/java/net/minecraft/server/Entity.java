@@ -31,6 +31,10 @@ import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.plugin.PluginManager;
 // CraftBukkit end
 
+// Poweruser start
+import org.bukkit.craftbukkit.SpigotTimings;
+// Poweruser end
+
 public abstract class Entity {
 
     // CraftBukkit start
@@ -127,10 +131,15 @@ public abstract class Entity {
     public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getEntityTimings(this); // Spigot
     public final byte activationType = org.spigotmc.ActivationRange.initializeEntityActivationType(this);
     public final boolean defaultActivationState;
-    public long activatedTick = Integer.MIN_VALUE; // PaperSpigot - EAR backport
+    public long activatedTick = MinecraftServer.currentTick + 20; // Kohi - activate for 20 ticks on first adding to the world
     public boolean fromMobSpawner;
     public void inactiveTick() { }
     // Spigot end
+
+    // Poweruser start
+    private boolean isInLava;
+    private int lastLavaCheck;
+    // Poweruser end
 
     public int getId() {
         return this.id;
@@ -266,6 +275,7 @@ public abstract class Entity {
     }
 
     public void C() {
+        SpigotTimings.timerEntity_C.startTiming(); // Poweruser
         this.world.methodProfiler.a("entityBaseTick");
         if (this.vehicle != null && this.vehicle.dead) {
             this.vehicle = null;
@@ -297,7 +307,9 @@ public abstract class Entity {
                             b0 = -1;
                         }
 
+                        SpigotTimings.timerEntity_C_portal.startTiming(); // Poweruser
                         this.b(b0);
+                        SpigotTimings.timerEntity_C_portal.stopTiming(); // Poweruser
                     }
 
                     this.an = false;
@@ -364,6 +376,7 @@ public abstract class Entity {
 
         this.justCreated = false;
         this.world.methodProfiler.b();
+        SpigotTimings.timerEntity_C.stopTiming(); // Poweruser
     }
 
     public int D() {
@@ -920,8 +933,19 @@ public abstract class Entity {
     }
 
     public boolean P() {
-        return this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA);
+    // Poweruser start
+        return this.P(this.world);
     }
+
+    public boolean P(IBlockAccess iblockaccess) {
+        int currentTick = MinecraftServer.getServer().al();
+        if(this.lastLavaCheck != currentTick) {
+            this.lastLavaCheck = currentTick;
+            this.isInLava = this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA, iblockaccess);
+        }
+        return this.isInLava;
+    }
+    // Poweruser end
 
     public void a(float f, float f1, float f2) {
         float f3 = f * f + f1 * f1;

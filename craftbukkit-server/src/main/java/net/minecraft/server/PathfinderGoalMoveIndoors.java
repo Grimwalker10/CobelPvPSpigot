@@ -47,10 +47,10 @@ public class PathfinderGoalMoveIndoors extends PathfinderGoal {
             Vec3D vec3d = RandomPositionGenerator.a(this.a, 14, 3, Vec3D.a((double) this.b.getIndoorsX() + 0.5D, (double) this.b.getIndoorsY(), (double) this.b.getIndoorsZ() + 0.5D));
 
             if (vec3d != null) {
-                this.a.getNavigation().a(vec3d.a, vec3d.b, vec3d.c, 1.0D);
+                this.a.getNavigation().a(net.frozenorb.pathsearch.PositionPathSearchType.MOVEINDOORS, vec3d.a, vec3d.b, vec3d.c, 1.0D); // Poweruser
             }
         } else {
-            this.a.getNavigation().a((double) this.b.getIndoorsX() + 0.5D, (double) this.b.getIndoorsY(), (double) this.b.getIndoorsZ() + 0.5D, 1.0D);
+            this.a.getNavigation().a(net.frozenorb.pathsearch.PositionPathSearchType.MOVEINDOORS, (double) this.b.getIndoorsX() + 0.5D, (double) this.b.getIndoorsY(), (double) this.b.getIndoorsZ() + 0.5D, 1.0D); // Poweruser
         }
     }
 

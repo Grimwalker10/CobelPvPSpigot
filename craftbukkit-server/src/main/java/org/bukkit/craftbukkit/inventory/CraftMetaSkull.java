@@ -14,6 +14,8 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import com.google.common.collect.ImmutableMap.Builder;
 
+import net.frozenorb.ThreadingManager; // Poweruser
+
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     static final ItemMetaKey SKULL_OWNER = new ItemMetaKey("SkullOwner", "skull-owner");
@@ -56,7 +58,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
             // Spigot start - do an async lookup of the profile.
             // Unfortunately there is not way to refresh the holding
             // inventory, so that responsibility is left to the user.
-            net.minecraft.server.TileEntitySkull.executor.execute( new Runnable()
+            ThreadingManager.queueHeadConversion(new Runnable() // Poweruser
             {
                 @Override
                 public void run()

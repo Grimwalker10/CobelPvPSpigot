@@ -4,9 +4,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import net.frozenorb.blocks.BlockAccessCache; // Poweruser
+
 public class Block {
 
-    public static final RegistryMaterials REGISTRY = new RegistryBlocks("air");
+    // Poweruser start
+    public static final RegistryBlocks REGISTRY_BLOCKS = new RegistryBlocks("air");
+    public static final RegistryMaterials REGISTRY = REGISTRY_BLOCKS;
+    private static final BlockAccessCache blockCache = new BlockAccessCache();
+    // Poweruser end
     private CreativeModeTab creativeTab;
     protected String d;
     public static final StepSound e = new StepSound("stone", 1.0F, 1.0F);
@@ -49,7 +55,7 @@ public class Block {
     }
 
     public static Block getById(int i) {
-        return (Block) REGISTRY.a(i);
+        return blockCache.getById(i); // Poweruser
     }
 
     public static Block a(Item item) {

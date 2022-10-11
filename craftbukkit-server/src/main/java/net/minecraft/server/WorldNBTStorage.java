@@ -18,6 +18,12 @@ import java.util.UUID;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 // CraftBukkit end
 
+// Poweruser start
+import net.frozenorb.PlayerDataCache;
+import net.frozenorb.PlayerDataSaveJob;
+import net.frozenorb.ThreadingManager;
+// Poweruser end
+
 public class WorldNBTStorage implements IDataManager, IPlayerFileData {
 
     private static final Logger a = LogManager.getLogger();
@@ -27,6 +33,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
     private final long sessionId = MinecraftServer.ar();
     private final String f;
     private UUID uuid = null; // CraftBukkit
+    private PlayerDataCache<File, NBTTagCompound> dataCache = new PlayerDataCache<File, NBTTagCompound>(); // Poweruser
 
     public WorldNBTStorage(File file1, String s, boolean flag) {
         this.baseDir = new File(file1, s);
@@ -177,15 +184,14 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             NBTTagCompound nbttagcompound = new NBTTagCompound();
 
             entityhuman.e(nbttagcompound);
-            File file1 = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat.tmp");
+
+            // Poweruser start
             File file2 = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat");
-
-            NBTCompressedStreamTools.a(nbttagcompound, (OutputStream) (new FileOutputStream(file1)));
-            if (file2.exists()) {
-                file2.delete();
+            synchronized(this.dataCache) {
+                this.dataCache.put(file2, nbttagcompound);
             }
-
-            file1.renameTo(file2);
+            ThreadingManager.saveNBTPlayerDataStatic(new PlayerDataSaveJob(file2, nbttagcompound));
+            // Poweruser end
         } catch (Exception exception) {
             a.warn("Failed to save player data for " + entityhuman.getName());
         }
@@ -198,9 +204,21 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             File file1 = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat");
             // Spigot Start
             boolean usingWrongFile = false;
-            if ( !file1.exists() )
+
+            // Poweruser start
+            NBTTagCompound playerdata = null;
+            synchronized(this.dataCache) {
+                playerdata = this.dataCache.get(file1);
+            }
+            if ( !file1.exists() && playerdata == null)
+            // Poweruser end
             {
                 file1 = new File( this.playerDir, UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
+                // Poweruser start
+                synchronized(this.dataCache) {
+                    playerdata = this.dataCache.get(file1);
+                }
+                // Poweruser end
                 if ( file1.exists() )
                 {
                     usingWrongFile = true;
@@ -209,6 +227,11 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             }
             // Spigot End
 
+            // Poweruser start
+            if (playerdata != null) {
+                nbttagcompound = playerdata;
+            } else
+            // Poweruser end
             if (file1.exists() && file1.isFile()) {
                 nbttagcompound = NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file1)));
             }

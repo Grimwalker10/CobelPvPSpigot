@@ -27,7 +27,7 @@ public class HelpYamlReader {
     public HelpYamlReader(Server server) {
         this.server = server;
 
-        File helpYamlFile = new File("help.yml");
+        File helpYamlFile = new File("config/misc", "help.yml"); // MineHQ - Dedicated config directory
         YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(getClass().getClassLoader().getResourceAsStream("configurations/help.yml"), Charsets.UTF_8));
 
         try {

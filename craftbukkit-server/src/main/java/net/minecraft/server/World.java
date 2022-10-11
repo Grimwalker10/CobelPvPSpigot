@@ -39,6 +39,10 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 
 // Poweruser start
 import net.frozenorb.LightingUpdater;
+import net.frozenorb.WeakChunkCache;
+import net.frozenorb.ThreadingManager;
+import net.frozenorb.ThreadingManager.TaskQueueWorker;
+import net.frozenorb.autosave.AutoSaveWorldData;
 // Poweruser end
 
 public abstract class World implements IBlockAccess {
@@ -127,16 +131,9 @@ public abstract class World implements IBlockAccess {
     public static boolean haveWeSilencedAPhysicsCrash;
     public static String blockLocation;
     public List<TileEntity> triggerHoppersList = new ArrayList<TileEntity>(); // Spigot, When altHopperTicking, tile entities being added go through here.
-    // Poweruser start - only one thread, and with lower priority. Instead of one for each world
-    private static ExecutorService lightingExecutor; // PaperSpigot - Asynchronous lighting updates
+    // Poweruser start
     private LightingUpdater lightingUpdater = new LightingUpdater();
-
-    public static ExecutorService getLightingExecutor() {
-        if(lightingExecutor == null) {
-            lightingExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setPriority(Thread.NORM_PRIORITY - 1).setNameFormat("PaperSpigot - Lighting Thread").build());
-        }
-        return lightingExecutor;
-    }
+    private TaskQueueWorker lightingQueue = ThreadingManager.createTaskQueue();
     // Poweruser end
     public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<Explosion.CacheKey, Float>(); // PaperSpigot - Optimize explosions
 
@@ -215,6 +212,16 @@ public abstract class World implements IBlockAccess {
     public WorldChunkManager getWorldChunkManager() {
         return this.worldProvider.e;
     }
+
+
+    // Poweruser start
+    public ChunkProviderServer chunkProviderServer; // moved here from WorldServer
+    private final AutoSaveWorldData autoSaveWorldData;
+
+    public AutoSaveWorldData getAutoSaveWorldData() {
+        return this.autoSaveWorldData;
+    }
+    // Poweruser end
 
     // CraftBukkit start
     private final CraftWorld world;
@@ -312,6 +319,13 @@ public abstract class World implements IBlockAccess {
         this.a();
 
         this.getServer().addWorld(this.world); // CraftBukkit
+
+        // MineHQ - Set spawn flags based on mobsEnabled.
+        if (!spigotConfig.mobsEnabled) {
+            this.world.setSpawnFlags(false, false);
+        }
+
+        this.autoSaveWorldData = new AutoSaveWorldData(this); // Poweruser
     }
 
     protected abstract IChunkProvider j();
@@ -797,8 +811,14 @@ public abstract class World implements IBlockAccess {
     }
 
     public int getHighestBlockYAt(int i, int j) {
+    // Poweruser start
+        return this.getHighestBlockYAt(i, j, false);
+    }
+
+    public int getHighestBlockYAt(int i, int j, boolean chunksHaveAlreadyBeenChecked) {
+    // Poweruser end
         if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
-            if (!this.isChunkLoaded(i >> 4, j >> 4)) {
+            if (!chunksHaveAlreadyBeenChecked && !this.isChunkLoaded(i >> 4, j >> 4)) { // Poweruser
                 return 0;
             } else {
                 Chunk chunk = this.getChunkAt(i >> 4, j >> 4);
@@ -811,8 +831,14 @@ public abstract class World implements IBlockAccess {
     }
 
     public int g(int i, int j) {
+    // Poweruser start
+        return this.g(i, j, false);
+    }
+
+    public int g(int i, int j, boolean chunksHaveAlreadyBeenChecked) {
+    // Poweruser end
         if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
-            if (!this.isChunkLoaded(i >> 4, j >> 4)) {
+            if (!chunksHaveAlreadyBeenChecked && !this.isChunkLoaded(i >> 4, j >> 4)) { // Poweruser
                 return 0;
             } else {
                 Chunk chunk = this.getChunkAt(i >> 4, j >> 4);
@@ -1307,7 +1333,7 @@ public abstract class World implements IBlockAccess {
         }
         // Spigot end
 
-        double d0 = 0.25D;
+        /*double d0 = 0.25D;
         List list = this.getEntities(entity, axisalignedbb.grow(d0, d0, d0));
 
         for (int j2 = 0; j2 < list.size(); ++j2) {
@@ -1321,7 +1347,7 @@ public abstract class World implements IBlockAccess {
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
                 this.L.add(axisalignedbb1);
             }
-        }
+        }*/
 
         return this.L;
     }
@@ -1903,6 +1929,12 @@ public abstract class World implements IBlockAccess {
     }
 
     public boolean a(AxisAlignedBB axisalignedbb, Material material) {
+    // Poweruser start
+        return this.a(axisalignedbb, material, this);
+    }
+
+    public boolean a(AxisAlignedBB axisalignedbb, Material material, IBlockAccess iblockaccess) {
+    // Poweruser end
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
         int k = MathHelper.floor(axisalignedbb.b);
@@ -1913,7 +1945,7 @@ public abstract class World implements IBlockAccess {
         for (int k1 = i; k1 < j; ++k1) {
             for (int l1 = k; l1 < l; ++l1) {
                 for (int i2 = i1; i2 < j1; ++i2) {
-                    if (this.getType(k1, l1, i2).getMaterial() == material) {
+                    if (iblockaccess.getType(k1, l1, i2).getMaterial() == material) { // Poweruser
                         return true;
                     }
                 }
@@ -2275,6 +2307,7 @@ public abstract class World implements IBlockAccess {
         {
             return;
         }
+        this.timings.doTickTiles_buildList.startTiming(); // Poweruser
         // Keep chunks with growth inside of the optimal chunk range
         int chunksPerPlayer = Math.min( 200, Math.max( 1, (int) ( ( ( optimalChunks - players.size() ) / (double) players.size() ) + 0.5 ) ) );
         int randRange = 3 + chunksPerPlayer / 30;
@@ -2283,6 +2316,9 @@ public abstract class World implements IBlockAccess {
         // odds of growth happening vs growth happening in vanilla
         this.growthOdds = this.modifiedOdds = Math.max( 35, Math.min( 100, ( ( chunksPerPlayer + 1 ) * 100F ) / 15F ) );
         // Spigot end
+
+        Chunk chunkObj = null; // Poweruser
+
         for (i = 0; i < this.players.size(); ++i) {
             entityhuman = (EntityHuman) this.players.get(i);
             j = MathHelper.floor(entityhuman.locX / 16.0D);
@@ -2300,7 +2336,7 @@ public abstract class World implements IBlockAccess {
                 int dx = ( random.nextBoolean() ? 1 : -1 ) * random.nextInt( randRange );
                 int dz = ( random.nextBoolean() ? 1 : -1 ) * random.nextInt( randRange );
                 long hash = chunkToKey( dx + j, dz + k );
-                if ( !chunkTickList.contains( hash ) && this.isChunkLoaded( dx + j, dz + k ) )
+                if ( !chunkTickList.contains( hash ) && ((chunkObj = this.getChunkIfLoaded(dx + j, dz + k)) != null) && chunkObj.areNeighborsLoaded(1) ) // Poweruser
                 {
                     chunkTickList.put( hash, (short) -1 ); // no players
                 }
@@ -2324,6 +2360,7 @@ public abstract class World implements IBlockAccess {
         }
 
         this.methodProfiler.b();
+        this.timings.doTickTiles_buildList.stopTiming(); // Poweruser
     }
 
     protected abstract int p();
@@ -2643,7 +2680,7 @@ public abstract class World implements IBlockAccess {
         }
 
         // Poweruser start
-        getLightingExecutor().submit(new Runnable() {
+        this.lightingQueue.queueTask(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -2811,7 +2848,7 @@ public abstract class World implements IBlockAccess {
         int l1 = i + l;
         int i2 = j + l;
         int j2 = k + l;
-        ChunkCache chunkcache = new ChunkCache(this, i1, j1, k1, l1, i2, j2, 0);
+        WeakChunkCache chunkcache = new WeakChunkCache(this, i1, j1, k1, l1, i2, j2, 0); // Poweruser
         PathEntity pathentity = (new Pathfinder(chunkcache, flag, flag1, flag2, flag3)).a(entity, entity1, f);
 
         this.methodProfiler.b();
@@ -2830,7 +2867,7 @@ public abstract class World implements IBlockAccess {
         int k2 = l + k1;
         int l2 = i1 + k1;
         int i3 = j1 + k1;
-        ChunkCache chunkcache = new ChunkCache(this, l1, i2, j2, k2, l2, i3, 0);
+        WeakChunkCache chunkcache = new WeakChunkCache(this, l1, i2, j2, k2, l2, i3, 0); // Poweruser
         PathEntity pathentity = (new Pathfinder(chunkcache, flag, flag1, flag2, flag3)).a(entity, i, j, k, f);
 
         this.methodProfiler.b();
@@ -3052,6 +3089,12 @@ public abstract class World implements IBlockAccess {
     public void x(int i, int j, int k) {
         this.worldData.setSpawn(i, j, k);
     }
+
+    // Poweruser start
+    public void setSpawn(int i, int j, int k, float yaw, float pitch) {
+        this.worldData.setSpawn(i, j, k, yaw, pitch);
+    }
+    // Poweruser end
 
     public boolean a(EntityHuman entityhuman, int i, int j, int k) {
         return true;

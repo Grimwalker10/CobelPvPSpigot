@@ -38,7 +38,8 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             // Spigot end
         }
 
-        return RegionFileCache.a(this.e, i, j).chunkExists(i & 31, j & 31);
+        final RegionFile region = RegionFileCache.a(this.e, i, j, false); // PaperSpigot
+        return region != null && region.chunkExists(i & 31, j & 31); // PaperSpigot
     }
     // CraftBukkit end
 

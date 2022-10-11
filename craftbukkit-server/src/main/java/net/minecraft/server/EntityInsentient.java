@@ -11,6 +11,11 @@ import org.bukkit.event.entity.EntityUnleashEvent;
 import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
 // CraftBukkit end
 
+// Poweruser start
+import org.bukkit.craftbukkit.SpigotTimings;
+import net.frozenorb.pathsearch.AsyncNavigation;
+// Poweruser end
+
 public abstract class EntityInsentient extends EntityLiving {
 
     public int a_;
@@ -43,7 +48,7 @@ public abstract class EntityInsentient extends EntityLiving {
         this.moveController = new ControllerMove(this);
         this.bm = new ControllerJump(this);
         this.bn = new EntityAIBodyControl(this);
-        this.navigation = new Navigation(this, world);
+        this.navigation = new AsyncNavigation(this, world); // Poweruser
         this.bq = new EntitySenses(this);
 
         for (int i = 0; i < this.dropChances.length; ++i) {
@@ -113,6 +118,7 @@ public abstract class EntityInsentient extends EntityLiving {
     }
 
     public void C() {
+        SpigotTimings.timerEntityInsentient_C.startTiming(); // Poweruser
         super.C();
         this.world.methodProfiler.a("mobBaseTick");
         if (this.isAlive() && this.random.nextInt(1000) < this.a_++) {
@@ -121,6 +127,7 @@ public abstract class EntityInsentient extends EntityLiving {
         }
 
         this.world.methodProfiler.b();
+        SpigotTimings.timerEntityInsentient_C.stopTiming(); // Poweruser
     }
 
     protected int getExpValue(EntityHuman entityhuman) {
@@ -234,6 +241,12 @@ public abstract class EntityInsentient extends EntityLiving {
 
             nbttagcompound.set("Leash", nbttagcompound1);
         }
+
+        // Poweruser start
+        else if(this.bx != null) {
+            nbttagcompound.set("Leash", this.bx);
+        }
+        // Poweruser end
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -411,6 +424,7 @@ public abstract class EntityInsentient extends EntityLiving {
 
     protected void bn() {
         ++this.aU;
+        this.navigation.cleanUpExpiredSearches(); // Poweruser
         this.world.methodProfiler.a("checkDespawn");
         this.w();
         this.world.methodProfiler.b();
@@ -894,11 +908,14 @@ public abstract class EntityInsentient extends EntityLiving {
                     EntityLiving entityliving = (EntityLiving) iterator.next();
 
                     if (entityliving.getUniqueID().equals(uuid)) {
-                        this.bw = entityliving;
+                        this.setLeashHolder(entityliving, true); // Poweruser
                         break;
                     }
                 }
-            } else if (this.bx.hasKeyOfType("X", 99) && this.bx.hasKeyOfType("Y", 99) && this.bx.hasKeyOfType("Z", 99)) {
+            // Poweruser start
+            }
+            if (this.bw == null && this.bx.hasKeyOfType("X", 99) && this.bx.hasKeyOfType("Y", 99) && this.bx.hasKeyOfType("Z", 99)) {
+            // Poweruser end
                 int i = this.bx.getInt("X");
                 int j = this.bx.getInt("Y");
                 int k = this.bx.getInt("Z");
@@ -907,9 +924,11 @@ public abstract class EntityInsentient extends EntityLiving {
                 if (entityleash == null) {
                     entityleash = EntityLeash.a(this.world, i, j, k);
                 }
-
-                this.bw = entityleash;
-            } else {
+            // Poweruser start
+                this.setLeashHolder(entityleash, true);
+            }
+            if (this.bw == null) {
+            // Poweruser end
                 this.world.getServer().getPluginManager().callEvent(new EntityUnleashEvent(this.getBukkitEntity(), UnleashReason.UNKNOWN)); // CraftBukkit
                 this.unleash(false, true);
             }

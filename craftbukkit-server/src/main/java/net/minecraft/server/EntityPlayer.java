@@ -179,6 +179,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void h() {
+        this.world.timings.entityPlayerTickNormal.startTiming(); // Poweruser
+
         // CraftBukkit start
         if (this.joining) {
             this.joining = false;
@@ -253,20 +255,24 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                 }
             }
         }
+        this.world.timings.entityPlayerTickNormal.stopTiming(); // Poweruser
     }
 
     public void i() {
+        this.world.timings.entityPlayerTickOnMove.startTiming(); // Poweruser
         try {
             super.h();
 
-            for (int i = 0; i < this.inventory.getSize(); ++i) {
-                ItemStack itemstack = this.inventory.getItem(i);
+            if(this.world.spigotConfig.updateMapItemsInPlayerInventory) { // Poweruser
+                for (int i = 0; i < this.inventory.getSize(); ++i) {
+                    ItemStack itemstack = this.inventory.getItem(i);
 
-                if (itemstack != null && itemstack.getItem().h()) {
-                    Packet packet = ((ItemWorldMapBase) itemstack.getItem()).c(itemstack, this.world, this);
+                    if (itemstack != null && itemstack.getItem().h()) {
+                        Packet packet = ((ItemWorldMapBase) itemstack.getItem()).c(itemstack, this.world, this);
 
-                    if (packet != null) {
-                        this.playerConnection.sendPacket(packet);
+                        if (packet != null) {
+                            this.playerConnection.sendPacket(packet);
+                        }
                     }
                 }
             }
@@ -317,6 +323,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.a(crashreportsystemdetails);
             throw new ReportedException(crashreport);
         }
+        this.world.timings.entityPlayerTickOnMove.stopTiming(); // Poweruser
     }
 
     protected void j() {

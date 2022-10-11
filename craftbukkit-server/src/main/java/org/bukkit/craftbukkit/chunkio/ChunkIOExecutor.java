@@ -5,10 +5,10 @@ import net.minecraft.server.ChunkProviderServer;
 import net.minecraft.server.ChunkRegionLoader;
 import net.minecraft.server.World;
 import org.bukkit.craftbukkit.util.AsynchronousExecutor;
+import org.spigotmc.SpigotConfig; // Poweruser
 
 public class ChunkIOExecutor {
     static final int BASE_THREADS = 1;
-    static final int PLAYERS_PER_THREAD = 50;
 
     private static final AsynchronousExecutor<QueuedChunk, Chunk, Runnable, RuntimeException> instance = new AsynchronousExecutor<QueuedChunk, Chunk, Runnable, RuntimeException>(new ChunkIOProvider(), BASE_THREADS);
 
@@ -26,7 +26,7 @@ public class ChunkIOExecutor {
     }
 
     public static void adjustPoolSize(int players) {
-        int size = Math.max(BASE_THREADS, (int) Math.ceil(players / PLAYERS_PER_THREAD));
+        int size = Math.max(BASE_THREADS, (int) Math.ceil(players / SpigotConfig.playersPerChunkIOThread)); // Poweruser
         instance.setActiveThreads(size);
     }
 

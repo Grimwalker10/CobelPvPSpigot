@@ -3,38 +3,34 @@ package net.minecraft.server;
 public class NibbleArray {
 
     public final byte[] a;
-    private final int b;
-    private final int c;
 
     public NibbleArray(int i, int j) {
         this.a = new byte[i >> 1];
-        this.b = j;
-        this.c = j + 4;
+        // this.b = j; // MineHQ
+        // this.c = j + 4; // MineHQ
     }
 
     public NibbleArray(byte[] abyte, int i) {
+        // MineHQ start
+        if (abyte.length != 2048 || i != 4) {
+            throw new IllegalStateException("NibbleArrays should be 2048 in length with 4 bits per nibble.");
+        }
+        // MineHQ end
         this.a = abyte;
-        this.b = i;
-        this.c = i + 4;
     }
 
     public int a(int i, int j, int k) {
-        int l = j << this.c | k << this.b | i;
-        int i1 = l >> 1;
-        int j1 = l & 1;
-
-        return j1 == 0 ? this.a[i1] & 15 : this.a[i1] >> 4 & 15;
+        // MineHQ start
+        int position = j << 8 | k << 4 | i;
+        return this.a[position >> 1] >> ((position & 1) << 2) & 15;
+        // MineHQ end
     }
 
     public void a(int i, int j, int k, int l) {
-        int i1 = j << this.c | k << this.b | i;
-        int j1 = i1 >> 1;
-        int k1 = i1 & 1;
-
-        if (k1 == 0) {
-            this.a[j1] = (byte) (this.a[j1] & 240 | l & 15);
-        } else {
-            this.a[j1] = (byte) (this.a[j1] & 15 | (l & 15) << 4);
-        }
+        // MineHQ start
+        int position = j << 8 | k << 4 | i; // MineHQ
+        int shift = (position & 1) << 2;
+        this.a[position >> 1] = (byte) (this.a[position >> 1] & ~(15 << shift) | (l & 15) << shift);
+        // MineHQ end
     }
 }

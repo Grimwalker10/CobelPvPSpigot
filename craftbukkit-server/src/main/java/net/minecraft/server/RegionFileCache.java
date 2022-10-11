@@ -12,7 +12,13 @@ public class RegionFileCache {
 
     public static final Map a = new HashMap(); // CraftBukkit - private -> public
 
+    // PaperSpigot start
     public static synchronized RegionFile a(File file1, int i, int j) {
+        return a(file1, i, j, true);
+    }
+
+    public static synchronized RegionFile a(File file1, int i, int j, boolean create) {
+    // PaperSpigot end
         File file2 = new File(file1, "region");
         File file3 = new File(file2, "r." + (i >> 5) + "." + (j >> 5) + ".mca");
         RegionFile regionfile = (RegionFile) a.get(file3);
@@ -20,6 +26,7 @@ public class RegionFileCache {
         if (regionfile != null) {
             return regionfile;
         } else {
+            if (!create && !file3.exists()) { return null; } // PaperSpigot
             if (!file2.exists()) {
                 file2.mkdirs();
             }

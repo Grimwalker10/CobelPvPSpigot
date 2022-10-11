@@ -17,6 +17,11 @@ public class EntitySpider extends EntityMonster {
     public void h() {
         super.h();
         if (!this.world.isStatic) {
+            // MineHQ - Add mobsEnabled check.
+            if (!this.world.spigotConfig.mobsEnabled) {
+                this.die();
+            }
+
             this.a(this.positionChanged);
         }
     }

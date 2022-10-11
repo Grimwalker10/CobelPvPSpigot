@@ -26,6 +26,11 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
         if (!this.world.isStatic && this.world.difficulty == EnumDifficulty.PEACEFUL) {
             this.die();
         }
+
+        // MineHQ - Add mobsEnabled check.
+        if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
+            this.die();
+        }
     }
 
     protected String H() {

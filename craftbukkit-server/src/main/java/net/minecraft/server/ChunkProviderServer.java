@@ -37,7 +37,7 @@ public class ChunkProviderServer implements IChunkProvider {
     // CraftBukkit end
 
     public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, IChunkProvider ichunkprovider) {
-        this.emptyChunk = new EmptyChunk(worldserver, 0, 0);
+        this.emptyChunk = new EmptyChunk(worldserver, Integer.MIN_VALUE, Integer.MIN_VALUE); // Poweruser
         this.world = worldserver;
         this.f = ichunkloader;
         this.chunkProvider = ichunkprovider;
@@ -331,11 +331,19 @@ public class ChunkProviderServer implements IChunkProvider {
                 this.saveChunk(chunk);
                 chunk.n = false;
                 ++i;
-                if (i == 24 && !flag) {
+                // Poweruser start
+                if (i >= org.spigotmc.SpigotConfig.autoSaveChunksPerTick && !flag) {
+                    this.world.getAutoSaveWorldData().addAutoSaveChunkCount(i);
+                // Poweruser end
                     return false;
                 }
             }
         }
+        // Poweruser start
+        if(!flag) {
+            this.world.getAutoSaveWorldData().addAutoSaveChunkCount(i);
+        }
+        // Poweruser end
 
         return true;
     }

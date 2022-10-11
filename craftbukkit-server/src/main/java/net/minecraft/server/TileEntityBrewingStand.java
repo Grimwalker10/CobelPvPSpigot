@@ -6,6 +6,7 @@ import java.util.List;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.BrewEvent;
+import io.kohi.kspigot.potion.PotionsConfig;
 // CraftBukkit end
 
 public class TileEntityBrewingStand extends TileEntity implements IWorldInventory {
@@ -113,6 +114,10 @@ public class TileEntityBrewingStand extends TileEntity implements IWorldInventor
                         int j = this.items[i].getData();
                         int k = this.c(j, itemstack);
 
+                        if (k > 0 && PotionsConfig.isBrewingDisabled(k)) {
+                            continue;
+                        }
+
                         if (!ItemPotion.g(j) && ItemPotion.g(k)) {
                             flag = true;
                             break;
@@ -155,6 +160,10 @@ public class TileEntityBrewingStand extends TileEntity implements IWorldInventor
                     int k = this.c(j, itemstack);
                     List list = Items.POTION.c(j);
                     List list1 = Items.POTION.c(k);
+
+                    if (k > 0 && PotionsConfig.isBrewingDisabled(k)) {
+                        continue;
+                    }
 
                     if ((j <= 0 || list != list1) && (list == null || !list.equals(list1) && list1 != null)) {
                         if (j != k) {

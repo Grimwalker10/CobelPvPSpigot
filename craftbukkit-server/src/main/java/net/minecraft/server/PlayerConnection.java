@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.HashSet;
 
+import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
@@ -82,6 +83,13 @@ public class PlayerConnection implements PacketPlayInListener {
     private double q;
     public boolean checkMovement = true; // CraftBukkit - private -> public
     private boolean processedDisconnect; // CraftBukkit - added
+
+    // Poweruser start
+    private int movedWronglyViolations = 0;
+    private int movedTooQuicklyViolations = 0;
+    private int lastViolationTick = MinecraftServer.currentTick;
+    private double offsetDistanceSum = 0.0D;
+    // Poweruser end
 
     public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
         this.minecraftServer = minecraftserver;
@@ -374,11 +382,21 @@ public class PlayerConnection implements PacketPlayInListener {
                 double d10 = d7 * d7 + d8 * d8 + d9 * d9;
 
                 // Spigot: make "moved too quickly" limit configurable
+                // Poweruser start
+                boolean violationDelayPassed = (this.lastViolationTick + 60 < MinecraftServer.currentTick);
+                if(this.movedTooQuicklyViolations > 0 && violationDelayPassed) {
+                    c.warn(this.player.getName() + " moved too quickly! Violations: " + this.movedTooQuicklyViolations);
+                    this.movedTooQuicklyViolations = 0;
+                }
                 if (d10 > org.spigotmc.SpigotConfig.movedTooQuicklyThreshold && this.checkMovement && (!this.minecraftServer.N() || !this.minecraftServer.M().equals(this.player.getName()))) { // CraftBukkit - Added this.checkMovement condition to solve this check being triggered by teleports
-                    c.warn(this.player.getName() + " moved too quickly! " + d4 + "," + d5 + "," + d6 + " (" + d7 + ", " + d8 + ", " + d9 + ")");
+                    this.movedTooQuicklyViolations++;
+                    this.lastViolationTick = MinecraftServer.currentTick;
+                // Poweruser end
                     this.a(this.y, this.z, this.q, this.player.yaw, this.player.pitch);
                     return;
                 }
+
+                SpigotTimings.connectionTimer_PacketFlying_move.startTiming(); // Poweruser
 
                 float f4 = 0.0625F;
                 boolean flag = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
@@ -403,19 +421,47 @@ public class PlayerConnection implements PacketPlayInListener {
                 boolean flag1 = false;
 
                 // Spigot: make "moved wrongly" limit configurable
-                if (d10 > org.spigotmc.SpigotConfig.movedWronglyThreshold && !this.player.isSleeping() && !this.player.playerInteractManager.isCreative()) {
-                    flag1 = true;
-                    c.warn(this.player.getName() + " moved wrongly!");
+                // Poweruser start
+                double positionOffset = d10;
+                if(this.player.playerInteractManager.isCreative()) {
+                    positionOffset *= 2.0D;
                 }
 
+                if(this.movedWronglyViolations > 0 && violationDelayPassed) {
+                    c.warn(this.player.getName() + " moved wrongly! Violations: " + this.movedWronglyViolations + " Average Offset: " + String.format("%.2f", (this.offsetDistanceSum / (double) this.movedWronglyViolations)));
+                    this.movedWronglyViolations = 0;
+                    this.offsetDistanceSum = 0.0D;
+                }
+
+                if (positionOffset > org.spigotmc.SpigotConfig.movedWronglyThreshold && !this.player.isSleeping()) {
+                    flag1 = true;
+                    this.lastViolationTick = MinecraftServer.currentTick;
+                    this.movedWronglyViolations++;
+                    this.offsetDistanceSum += MathHelper.sqrt(d10);
+                }
+                // Poweruser end
+
+                // Poweruser start
+                double calculatedX = this.player.locX;
+                double calculatedY = this.player.locY;
+                double calculatedZ = this.player.locZ;
                 this.player.setLocation(d1, d2, d3, f2, f3);
                 boolean flag2 = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
                 boolean rayTraceCollision = delta > 0.3 && worldserver.rayTrace(Vec3D.a(this.y, this.z + 1.0, this.q), Vec3D.a(d1, d2 + 1.0, d3), false, true, false) != null;
 
-                if (flag && (flag1 || !flag2 || rayTraceCollision) && !this.player.isSleeping()) {
-                    this.a(this.y, this.z, this.q, f2, f3);
+                this.player.setLocation(calculatedX, calculatedY, calculatedZ, f2, f3);
+
+                SpigotTimings.connectionTimer_PacketFlying_move.stopTiming(); // Poweruser
+
+                if (flag1 || (!this.player.isSleeping() && flag && !flag2) || rayTraceCollision) {
+                    if(!rayTraceCollision && !flag && e % 3 != 0) {
+                        this.player.setPosition(this.y, this.z, this.q);
+                    } else {
+                        this.a(this.y, this.z, this.q, f2, f3);
+                    }
                     return;
                 }
+                // Poweruser end
 
                 AxisAlignedBB axisalignedbb = this.player.boundingBox.clone().grow((double) f4, (double) f4, (double) f4).a(0.0D, -0.55D, 0.0D);
 
@@ -433,7 +479,9 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
 
                 this.player.onGround = packetplayinflying.i();
+                SpigotTimings.connectionTimer_PacketFlying_playerChunks.startTiming(); // Poweruser
                 this.minecraftServer.getPlayerList().d(this.player);
+                SpigotTimings.connectionTimer_PacketFlying_playerChunks.stopTiming(); // Poweruser
                 this.player.b(this.player.locY - d0, packetplayinflying.i());
             } else if (this.e % 20 == 0) {
                 this.a(this.y, this.z, this.q, this.player.yaw, this.player.pitch);
@@ -701,7 +749,7 @@ public class PlayerConnection implements PacketPlayInListener {
         }
 
         itemstack = this.player.inventory.getItemInHand();
-        if (itemstack != null && itemstack.count == 0) {
+        if (itemstack != null && itemstack.count <= 0) { // EMC
             this.player.inventory.items[this.player.inventory.itemInHandIndex] = null;
             itemstack = null;
         }
@@ -804,7 +852,7 @@ public class PlayerConnection implements PacketPlayInListener {
         // CraftBukkit end
 
         try {
-            this.networkManager.handle(packet, new GenericFutureListener[0]);
+            this.networkManager.handle(packet, NetworkManager.emptyListenerArray); // Poweruser
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
@@ -852,23 +900,21 @@ public class PlayerConnection implements PacketPlayInListener {
                 if (!SharedConstants.isAllowedChatCharacter(s.charAt(i))) {
                     // CraftBukkit start - threadsafety
                     if (packetplayinchat.a()) {
-                        Waitable waitable = new Waitable() {
-                            @Override
-                            protected Object evaluate() {
-                                PlayerConnection.this.disconnect("Illegal characters in chat");
-                                return null;
-                            }
-                        };
-
-                        this.minecraftServer.processQueue.add(waitable);
-
-                        try {
-                            waitable.get();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        } catch (ExecutionException e) {
-                            throw new RuntimeException(e);
+                        // Poweruser start
+                        if(!this.networkManager.lockDownIncomingTraffic()) {
+                            Runnable runnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        PlayerConnection.this.disconnect("Illegal characters in chat");
+                                    } catch (Exception e) {
+                                        c.warn(e.toString());
+                                    }
+                                }
+                            };
+                            this.minecraftServer.processQueue.add(runnable);
                         }
+                        // Poweruser end
                     } else {
                         this.disconnect("Illegal characters in chat");
                     }
@@ -928,23 +974,21 @@ public class PlayerConnection implements PacketPlayInListener {
             // this.chatThrottle += 20;
             if (counted && chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
                 if (packetplayinchat.a()) {
-                    Waitable waitable = new Waitable() {
-                        @Override
-                        protected Object evaluate() {
-                            PlayerConnection.this.disconnect("disconnect.spam");
-                            return null;
-                        }
-                    };
-
-                    this.minecraftServer.processQueue.add(waitable);
-
-                    try {
-                        waitable.get();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    } catch (ExecutionException e) {
-                        throw new RuntimeException(e);
+                    // Poweruser start
+                    if(!this.networkManager.lockDownIncomingTraffic()) {
+                        Runnable runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    PlayerConnection.this.disconnect("disconnect.spam");
+                                } catch (Exception e) {
+                                    c.warn(e.toString());
+                                }
+                            }
+                        };
+                        this.minecraftServer.processQueue.add(runnable);
                     }
+                    // Poweruser end
                 } else {
                     this.disconnect("disconnect.spam");
                 }
@@ -972,40 +1016,38 @@ public class PlayerConnection implements PacketPlayInListener {
                 // Evil plugins still listening to deprecated event
                 final PlayerChatEvent queueEvent = new PlayerChatEvent(player, event.getMessage(), event.getFormat(), event.getRecipients());
                 queueEvent.setCancelled(event.isCancelled());
-                Waitable waitable = new Waitable() {
+                // Poweruser start
+                Runnable runnable = new Runnable() {
                     @Override
-                    protected Object evaluate() {
-                        org.bukkit.Bukkit.getPluginManager().callEvent(queueEvent);
+                    public void run() {
+                        try {
+                            org.bukkit.Bukkit.getPluginManager().callEvent(queueEvent);
 
-                        if (queueEvent.isCancelled()) {
-                            return null;
-                        }
+                            if (queueEvent.isCancelled()) {
+                                return;
+                            }
 
-                        String message = String.format(queueEvent.getFormat(), queueEvent.getPlayer().getDisplayName(), queueEvent.getMessage());
-                        PlayerConnection.this.minecraftServer.console.sendMessage(message);
-                        if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
-                            for (Object player : PlayerConnection.this.minecraftServer.getPlayerList().players) {
-                                ((EntityPlayer) player).sendMessage(CraftChatMessage.fromString(message));
+                            String message = String.format(queueEvent.getFormat(), queueEvent.getPlayer().getDisplayName(), queueEvent.getMessage());
+                            PlayerConnection.this.minecraftServer.console.sendMessage(message);
+                            if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
+                                for (Object player : PlayerConnection.this.minecraftServer.getPlayerList().players) {
+                                    ((EntityPlayer) player).sendMessage(CraftChatMessage.fromString(message));
+                                }
+                            } else {
+                                for (Player player : queueEvent.getRecipients()) {
+                                    player.sendMessage(message);
+                                }
                             }
-                        } else {
-                            for (Player player : queueEvent.getRecipients()) {
-                                player.sendMessage(message);
-                            }
+                        } catch (Exception e) {
+                            c.warn(e.toString());
                         }
-                        return null;
                     }};
                 if (async) {
-                    minecraftServer.processQueue.add(waitable);
+                    minecraftServer.processQueue.add(runnable);
                 } else {
-                    waitable.run();
+                    runnable.run();
                 }
-                try {
-                    waitable.get();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // This is proper habit for java. If we aren't handling it, pass it on!
-                } catch (ExecutionException e) {
-                    throw new RuntimeException("Exception processing chat event", e.getCause());
-                }
+                // Poweruser end
             } else {
                 if (event.isCancelled()) {
                     return;

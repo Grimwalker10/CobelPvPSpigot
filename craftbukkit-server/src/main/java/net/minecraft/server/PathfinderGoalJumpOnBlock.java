@@ -26,7 +26,7 @@ public class PathfinderGoalJumpOnBlock extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a((double) ((float) this.f) + 0.5D, (double) (this.g + 1), (double) ((float) this.h) + 0.5D, this.b);
+        this.a.getNavigation().a(net.frozenorb.pathsearch.PositionPathSearchType.JUMPONBLOCK, (double) ((float) this.f) + 0.5D, (double) (this.g + 1), (double) ((float) this.h) + 0.5D, this.b); // Poweruser
         this.c = 0;
         this.d = 0;
         this.e = this.a.aI().nextInt(this.a.aI().nextInt(1200) + 1200) + 1200;

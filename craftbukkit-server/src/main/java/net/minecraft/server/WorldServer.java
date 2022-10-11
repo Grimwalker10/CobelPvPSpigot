@@ -321,30 +321,35 @@ public class WorldServer extends World {
         // CraftBukkit start
         // Iterator iterator = this.chunkTickList.iterator();
 
+        this.timings.doTickTiles_tickingChunks.startTiming(); // Poweruser
         // Spigot start
         for (net.minecraft.util.gnu.trove.iterator.TLongShortIterator iter = chunkTickList.iterator(); iter.hasNext();) {
             iter.advance();
             long chunkCoord = iter.key();
             int chunkX = World.keyToX(chunkCoord);
             int chunkZ = World.keyToZ(chunkCoord);
-            // If unloaded, or in procedd of being unloaded, drop it
-            if ( ( !this.isChunkLoaded( chunkX, chunkZ ) ) || ( this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ ) ) )
-            {
-                iter.remove();
-                continue;
-            }
             // Spigot end
             // ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator.next();
             int k = chunkX * 16;
             int l = chunkZ * 16;
 
             this.methodProfiler.a("getChunk");
-            Chunk chunk = this.getChunkAt(chunkX, chunkZ);
+            this.timings.doTickTiles_tickingChunks_getChunk.startTiming(); // Poweruser
+            // Poweruser start
+            Chunk chunk = this.getChunkIfLoaded(chunkX, chunkZ);
+            if(chunk == null || !chunk.areNeighborsLoaded(1) || this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ )) {
+                iter.remove();
+                continue;
+            }
+            // Poweruser end
             // CraftBukkit end
 
             this.a(k, l, chunk);
+            this.timings.doTickTiles_tickingChunks_getChunk.stopTiming(); // Poweruser
             this.methodProfiler.c("tickChunk");
+            this.timings.doTickTiles_tickingChunks_tickChunk.startTiming(); // Poweruser
             chunk.b(false);
+            this.timings.doTickTiles_tickingChunks_tickChunk.stopTiming(); // Poweruser
             this.methodProfiler.c("thunder");
             int i1;
             int j1;
@@ -364,6 +369,7 @@ public class WorldServer extends World {
 
             this.methodProfiler.c("iceandsnow");
             if (this.random.nextInt(16) == 0) {
+                this.timings.doTickTiles_tickingChunks_iceAndSnow.startTiming(); // Poweruser
                 this.k = this.k * 3 + 1013904223;
                 i1 = this.k >> 2;
                 j1 = i1 & 15;
@@ -402,9 +408,11 @@ public class WorldServer extends World {
                         this.getType(j1 + k, l1 - 1, k1 + l).l(this, j1 + k, l1 - 1, k1 + l);
                     }
                 }
+                this.timings.doTickTiles_tickingChunks_iceAndSnow.stopTiming(); // Poweruser
             }
 
             this.methodProfiler.c("tickBlocks");
+            this.timings.doTickTiles_tickingChunks_tickBlocks.startTiming(); // Poweruser
             ChunkSection[] achunksection = chunk.getSections();
 
             j1 = achunksection.length;
@@ -431,6 +439,7 @@ public class WorldServer extends World {
                     }
                 }
             }
+            this.timings.doTickTiles_tickingChunks_tickBlocks.stopTiming(); // Poweruser
 
             this.methodProfiler.b();
         }
@@ -440,6 +449,7 @@ public class WorldServer extends World {
             chunkTickList.clear();
         }
         // Spigot End
+        this.timings.doTickTiles_tickingChunks.stopTiming(); // Poweruser
     }
 
     public boolean a(int i, int j, int k, Block block) {
@@ -801,18 +811,30 @@ public class WorldServer extends World {
         return this.worldProvider.h();
     }
 
-    public void save(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict { // CraftBukkit - added throws
+    // Poweruser start
+    public void saveOnlyLevel(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict {
         if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.a("Saving level");
             }
 
             this.a();
+        }
+    }
+
+    public boolean saveOnlyChunks(boolean flag, IProgressUpdate iprogressupdate) {
+        if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.c("Saving chunks");
             }
 
-            this.chunkProvider.saveChunks(flag, iprogressupdate);
+            return this.chunkProvider.saveChunks(flag, iprogressupdate);
+        }
+        return true;
+    }
+
+    public void unloadOnlyUnusedChunks(boolean flag, IProgressUpdate iprogressupdate) {
+        if (this.chunkProvider.canSave()) {
             // CraftBukkit - ArrayList -> Collection
             Collection arraylist = this.chunkProviderServer.a();
             Iterator iterator = arraylist.iterator();
@@ -824,6 +846,17 @@ public class WorldServer extends World {
                     this.chunkProviderServer.queueUnload(chunk.locX, chunk.locZ);
                 }
             }
+        }
+    }
+    // Poweruser end
+
+    public void save(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict { // CraftBukkit - added throws
+        if (this.chunkProvider.canSave()) {
+            // Poweruser start
+            this.saveOnlyLevel(flag, iprogressupdate);
+            this.saveOnlyChunks(flag, iprogressupdate);
+            this.unloadOnlyUnusedChunks(flag, iprogressupdate);
+            // Poweruser end
         }
     }
 

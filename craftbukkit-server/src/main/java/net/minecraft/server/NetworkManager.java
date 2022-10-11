@@ -28,6 +28,11 @@ import org.spigotmc.SpigotCompressor;
 import org.spigotmc.SpigotDecompressor;
 // Spigot end
 
+// Poweruser start
+import org.spigotmc.CustomTimingsHandler;
+import org.bukkit.craftbukkit.SpigotTimings;
+// Poweruser end
+
 public class NetworkManager extends SimpleChannelInboundHandler {
 
     private static final Logger i = LogManager.getLogger();
@@ -67,6 +72,18 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         return getVersion( this.m );
     }
     // Spigot End
+
+    // Poweruser start
+    private boolean lockDownIncomingTraffic = false;
+
+    protected boolean lockDownIncomingTraffic() {
+        boolean oldValue = this.lockDownIncomingTraffic;
+        this.lockDownIncomingTraffic = true;
+        return oldValue;
+    }
+    // Poweruser end
+
+    public static final GenericFutureListener[] emptyListenerArray = new GenericFutureListener[0]; // Poweruser
 
     public NetworkManager(boolean flag) {
         this.j = flag;
@@ -108,7 +125,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     protected void a(ChannelHandlerContext channelhandlercontext, Packet packet) {
-        if (this.m.isOpen()) {
+        if (this.m.isOpen() && !this.lockDownIncomingTraffic) { // Poweruser
             if (packet.a()) {
                 packet.handle(this.o);
             } else {
@@ -125,10 +142,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     public void handle(Packet packet, GenericFutureListener... agenericfuturelistener) {
         if (this.m != null && this.m.isOpen()) {
-            this.i();
             this.b(packet, agenericfuturelistener);
         } else {
-            this.l.add(new QueuedPacket(packet, agenericfuturelistener));
         }
     }
 
@@ -142,11 +157,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         }
 
         if (this.m.eventLoop().inEventLoop()) {
-            if (enumprotocol != enumprotocol1) {
-                this.a(enumprotocol);
-            }
-
-            this.m.writeAndFlush(packet).addListeners(agenericfuturelistener).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+            QueuedProtocolSwitch.execute(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener); // CobelPvP
         } else {
             this.m.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener));
         }
@@ -186,7 +197,21 @@ public class NetworkManager extends SimpleChannelInboundHandler {
                     continue;
                 }
                 // CraftBukkit end
-                packet.handle(this.o);
+
+                // Poweruser start
+                if(this.lockDownIncomingTraffic) {
+                    this.k.clear();
+                    break;
+                }
+
+                CustomTimingsHandler packetHandlerTimer = SpigotTimings.getPacketHandlerTimings(packet);
+                packetHandlerTimer.startTiming();
+                try {
+                    packet.handle(this.o);
+                } finally {
+                    packetHandlerTimer.stopTiming();
+                }
+                // Poweruser end
             }
 
             this.o.a();

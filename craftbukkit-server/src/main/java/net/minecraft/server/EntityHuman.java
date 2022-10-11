@@ -76,7 +76,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         this.height = 1.62F;
         ChunkCoordinates chunkcoordinates = world.getSpawn();
 
-        this.setPositionRotation((double) chunkcoordinates.x + 0.5D, (double) (chunkcoordinates.y + 1), (double) chunkcoordinates.z + 0.5D, 0.0F, 0.0F);
+        this.setPositionRotation((double) chunkcoordinates.x + 0.5D, (double) (chunkcoordinates.y + 1), (double) chunkcoordinates.z + 0.5D, world.getWorldData().getSpawnYaw(), world.getWorldData().getSpawnPitch()); // Poweruser
         this.aZ = 180.0F;
         this.maxFireTicks = 20;
     }
@@ -282,6 +282,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                     ((EntityPlayer) this).getBukkitEntity().updateScaledHealth();
                     // Spigot End
                 }
+                this.g = this.f.n(); // Poweruser
                 return;
             }
 
@@ -530,7 +531,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     public EntityItem a(ItemStack itemstack, boolean flag, boolean flag1) {
         if (itemstack == null) {
             return null;
-        } else if (itemstack.count == 0) {
+        } else if (itemstack.count <= 0) { // EMC
             return null;
         } else {
             EntityItem entityitem = new EntityItem(this.world, this.locX, this.locY - 0.30000001192092896D + (double) this.getHeadHeight(), this.locZ, itemstack);

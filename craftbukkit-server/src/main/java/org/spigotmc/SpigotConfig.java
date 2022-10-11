@@ -31,7 +31,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class SpigotConfig
 {
 
-    private static final File CONFIG_FILE = new File( "spigot.yml" );
+    private static final File CONFIG_FILE = new File( "config/server", "spigot.yml" ); // MineHQ - Dedicated config directory
     private static final String HEADER = "This is the main configuration file for Spigot.\n"
             + "As you can see, there's tons to configure. Some options may impact gameplay, so use\n"
             + "with caution, and make sure you know what each option does before configuring.\n"
@@ -398,4 +398,62 @@ public class SpigotConfig
             Bukkit.getLogger().info( "Debug logging is disabled" );
         }
     }
+
+    // Poweruser start
+    public static boolean disablePlayerFileSaving;
+    private static void playerFiles() {
+        disablePlayerFileSaving = getBoolean( "settings.disable-player-file-saving", false );
+        if (disablePlayerFileSaving) {
+            disableStatSaving = true;
+        }
+    }
+
+    public static boolean logRemainingAsyncThreadsDuringShutdown;
+    private static void logRemainingAsyncThreadsDuringShutdown() {
+        logRemainingAsyncThreadsDuringShutdown = getBoolean( "settings.logRemainingAsyncThreadsDuringShutdown" , true);
+    }
+
+    private static void powertpsCommand()
+    {
+        commands.put( "tps2", new net.frozenorb.command.TPSCommand( "tps2" ) );
+    }
+
+    private static void worldstatsCommand() {
+        commands.put( "worldstats", new net.frozenorb.command.WorldStatsCommand( "worldstats" ) );
+    }
+
+    private static void setviewdistanceCommand() {
+        commands.put( "setviewdistance", new net.frozenorb.command.SetViewDistanceCommand( "setviewdistance" ) );
+    }
+
+    public static int playersPerChunkIOThread;
+    private static void playersPerChunkIOThread() {
+        playersPerChunkIOThread = Math.max(1, getInt( "settings.chunkio.players-per-thread", 150) );
+    }
+
+    public static int autoSaveChunksPerTick;
+    private static void autoSaveChunksPerTick() {
+        autoSaveChunksPerTick = getInt( "settings.autosave.chunks-per-tick" , 200 );
+    }
+
+    public static boolean autoSaveFireWorldSaveEvent;
+    private static void autoSaveFireWorldSaveEvent() {
+        autoSaveFireWorldSaveEvent = getBoolean ( "settings.autosave.fire-WorldSaveEvent", false);
+    }
+
+    public static boolean autoSaveClearRegionFileCache;
+    private static void autoSaveClearRegionFileCache() {
+        autoSaveClearRegionFileCache = getBoolean ( "settings.autosave.clear-RegionFileCache", false);
+    }
+
+    public static boolean lagSpikeLoggerEnabled;
+    private static void lagSpikeLoggerEnabled() {
+        lagSpikeLoggerEnabled = getBoolean ( "settings.lagSpikeLogger.enabled", true);
+    }
+
+    public static long lagSpikeLoggerTickLimitNanos;
+    private static void lagSpikeLoggerTickLimitNanos() {
+        lagSpikeLoggerTickLimitNanos = ((long) getInt( "settings.lagSpikeLogger.tickLimitInMilliseconds", 100)) * 1000000L;
+    }
+    // Poweruser end
 }

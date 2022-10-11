@@ -1,8 +1,16 @@
 package net.minecraft.server;
 
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
+
+import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Enchantment {
+
+    private static final File CONFIG_FILE = new File("config/server", "enchantments.yml"); // MineHQ - Dedicated config directory
+    protected static YamlConfiguration config = YamlConfiguration.loadConfiguration(CONFIG_FILE);
 
     // CraftBukkit - update CraftEnchant.getName(i) if this changes
     public static final Enchantment[] byId = new Enchantment[256];
@@ -35,10 +43,14 @@ public abstract class Enchantment {
     private final int weight;
     public EnchantmentSlotType slot;
     protected String name;
+    protected String configName;
+    private final int startLevel;
+    private final int maxLevel;
+    private List<String> conflictingNames;
+    private boolean[] conflicts;
 
     protected Enchantment(int i, int j, EnchantmentSlotType enchantmentslottype) {
         this.id = i;
-        this.weight = j;
         this.slot = enchantmentslottype;
         if (byId[i] != null) {
             throw new IllegalArgumentException("Duplicate enchantment id!");
@@ -46,7 +58,13 @@ public abstract class Enchantment {
             byId[i] = this;
         }
 
-        org.bukkit.enchantments.Enchantment.registerEnchantment(new org.bukkit.craftbukkit.enchantments.CraftEnchantment(this)); // CraftBukkit
+        CraftEnchantment craftEnch = new CraftEnchantment(this);
+        org.bukkit.enchantments.Enchantment.registerEnchantment(craftEnch); // CraftBukkit
+        this.configName = craftEnch.getName().toLowerCase().replace('_', '-');
+        this.weight = config.getInt(configName + ".weight", j);
+        this.startLevel = config.getInt(configName + ".start-level", 1);
+        this.maxLevel = config.getInt(configName + ".max-level", getDefaultMaxLevel());
+        this.conflictingNames = config.getStringList(configName + ".conflicting");
     }
 
     public int getRandomWeight() {
@@ -54,10 +72,14 @@ public abstract class Enchantment {
     }
 
     public int getStartLevel() {
-        return 1;
+        return startLevel;
     }
 
     public int getMaxLevel() {
+        return maxLevel;
+    }
+
+    public int getDefaultMaxLevel() {
         return 1;
     }
 
@@ -78,7 +100,28 @@ public abstract class Enchantment {
     }
 
     public boolean a(Enchantment enchantment) {
-        return this != enchantment;
+        if (enchantment == this) {
+            return false;
+        }
+        initCustomConflicts();
+        enchantment.initCustomConflicts();
+        return !conflicts[enchantment.id] && !enchantment.conflicts[id];
+    }
+
+    private void initCustomConflicts() {
+        if (this.conflicts == null) {
+            this.conflicts = new boolean[256];
+
+            for (String s : conflictingNames) {
+                for (int i = 0; i < 256; i++) {
+                    if (byId[i] != null && byId[i].configName.equals(s)) {
+                        this.conflicts[i] = true;
+                        System.out.println(this.configName + " conflicts " + s);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public Enchantment b(String s) {
