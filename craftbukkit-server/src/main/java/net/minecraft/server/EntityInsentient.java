@@ -379,7 +379,7 @@ public abstract class EntityInsentient extends EntityLiving {
         if (this.persistent) {
             this.aU = 0;
         } else {
-            EntityHuman entityhuman = this.world.findNearbyPlayer(this, -1.0D);
+            EntityHuman entityhuman = this.world.findNearbyPlayerWhoAffectsSpawning(this, -1.0D); // PaperSpigot
 
             if (entityhuman != null) {
                 double d0 = entityhuman.locX - this.locX;
@@ -387,13 +387,13 @@ public abstract class EntityInsentient extends EntityLiving {
                 double d2 = entityhuman.locZ - this.locZ;
                 double d3 = d0 * d0 + d1 * d1 + d2 * d2;
 
-                if (d3 > 16384.0D) { // CraftBukkit - remove isTypeNotPersistent() check
+                if (d3 > this.world.paperSpigotConfig.hardDespawnDistance) { // CraftBukkit - remove isTypeNotPersistent() check // PaperSpigot - custom despawn distances
                     this.die();
                 }
 
-                if (this.aU > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) { // CraftBukkit - remove isTypeNotPersistent() check
+                if (this.aU > 600 && this.random.nextInt(800) == 0 && d3 > this.world.paperSpigotConfig.softDespawnDistance) { // CraftBukkit - remove isTypeNotPersistent() check // PaperSpigot - custom despawn distances
                     this.die();
-                } else if (d3 < 1024.0D) {
+                } else if (d3 < this.world.paperSpigotConfig.softDespawnDistance) { // PaperSpigot - custom despawn distances
                     this.aU = 0;
                 }
             }
@@ -408,6 +408,12 @@ public abstract class EntityInsentient extends EntityLiving {
         // Spigot Start
         if ( this.fromMobSpawner )
         {
+            // PaperSpigot start - Allow nerfed mobs to jump
+            this.world.methodProfiler.a("goalSelector");
+            this.goalSelector.a();
+            this.world.methodProfiler.c("jump");
+            this.bm.b();
+            // PaperSpigot end
             return;
         }
         // Spigot End

@@ -58,7 +58,7 @@ public abstract class World implements IBlockAccess {
     };
     // Spigot end
     protected List f = new ArrayList();
-    public Set tileEntityList = new HashSet(); // CraftBukkit - ArrayList -> HashSet
+    public Set tileEntityList = new org.spigotmc.WorldTileEntityList(this); // CraftBukkit - ArrayList -> HashSet
     private List a = new ArrayList();
     private List b = new ArrayList();
     public List players = new ArrayList();
@@ -222,6 +222,7 @@ public abstract class World implements IBlockAccess {
         this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
         this.ticksPerMonsterSpawns = this.getServer().getTicksPerMonsterSpawns(); // CraftBukkit
         // CraftBukkit end
+        this.keepSpawnInMemory = this.paperSpigotConfig.keepSpawnInMemory; // PaperSpigot
         // Spigot start
         this.chunkTickRadius = (byte) ( ( this.getServer().getViewDistance() < 7 ) ? this.getServer().getViewDistance() : 7 );
         this.chunkTickList = new net.minecraft.util.gnu.trove.map.hash.TLongShortHashMap( spigotConfig.chunksPerTick * 5, 0.7f, Long.MIN_VALUE, Short.MIN_VALUE );
@@ -1244,6 +1245,7 @@ public abstract class World implements IBlockAccess {
             {
                 if ( !this.isChunkLoaded( chunkx, chunkz ) )
                 {
+                    entity.inUnloadedChunk = true; // PaperSpigot - Remove entities in unloaded chunks
                     continue;
                 }
                 int cz = chunkz << 4;
@@ -1608,6 +1610,14 @@ public abstract class World implements IBlockAccess {
         if (!org.spigotmc.ActivationRange.checkIfActive(entity)) {
             entity.ticksLived++;
             entity.inactiveTick();
+            // PaperSpigot start - Remove entities in unloaded chunks
+            if (!this.isChunkLoaded(i, j) && ((entity instanceof EntityEnderPearl && this.paperSpigotConfig.removeUnloadedEnderPearls) ||
+                    (entity instanceof EntityFallingBlock && this.paperSpigotConfig.removeUnloadedFallingBlocks) ||
+                    (entity instanceof EntityTNTPrimed && this.paperSpigotConfig.removeUnloadedTNTEntities))) {
+                entity.inUnloadedChunk = true;
+                entity.die();
+            }
+            // PaperSpigot end
         } else {
             MinecraftServer.getServer().activeEntities++; // Kohi
             entity.tickTimer.startTiming(); // Spigot
@@ -1913,6 +1923,12 @@ public abstract class World implements IBlockAccess {
         double d1 = 1.0D / ((axisalignedbb.e - axisalignedbb.b) * 2.0D + 1.0D);
         double d2 = 1.0D / ((axisalignedbb.f - axisalignedbb.c) * 2.0D + 1.0D);
 
+        // PaperSpigot start - Center TNT sample points for more accurate calculations
+        // Shift the sample points so they are centered on the BB
+        double xOffset = (1.0 - Math.floor(1.0 / d0) * d0) / 2.0;
+        double zOffset = (1.0 - Math.floor(1.0 / d2) * d2) / 2.0;
+        // PaperSpigot end
+
         if (d0 >= 0.0D && d1 >= 0.0D && d2 >= 0.0D) {
             int i = 0;
             int j = 0;
@@ -1925,7 +1941,7 @@ public abstract class World implements IBlockAccess {
                         double d4 = axisalignedbb.b + (axisalignedbb.e - axisalignedbb.b) * (double) f1;
                         double d5 = axisalignedbb.c + (axisalignedbb.f - axisalignedbb.c) * (double) f2;
 
-                        if (this.a(vec3d2.b(d3, d4, d5), vec3d) == null) { // CraftBukkit
+                        if (this.a(vec3d2.b(xOffset + d3, d4, zOffset + d5), vec3d) == null) { // CraftBukkit // PaperSpigot
                             ++i;
                         }
 
@@ -2842,6 +2858,34 @@ public abstract class World implements IBlockAccess {
 
         return entityhuman;
     }
+
+    // PaperSpigot start - Find players with the spawning flag
+    public EntityHuman findNearbyPlayerWhoAffectsSpawning(Entity entity, double radius) {
+        return this.findNearbyPlayerWhoAffectsSpawning(entity.locX, entity.locY, entity.locZ, radius);
+    }
+
+    public EntityHuman findNearbyPlayerWhoAffectsSpawning(double x, double y, double z, double radius) {
+        double nearestRadius = - 1.0D;
+        EntityHuman entityHuman = null;
+
+        for (int i = 0; i < this.players.size(); ++i) {
+            EntityHuman nearestPlayer = (EntityHuman) this.players.get(i);
+
+            if (nearestPlayer == null || nearestPlayer.dead || !nearestPlayer.affectsSpawning) {
+                continue;
+            }
+
+            double distance = nearestPlayer.e(x, y, z);
+
+            if ((radius < 0.0D || distance < radius * radius) && (nearestRadius == -1.0D || distance < nearestRadius)) {
+                nearestRadius = distance;
+                entityHuman = nearestPlayer;
+            }
+        }
+
+        return entityHuman;
+    }
+    // PaperSpigot end
 
     public EntityHuman a(String s) {
         for (int i = 0; i < this.players.size(); ++i) {

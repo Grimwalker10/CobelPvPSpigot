@@ -97,4 +97,95 @@ public class PaperSpigotWorldConfig
         playerBlockingDamageMultiplier = getFloat( "player-blocking-damage-multiplier", 0.5F );
         log( "Player blocking damage multiplier set to " + playerBlockingDamageMultiplier);
     }
+
+    public int cactusMaxHeight;
+    public int reedMaxHeight;
+    private void blockGrowthHeight()
+    {
+        cactusMaxHeight = getInt( "max-growth-height.cactus", 3 );
+        reedMaxHeight = getInt( "max-growth-height.reeds", 3 );
+        log( "Max height for cactus growth " + cactusMaxHeight + ". Max height for reed growth " + reedMaxHeight);
+    }
+
+    public boolean invertedDaylightDetectors;
+    private void invertedDaylightDetectors()
+    {
+        invertedDaylightDetectors = getBoolean( "inverted-daylight-detectors", false );
+        log( "Inverted Redstone Lamps: " + invertedDaylightDetectors );
+    }
+
+    public int fishingMinTicks;
+    public int fishingMaxTicks;
+    private void fishingTickRange()
+    {
+        fishingMinTicks = getInt( "fishing-time-range.MinimumTicks", 100 );
+        fishingMaxTicks = getInt( "fishing-time-range.MaximumTicks", 900 );
+    }
+
+    public float blockBreakExhaustion;
+    public float playerSwimmingExhaustion;
+    private void exhaustionValues ()
+    {
+        blockBreakExhaustion = getFloat( "player-exhaustion.block-break", 0.025F );
+        playerSwimmingExhaustion = getFloat("player-exhaustion.swimming", 0.015F );
+    }
+
+    public Integer softDespawnDistance;
+    public Integer hardDespawnDistance;
+    private void despawnDistances()
+    {
+        softDespawnDistance = getInt( "despawn-ranges.soft", 32 ); // 32^2 = 1024, Minecraft Default
+        hardDespawnDistance = getInt( "despawn-ranges.hard", 128 ); // 128^2 = 16384, Minecraft Default;
+
+        if ( softDespawnDistance > hardDespawnDistance)
+        {
+            softDespawnDistance = hardDespawnDistance;
+        }
+
+        log( "Living Entity Despawn Ranges:  Soft: " + softDespawnDistance + " Hard: " + hardDespawnDistance );
+
+        softDespawnDistance = softDespawnDistance*softDespawnDistance;
+        hardDespawnDistance = hardDespawnDistance*hardDespawnDistance;
+    }
+
+    public boolean keepSpawnInMemory;
+    private void keepSpawnInMemory()
+    {
+        keepSpawnInMemory = getBoolean( "keep-spawn-loaded", true );
+        log( "Keep spawn chunk loaded: " + keepSpawnInMemory );
+    }
+
+    public double fallingBlockHeightNerf;
+    private void fallingBlockheightNerf()
+    {
+        // Technically a little disingenuous as it applies to all falling blocks but alas, backwards compat prevails!
+        fallingBlockHeightNerf = getDouble( "tnt-entity-height-nerf", 0 );
+        if (fallingBlockHeightNerf != 0) {
+            log( "TNT/Falling Block Height Limit set to Y: " + fallingBlockHeightNerf);
+        }
+    }
+
+    public int waterOverLavaFlowSpeed;
+    private void waterOverLavaFlowSpeed()
+    {
+        waterOverLavaFlowSpeed = getInt( "water-over-lava-flow-speed", 5 );
+        log( "Water over lava flow speed: " + waterOverLavaFlowSpeed);
+    }
+
+    public boolean removeInvalidMobSpawnerTEs;
+    private void removeInvalidMobSpawnerTEs()
+    {
+        removeInvalidMobSpawnerTEs = getBoolean( "remove-invalid-mob-spawner-tile-entities", true );
+        log( "Remove invalid mob spawner tile entities: " + removeInvalidMobSpawnerTEs );
+    }
+
+    public boolean removeUnloadedEnderPearls;
+    public boolean removeUnloadedTNTEntities;
+    public boolean removeUnloadedFallingBlocks;
+    private void removeUnloaded()
+    {
+        removeUnloadedEnderPearls = getBoolean( "remove-unloaded.enderpearls", true );
+        removeUnloadedTNTEntities = getBoolean( "remove-unloaded.tnt-entities", true );
+        removeUnloadedFallingBlocks = getBoolean( "remove-unloaded.falling-blocks", true );
+    }
 }

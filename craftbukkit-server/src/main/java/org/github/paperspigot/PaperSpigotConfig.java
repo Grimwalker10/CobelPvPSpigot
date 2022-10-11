@@ -139,4 +139,28 @@ public class PaperSpigotConfig
         config.addDefault( path, def );
         return config.getString( path, config.getString( path ) );
     }
+
+    public static double babyZombieMovementSpeed;
+    private static void babyZombieMovementSpeed()
+    {
+        babyZombieMovementSpeed = getDouble( "settings.baby-zombie-movement-speed", 0.4D); // Player moves at 0.1F, for reference
+    }
+
+    public static boolean asyncCatcherFeature;
+    private static void asyncCatcherFeature()
+    {
+        asyncCatcherFeature = getBoolean( "settings.async-plugin-bad-magic-catcher", true );
+        if (!asyncCatcherFeature) {
+            Bukkit.getLogger().log( Level.INFO, "Disabling async plugin bad ju-ju catcher, this may be bad depending on your plugins" );
+        }
+    }
+
+    public static boolean interactLimitEnabled;
+    private static void interactLimitEnabled()
+    {
+        interactLimitEnabled = getBoolean( "settings.limit-player-interactions", true );
+        if (!interactLimitEnabled) {
+            Bukkit.getLogger().log( Level.INFO, "Disabling player interaction limiter, your server may be more vulnerable to malicious users" );
+        }
+    }
 }

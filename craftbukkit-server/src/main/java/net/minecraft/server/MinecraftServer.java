@@ -998,7 +998,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public String getServerModName() {
-        return "Spigot"; // Spigot - Spigot > // CraftBukkit - cb > vanilla!
+        return "CobelPvP Custom  1.7.10"; // Spigot - Spigot > // CraftBukkit - cb > vanilla!
     }
 
     public CrashReport b(CrashReport crashreport) {
