@@ -15,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -24,7 +23,6 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
-import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.server.ChunkCoordinates;
 import net.minecraft.server.CommandAchievement;
 import net.minecraft.server.CommandBan;
@@ -153,7 +151,6 @@ import org.bukkit.craftbukkit.util.Versioning;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerChatTabCompleteEvent;
-import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.event.world.WorldSaveEvent;
@@ -183,7 +180,6 @@ import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.scheduler.BukkitWorker;
 import org.bukkit.util.StringUtil;
 import org.bukkit.util.permissions.DefaultPermissions;
-import org.spigotmc.SpigotConfig;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
@@ -201,7 +197,6 @@ import jline.console.ConsoleReader;
 public final class CraftServer implements Server {
     private static final Player[] EMPTY_PLAYER_ARRAY = new Player[0];
     private final String serverName = "CraftBukkit";
-    private String serverGroup = "Dev"; // PowerSpigot
     private final String serverVersion;
     private final String bukkitVersion = Versioning.getBukkitVersion();
     private final Logger logger = Logger.getLogger("Minecraft");
@@ -365,18 +360,6 @@ public final class CraftServer implements Server {
         }
     }
 
-    // SportBukkit start
-    public boolean getRequireAllPlugins() {
-        return this.configuration.getBoolean("settings.require-all-plugins");
-    }
-
-    private void pluginFailedToLoad(Plugin plugin) {
-        if(getRequireAllPlugins()) {
-            throw new RuntimeException("Required plugin " + plugin.getDescription().getFullName() + " failed to load (server will shutdown)");
-        }
-    }
-    // SportBukkit end
-
     public void loadPlugins() {
         pluginManager.registerInterface(JavaPluginLoader.class);
 
@@ -389,9 +372,8 @@ public final class CraftServer implements Server {
                     String message = String.format("Loading %s", plugin.getDescription().getFullName());
                     plugin.getLogger().info(message);
                     plugin.onLoad();
-                } catch (RuntimeException ex) { // SportBukkit
+                } catch (Throwable ex) {
                     Logger.getLogger(CraftServer.class.getName()).log(Level.SEVERE, ex.getMessage() + " initializing " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
-                    pluginFailedToLoad(plugin); // SportBukkit
                 }
             }
         } else {
@@ -502,15 +484,9 @@ public final class CraftServer implements Server {
                     getLogger().log(Level.WARNING, "Plugin " + plugin.getDescription().getFullName() + " tried to register permission '" + perm.getName() + "' but it's already registered", ex);
                 }
             }
-        } catch (RuntimeException ex) { // SportBukkit
+        } catch (Throwable ex) {
             Logger.getLogger(CraftServer.class.getName()).log(Level.SEVERE, ex.getMessage() + " loading " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
         }
-
-        // SportBukkit start
-        if(!plugin.isEnabled()) {
-            pluginFailedToLoad(plugin);
-        }
-        // SportBukkit end
     }
 
     @Override
@@ -545,12 +521,7 @@ public final class CraftServer implements Server {
     public Player getPlayer(final String name) {
         Validate.notNull(name, "Name cannot be null");
 
-        // PaperSpigot start - Improved player lookup changes
-        Player found = getPlayerExact(name);
-        if (found != null) {
-            return found;
-        }
-        // PaperSpigot end
+        Player found = null;
         String lowerName = name.toLowerCase();
         int delta = Integer.MAX_VALUE;
         for (Player player : getOnlinePlayers()) {
@@ -569,16 +540,29 @@ public final class CraftServer implements Server {
     @Override
     @Deprecated
     public Player getPlayerExact(String name) {
-        // PaperSpigot start - Improved player lookup, replace whole method
-        EntityPlayer player = playerList.playerMap.get(name);
-        return player != null ? player.getBukkitEntity() : null;
-        // PaperSpigot end
+        Validate.notNull(name, "Name cannot be null");
+
+        String lname = name.toLowerCase();
+
+        for (Player player : getOnlinePlayers()) {
+            if (player.getName().equalsIgnoreCase(lname)) {
+                return player;
+            }
+        }
+
+        return null;
     }
 
+    // TODO: In 1.8+ this should use the server's UUID->EntityPlayer map
     @Override
     public Player getPlayer(UUID id) {
-        EntityPlayer player = playerList.uuidMap.get(id);
-        return player != null ? player.getBukkitEntity() : null;
+        for (Player player : getOnlinePlayers()) {
+            if (player.getUniqueId().equals(id)) {
+                return player;
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -640,15 +624,6 @@ public final class CraftServer implements Server {
     @Override
     public String getServerName() {
         return this.getConfigString("server-name", "Unknown Server");
-    }
-
-    @Override
-    public String getServerGroup() {
-        return serverGroup;
-    }
-
-    public void setServerGroup(String serverGroup) {
-        this.serverGroup = serverGroup;
     }
 
     @Override
@@ -789,15 +764,6 @@ public final class CraftServer implements Server {
         Validate.notNull(sender, "Sender cannot be null");
         Validate.notNull(commandLine, "CommandLine cannot be null");
 
-
-        ServerCommandEvent event = new ServerCommandEvent(sender, commandLine);
-
-        this.getPluginManager().callEvent(event);
-
-        if (event.isCancelled()) {
-            return true;
-        }
-
         if (commandMap.dispatch(sender, commandLine)) {
             return true;
         }
@@ -847,7 +813,6 @@ public final class CraftServer implements Server {
         }
 
         org.spigotmc.SpigotConfig.init(); // Spigot
-        org.github.paperspigot.PaperSpigotConfig.init(); // PaperSpigot
         for (WorldServer world : console.worlds) {
             world.difficulty = difficulty;
             world.setSpawnFlags(monsters, animals);
@@ -863,14 +828,12 @@ public final class CraftServer implements Server {
                 world.ticksPerMonsterSpawns = this.getTicksPerMonsterSpawns();
             }
             world.spigotConfig.init(); // Spigot
-            world.paperSpigotConfig.init(); // PaperSpigot
         }
 
         pluginManager.clearPlugins();
         commandMap.clearCommands();
         resetRecipes();
         org.spigotmc.SpigotConfig.registerCommands(); // Spigot
-        org.github.paperspigot.PaperSpigotConfig.registerCommands(); // PaperSpigot
 
         overrideAllCommandBlockCommands = commandsConfiguration.getStringList("command-block-overrides").contains("*");
 
@@ -1860,23 +1823,6 @@ public final class CraftServer implements Server {
         return console.getIdleTimeout();
     }
 
-    // Anticheat start
-    @Override
-    public boolean isAnticheatEnabled() {
-        return SpigotConfig.anticheatEnabled;
-    }
-
-    @Override
-    public void setAnticheatEnabled(boolean enabled) {
-        SpigotConfig.anticheatEnabled = enabled;
-    }
-
-    @Override
-    public boolean shouldAnticheatAct() {
-        return isAnticheatEnabled() && spigot().getTPS()[0] >= 19.0D;
-    }
-    // Anticheat end
-
     @Deprecated
     @Override
     public UnsafeValues getUnsafe() {
@@ -1892,8 +1838,13 @@ public final class CraftServer implements Server {
             return org.spigotmc.SpigotConfig.config;
         }
 
+        /**
+         * Sends the component to the player
+         *
+         * @param component the components to send
+         */
         @Override
-        public void broadcast( BaseComponent component )
+        public void broadcast(net.md_5.bungee.api.chat.BaseComponent component)
         {
             for ( Player player : getOnlinePlayers() )
             {
@@ -1901,21 +1852,20 @@ public final class CraftServer implements Server {
             }
         }
 
+        /**
+         * Sends an array of components as a single message to the
+         * player
+         *
+         * @param components the components to send
+         */
         @Override
-        public void broadcast( BaseComponent... components )
+        public void broadcast(net.md_5.bungee.api.chat.BaseComponent ...components)
         {
             for ( Player player : getOnlinePlayers() )
             {
                 player.spigot().sendMessage( components );
             }
         }
-
-        // PaperSpigot start - Add getTPS
-        @Override
-        public double[] getTPS() {
-            return MinecraftServer.getServer().recentTps;
-        }
-        // PaperSpigot end
     };
 
     public Spigot spigot()

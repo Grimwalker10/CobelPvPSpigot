@@ -27,7 +27,6 @@ public abstract class Container {
     private final Set h = new HashSet();
     protected List listeners = new ArrayList();
     private Set i = new HashSet();
-    private int tickCount; // Spigot
 
     // CraftBukkit start
     public boolean checkReachable = true;
@@ -61,7 +60,7 @@ public abstract class Container {
     }
 
     public List a() {
-        ArrayList arraylist = new ArrayList(this.c.size()); // CobelPvP
+        ArrayList arraylist = new ArrayList();
 
         for (int i = 0; i < this.c.size(); ++i) {
             arraylist.add(((Slot) this.c.get(i)).getItem());
@@ -75,7 +74,7 @@ public abstract class Container {
             ItemStack itemstack = ((Slot) this.c.get(i)).getItem();
             ItemStack itemstack1 = (ItemStack) this.b.get(i);
 
-            if (!ItemStack.fastMatches(itemstack1, itemstack) || (tickCount % 20 == 0 && !ItemStack.matches(itemstack1, itemstack))) { // Spigot
+            if (!ItemStack.matches(itemstack1, itemstack)) {
                 itemstack1 = itemstack == null ? null : itemstack.cloneItemStack();
                 this.b.set(i, itemstack1);
 
@@ -84,8 +83,6 @@ public abstract class Container {
                 }
             }
         }
-
-        tickCount++; // Spigot
     }
 
     public boolean a(EntityHuman entityhuman, int i) {

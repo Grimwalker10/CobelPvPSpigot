@@ -67,7 +67,7 @@ public class TileEntityPiston extends TileEntity {
 
                 while (iterator.hasNext()) {
                     Entity entity = (Entity) iterator.next();
-                    entity.inPistonTick = MinecraftServer.currentTick; // Anticheat
+
                     entity.move((double) (f1 * (float) Facing.b[this.j]), (double) (f1 * (float) Facing.c[this.j]), (double) (f1 * (float) Facing.d[this.j]));
                 }
 

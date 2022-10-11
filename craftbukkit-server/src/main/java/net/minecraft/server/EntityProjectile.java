@@ -2,9 +2,6 @@ package net.minecraft.server;
 
 import java.util.List;
 
-import org.bukkit.Bukkit;
-import org.spigotmc.SpigotConfig;
-
 public abstract class EntityProjectile extends Entity implements IProjectile {
 
     private int blockX = -1;
@@ -150,14 +147,6 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
                 movingobjectposition = new MovingObjectPosition(entity);
             }
         }
-
-        // PaperSpigot start - Allow projectiles to fly through players the shooter can't see
-        if (movingobjectposition != null && movingobjectposition.entity instanceof EntityPlayer && shooter != null && shooter instanceof EntityPlayer) {
-            if (!((EntityPlayer) shooter).getBukkitEntity().canSee(((EntityPlayer) movingobjectposition.entity).getBukkitEntity())) {
-                movingobjectposition = null;
-            }
-        }
-        // PaperSpigot end
 
         if (movingobjectposition != null) {
             if (movingobjectposition.type == EnumMovingObjectType.BLOCK && this.world.getType(movingobjectposition.b, movingobjectposition.c, movingobjectposition.d) == Blocks.PORTAL) {

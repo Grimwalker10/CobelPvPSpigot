@@ -2,9 +2,6 @@ package net.minecraft.server;
 
 import java.io.IOException; // CraftBukkit
 
-import net.minecraft.optimizations.utils.ThreadingManager; // Poweruser
-import net.minecraft.optimizations.utils.ThreadingManager.TaskQueueWorker; // Poweruser
-
 public class PacketPlayInChat extends Packet {
 
     private String message;
@@ -46,20 +43,14 @@ public class PacketPlayInChat extends Packet {
     }
     // CraftBukkit end
 
-    private static TaskQueueWorker taskQueue; // Poweruser
     // Spigot Start
+    private static final java.util.concurrent.ExecutorService executors = java.util.concurrent.Executors.newCachedThreadPool(
+            new com.google.common.util.concurrent.ThreadFactoryBuilder().setDaemon( true ).setNameFormat( "Async Chat Thread - #%d" ).build() );
     public void handle(final PacketListener packetlistener)
     {
         if ( a() )
         {
-            // Poweruser start
-            TaskQueueWorker worker = taskQueue;
-            if(worker == null) {
-                taskQueue = worker = ThreadingManager.createTaskQueue();
-            }
-
-            worker.queueTask(new Runnable() // Poweruser
-            // Poweruser end
+            executors.submit( new Runnable()
             {
 
                 @Override

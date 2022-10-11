@@ -137,28 +137,6 @@ public class EntityItem extends Entity {
         }
     }
 
-    // PaperSpigot start - copied from above
-    @Override
-    public void inactiveTick() {
-        // CraftBukkit start - Use wall time for pickup and despawn timers
-        int elapsedTicks = MinecraftServer.currentTick - this.lastTick;
-        this.pickupDelay -= elapsedTicks;
-        this.age += elapsedTicks;
-        this.lastTick = MinecraftServer.currentTick;
-        // CraftBukkit end
-
-        if (!this.world.isStatic && this.age >= world.spigotConfig.itemDespawnRate) { // Spigot
-            // CraftBukkit start - fire ItemDespawnEvent
-            if (org.bukkit.craftbukkit.event.CraftEventFactory.callItemDespawnEvent(this).isCancelled()) {
-                this.age = 0;
-                return;
-            }
-            // CraftBukkit end
-            this.die();
-        }
-    }
-    // PaperSpigot end
-
     private void k() {
         // Spigot start
         double radius = world.spigotConfig.itemMerge;

@@ -7,26 +7,22 @@ import java.util.Iterator;
 
 public class PacketPlayOutScoreboardTeam extends Packet {
 
-    public String a = "";
-    public String b = "";
-    public String c = "";
-    public String d = "";
-    public Collection e = new ArrayList();
-    public int f;
-    public int g;
+    private String a = "";
+    private String b = "";
+    private String c = "";
+    private String d = "";
+    private Collection e = new ArrayList();
+    private int f;
+    private int g;
 
     public PacketPlayOutScoreboardTeam() {}
 
     public PacketPlayOutScoreboardTeam(ScoreboardTeam scoreboardteam, int i) {
-        if (16 < scoreboardteam.getName().length()) throw new IllegalArgumentException("Scoreboard team name '" + scoreboardteam.getName() + "' exceeds maximum length of 16.");
         this.a = scoreboardteam.getName();
         this.f = i;
         if (i == 0 || i == 2) {
-            if (16 < scoreboardteam.getDisplayName().length()) throw new IllegalArgumentException("Scoreboard team display name '" + scoreboardteam.getDisplayName() + "' exceeds maximum length of 16.");
             this.b = scoreboardteam.getDisplayName();
-            if (16 < scoreboardteam.getPrefix().length()) throw new IllegalArgumentException("Scoreboard team prefix '" + scoreboardteam.getPrefix() + "' exceeds maximum length of 16.");
             this.c = scoreboardteam.getPrefix();
-            if (16 < scoreboardteam.getSuffix().length()) throw new IllegalArgumentException("Scoreboard team suffix '" + scoreboardteam.getSuffix() + "' exceeds maximum length of 16.");
             this.d = scoreboardteam.getSuffix();
             this.g = scoreboardteam.packOptionData();
         }

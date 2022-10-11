@@ -14,8 +14,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import com.google.common.collect.ImmutableMap.Builder;
 
-import net.minecraft.optimizations.utils.ThreadingManager; // Poweruser
-
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
     static final ItemMetaKey SKULL_OWNER = new ItemMetaKey("SkullOwner", "skull-owner");
@@ -55,10 +53,10 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
             NBTTagCompound owner = new NBTTagCompound();
             GameProfileSerializer.serialize(owner, profile);
             tag.set( SKULL_OWNER.NBT, owner );
-            // Spigot start - do an async lookup of the profile. 
+            // Spigot start - do an async lookup of the profile.
             // Unfortunately there is not way to refresh the holding
             // inventory, so that responsibility is left to the user.
-            ThreadingManager.queueHeadConversion(new Runnable() // Poweruser
+            net.minecraft.server.TileEntitySkull.executor.execute( new Runnable()
             {
                 @Override
                 public void run()

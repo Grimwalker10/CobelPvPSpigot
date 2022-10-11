@@ -19,7 +19,6 @@ import net.minecraft.util.com.google.gson.JsonParser;
 import net.minecraft.util.org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spigotmc.SpigotConfig;
 
 public class ServerStatisticManager extends StatisticManager {
 
@@ -44,7 +43,6 @@ public class ServerStatisticManager extends StatisticManager {
     }
 
     public void a() {
-        if (SpigotConfig.disableSaving) return;
         if (this.d.isFile()) {
             try {
                 this.a.clear();
@@ -58,7 +56,6 @@ public class ServerStatisticManager extends StatisticManager {
     }
 
     public void b() {
-        if (SpigotConfig.disableSaving) return; // CobelPvP
         if ( org.spigotmc.SpigotConfig.disableStatSaving ) return; // Spigot
         try {
             FileUtils.writeStringToFile(this.d, a(this.a));
@@ -68,7 +65,6 @@ public class ServerStatisticManager extends StatisticManager {
     }
 
     public void setStatistic(EntityHuman entityhuman, Statistic statistic, int i) {
-        if (SpigotConfig.disableSaving) return; // CobelPvP
         if ( org.spigotmc.SpigotConfig.disableStatSaving ) return; // Spigot
         int j = statistic.d() ? this.getStatisticValue(statistic) : 0;
 

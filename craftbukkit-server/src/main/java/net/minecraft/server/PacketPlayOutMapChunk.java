@@ -1,9 +1,9 @@
 package net.minecraft.server;
 
-import net.minecraft.optimizations.utils.ReusableByteArray;
-
 import java.io.IOException;
+import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 public class PacketPlayOutMapChunk extends Packet {
 
@@ -11,30 +11,25 @@ public class PacketPlayOutMapChunk extends Packet {
     private int b;
     private int c;
     private int d;
-    private static final ReusableByteArray bufferCache = new ReusableByteArray(164196); // CobelPvP
+    private byte[] e;
     private byte[] f;
     private boolean g;
     private int h;
     private static byte[] i = new byte[196864];
 
-    private World world; // CobelPvP - use world instead of chunk
+    private Chunk chunk; // Spigot
     private int mask; // Spigot
 
     public PacketPlayOutMapChunk() {}
 
     // Spigot start - protocol patch
     public PacketPlayOutMapChunk(Chunk chunk, boolean flag, int i, int version) {
-        this.world = chunk.world;
+        this.chunk = chunk;
         this.mask = i;
         this.a = chunk.locX;
         this.b = chunk.locZ;
         this.g = flag;
-        // CobelPvP start - don't need to do chunkmap for unload chunk packets
-        if (i == 0 && this.g) {
-            return;
-        }
-        // CobelPvP end
-        ChunkMap chunkmap = chunk.getChunkMap(flag, i, version); // CobelPvP
+        ChunkMap chunkmap = a(chunk, flag, i, version);
 
         this.d = chunkmap.c;
         this.c = chunkmap.b;
@@ -42,23 +37,11 @@ public class PacketPlayOutMapChunk extends Packet {
         this.f = chunkmap.a;
     }
 
-    // CobelPvP start - constructor for unload chunk packets
-    public static PacketPlayOutMapChunk unload(int x, int z) {
-        PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk();
-        packet.a = x;
-        packet.b = z;
-        packet.g = true;
-        return packet;
-    }
-    // CobelPvP end
-
     public static int c() {
         return 196864;
     }
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
-        // CobelPvP start - this is client code
-        /*
         this.a = packetdataserializer.readInt();
         this.b = packetdataserializer.readInt();
         this.g = packetdataserializer.readBoolean();
@@ -95,8 +78,6 @@ public class PacketPlayOutMapChunk extends Packet {
         } finally {
             inflater.end();
         }
-        */
-        // CobelPvP end
     }
 
     public void b(PacketDataSerializer packetdataserializer) {
@@ -104,37 +85,25 @@ public class PacketPlayOutMapChunk extends Packet {
         packetdataserializer.writeInt(this.b);
         packetdataserializer.writeBoolean(this.g);
         packetdataserializer.writeShort((short) (this.c & '\uffff'));
-        // CobelPvP start - don't send any data for unload chunks, the client still accepts the packets fine without it
-        if (this.g && this.c == 0) {
-            if (packetdataserializer.version < 27) {
-                packetdataserializer.writeShort((short) (this.d & '\uffff'));
-                packetdataserializer.writeInt(0);
-            } else {
-                packetdataserializer.b(0);
-            }
-            return;
-        }
-        // CobelPvP end
         // Spigot start - protocol patch
         if ( packetdataserializer.version < 27 )
         {
-            this.world.spigotConfig.antiXrayInstance.obfuscate(this.a, this.b, mask, this.f, this.world, false); // Spigot
+            chunk.world.spigotConfig.antiXrayInstance.obfuscate(chunk.locX, chunk.locZ, mask, this.f, chunk.world, false); // Spigot
             Deflater deflater = new Deflater(4); // Spigot
-            byte[] buffer;
             try {
                 deflater.setInput(this.f, 0, this.f.length);
                 deflater.finish();
-                buffer = bufferCache.get(this.f.length + 100);
-                this.h = deflater.deflate(buffer);
+                this.e = new byte[this.f.length];
+                this.h = deflater.deflate(this.e);
             } finally {
                 deflater.end();
             }
             packetdataserializer.writeShort( (short) ( this.d & '\uffff' ) );
             packetdataserializer.writeInt( this.h );
-            packetdataserializer.writeBytes( buffer, 0, this.h );
+            packetdataserializer.writeBytes( this.e, 0, this.h );
         } else
         {
-            this.world.spigotConfig.antiXrayInstance.obfuscate(this.a, this.b, mask, this.f, this.world, true); // Spigot
+            chunk.world.spigotConfig.antiXrayInstance.obfuscate(chunk.locX, chunk.locZ, mask, this.f, chunk.world, true); // Spigot
             a( packetdataserializer, this.f );
         }
         // Spigot end - protocol patch
@@ -165,13 +134,10 @@ public class PacketPlayOutMapChunk extends Packet {
         for (l = 0; l < achunksection.length; ++l) {
             if (achunksection[l] != null && (!flag || !achunksection[l].isEmpty()) && (i & 1 << l) != 0) {
                 chunkmap.b |= 1 << l;
-                // CobelPvP start - 1.7 has no extended block IDs
-                /*
                 if (achunksection[l].getExtendedIdArray() != null) {
                     chunkmap.c |= 1 << l;
                     ++k;
                 }
-                */
             }
         }
 
@@ -249,8 +215,6 @@ public class PacketPlayOutMapChunk extends Packet {
             }
         }
 
-        // CobelPvP start - 1.7 has no extended block IDs
-        /*
         if (k > 0 && version < 24) {
             for (l = 0; l < achunksection.length; ++l) {
                 if (achunksection[l] != null && (!flag || !achunksection[l].isEmpty()) && achunksection[l].getExtendedIdArray() != null && (i & 1 << l) != 0) {
@@ -260,8 +224,6 @@ public class PacketPlayOutMapChunk extends Packet {
                 }
             }
         }
-        */
-        // CobelPvP end
 
         if (flag) {
             byte[] abyte2 = chunk.m();

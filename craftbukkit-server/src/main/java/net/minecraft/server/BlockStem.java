@@ -23,7 +23,7 @@ public class BlockStem extends BlockPlant implements IBlockFragilePlantElement {
 
     public void a(World world, int i, int j, int k, Random random) {
         super.a(world, i, j, k, random);
-        if (world.isLightLevel(i, j + 1, k, 9)) { // CobelPvP
+        if (world.getLightLevel(i, j + 1, k) >= 9) {
             float f = this.n(world, i, j, k);
 
             if (random.nextInt((int) (world.growthOdds / (this == Blocks.PUMPKIN_STEM? world.spigotConfig.pumpkinModifier : world.spigotConfig.melonModifier) * (25.0F / f)) + 1) == 0) { // Spigot

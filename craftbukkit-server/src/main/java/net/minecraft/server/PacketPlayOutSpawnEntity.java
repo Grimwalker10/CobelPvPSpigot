@@ -2,17 +2,17 @@ package net.minecraft.server;
 
 public class PacketPlayOutSpawnEntity extends Packet {
 
-    public int a;
-    public int b;
-    public int c;
-    public int d;
-    public int e;
-    public int f;
-    public int g;
-    public int h;
-    public int i;
-    public int j;
-    public int k;
+    private int a;
+    private int b;
+    private int c;
+    private int d;
+    private int e;
+    private int f;
+    private int g;
+    private int h;
+    private int i;
+    private int j;
+    private int k;
 
     public PacketPlayOutSpawnEntity() {}
 
@@ -116,12 +116,9 @@ public class PacketPlayOutSpawnEntity extends Packet {
             int data = k >> 16;
             k = id | ( data << 12 );
         }
-
-        if ( ( j == 50 || j == 70 || j == 74 ) && packetdataserializer.version >= 16 ) // Spigot Update - 20140916a
-        {
-            c -= 16;
+        if ((j == 50 || j == 70 || j == 74) && packetdataserializer.version >= 16) { // TNTPrimed, FallingSand, DragonEgg
+            this.c -= 16;
         }
-
         // Spigot end
         packetdataserializer.writeInt(this.b);
         packetdataserializer.writeInt(this.c);

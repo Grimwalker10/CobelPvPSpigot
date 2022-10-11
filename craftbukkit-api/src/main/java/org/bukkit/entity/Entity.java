@@ -1,6 +1,9 @@
 package org.bukkit.entity;
 
-import org.bukkit.*;
+import org.bukkit.Location;
+import org.bukkit.EntityEffect;
+import org.bukkit.Server;
+import org.bukkit.World;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.metadata.Metadatable;
 import org.bukkit.util.Vector;
@@ -13,34 +16,6 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
  * Represents a base entity in the world
  */
 public interface Entity extends Metadatable {
-
-    /**
-     * Returns the entity's current bounding box
-     *
-     * @return a new copy of AxisAlignedBB containing the bounding box of this entity
-     */
-    public AxisAlignedBB getBoundingBox();
-
-    /**
-     * Gets the entity's height
-     *
-     * @return height
-     */
-    public float getHeight();
-
-    /**
-     * Gets the entity's width
-     *
-     * @return width
-     */
-    public float getWidth();
-
-    /**
-     * Gets the entity's length
-     *
-     * @return length
-     */
-    public float getLength();
 
     /**
      * Gets the entity's current position
@@ -327,7 +302,7 @@ public interface Entity extends Metadatable {
 
         /**
          * Returns whether this entity is invulnerable.
-         *         
+         *
         * @return True if the entity is invulnerable.
          */
         public boolean isInvulnerable()

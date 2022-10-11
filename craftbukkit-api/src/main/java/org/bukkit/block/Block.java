@@ -2,7 +2,6 @@ package org.bukkit.block;
 
 import java.util.Collection;
 
-import org.bukkit.AxisAlignedBB;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -135,13 +134,6 @@ public interface Block extends Metadatable {
      * @return z-coordinate
      */
     int getZ();
-
-    /**
-     * Returns the bounding box of the block
-     *
-     * @return Bounding box of block
-     */
-    AxisAlignedBB getBoundingBox();
 
     /**
      * Gets the Location of the block

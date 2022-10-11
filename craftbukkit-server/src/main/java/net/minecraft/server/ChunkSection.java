@@ -1,7 +1,5 @@
 package net.minecraft.server;
 
-import com.cobelpvp.chunksnapshot.ChunkSectionSnapshot;
-
 import java.util.Arrays; // CraftBukkit
 
 public class ChunkSection {
@@ -10,17 +8,16 @@ public class ChunkSection {
     private int nonEmptyBlockCount;
     private int tickingBlockCount;
     private byte[] blockIds;
-    // private NibbleArray extBlockIds; // CobelPvP - 1.7 has no extended block IDs
+    private NibbleArray extBlockIds;
     private NibbleArray blockData;
     private NibbleArray emittedLight;
     private NibbleArray skyLight;
     // CraftBukkit start - Compact storage
     private int compactId;
-    // private byte compactExtId; // CobelPvP
+    private byte compactExtId;
     private byte compactData;
     private byte compactEmitted;
     private byte compactSky;
-    public boolean isDirty = false;
 
     // Pre-generated (read-only!) NibbleArrays for every possible value, used for chunk saving
     private static NibbleArray[] compactPregen = new NibbleArray[16];
@@ -68,13 +65,9 @@ public class ChunkSection {
     public ChunkSection(int y, boolean flag, byte[] blkIds, byte[] extBlkIds) {
         this.yPos = y;
         this.setIdArray(blkIds);
-        // CobelPvP start - 1.7 has no extended block IDs
-        /*
         if (extBlkIds != null) {
             this.setExtendedIdArray(new NibbleArray(extBlkIds, 4));
         }
-        */
-        // CobelPvP end
         if (!flag) {
             this.compactSky = -1;
         }
@@ -85,8 +78,6 @@ public class ChunkSection {
     public Block getTypeId(int i, int j, int k) {
         // CraftBukkit start - Compact storage
         if (this.blockIds == null) {
-            // CobelPvP start - 1.7 has no extended block IDs
-            /*
             int id = this.compactId;
             if (this.extBlockIds == null) {
                 id |= this.compactExtId << 8;
@@ -95,21 +86,15 @@ public class ChunkSection {
             }
 
             return Block.getById(id);
-            */
-            return Block.getById(this.compactId);
-            // CobelPvP end
         }
         // CraftBukkit end
 
         int l = this.blockIds[j << 8 | k << 4 | i] & 255;
 
-        // CobelPvP start
-        /*
         if (this.extBlockIds != null) {
             l |= this.extBlockIds.a(i, j, k) << 8;
         }
-        */
-        // CobelPvP end
+
         return Block.getById(l);
     }
 
@@ -145,9 +130,6 @@ public class ChunkSection {
         // CraftBukkit end
 
         this.blockIds[j << 8 | k << 4 | i] = (byte) (i1 & 255);
-        // CobelPvP start
-        isDirty = true;
-        /*
         if (i1 > 255) {
             if (this.extBlockIds == null) {
                 this.extBlockIds = expandCompactNibble(this.compactExtId); // CraftBukkit - Compact storage
@@ -157,8 +139,6 @@ public class ChunkSection {
         } else if (this.extBlockIds != null) {
             this.extBlockIds.a(i, j, k, 0);
         }
-        */
-        // CobelPvP end
     }
 
     public int getData(int i, int j, int k) {
@@ -179,7 +159,6 @@ public class ChunkSection {
             this.blockData = expandCompactNibble(this.compactData);
         }
         // CraftBukkit end
-        isDirty = true; // CobelPvP
         this.blockData.a(i, j, k, l);
     }
 
@@ -204,7 +183,6 @@ public class ChunkSection {
             this.skyLight = expandCompactNibble(this.compactSky);
         }
         // CraftBukkit end
-        isDirty = true; // CobelPvP
         this.skyLight.a(i, j, k, l);
     }
 
@@ -226,7 +204,6 @@ public class ChunkSection {
             this.emittedLight = expandCompactNibble(this.compactEmitted);
         }
         // CraftBukkit end
-        isDirty = true; // CobelPvP
         this.emittedLight.a(i, j, k, l);
     }
 
@@ -244,37 +221,107 @@ public class ChunkSection {
         int cntNonEmpty = 0;
         int cntTicking = 0;
 
-        // CobelPvP start - 1.7 has no extended block IDs
         if (this.blockIds == null) {
             int id = this.compactId;
-            if (id > 0) {
-                Block block = Block.getById(id);
-                if (block == null) {
-                    this.compactId = 0;
-                } else {
-                    cntNonEmpty = 4096;
-                    if (block.isTicking()) {
-                        cntTicking = 4096;
+            if (this.extBlockIds == null) {
+                id |= this.compactExtId << 8;
+                if (id > 0) {
+                    Block block = Block.getById(id);
+                    if (block == null) {
+                        this.compactId = 0;
+                        this.compactExtId = 0;
+                    } else {
+                        cntNonEmpty = 4096;
+                        if (block.isTicking()) {
+                            cntTicking = 4096;
+                        }
                     }
+                }
+            } else {
+                byte[] ext = this.extBlockIds.a;
+                for (int off = 0, off2 = 0; off < 4096;) {
+                    byte extid = ext[off2];
+                    int l = (id & 0xFF) | ((extid & 0xF) << 8); // Even data
+                    if (l > 0) {
+                        Block block = Block.getById(l);
+                        if (block == null) {
+                            this.compactId = 0;
+                            ext[off2] &= 0xF0;
+                        } else {
+                            ++cntNonEmpty;
+                            if (block.isTicking()) {
+                                ++cntTicking;
+                            }
+                        }
+                    }
+                    off++;
+                    l = (id & 0xFF) | ((extid & 0xF0) << 4); // Odd data
+                    if (l > 0) {
+                        Block block = Block.getById(l);
+                        if (block == null) {
+                            this.compactId = 0;
+                            ext[off2] &= 0x0F;
+                        } else {
+                            ++cntNonEmpty;
+                            if (block.isTicking()) {
+                                ++cntTicking;
+                            }
+                        }
+                    }
+                    off++;
+                    off2++;
                 }
             }
         } else {
             byte[] blkIds = this.blockIds;
-            for (int off = 0; off < blkIds.length; off++) {
-                int l = blkIds[off] & 0xFF;
-                if (l > 0) {
-                    if (Block.getById(l) == null) {
-                        blkIds[off] = 0;
-                    } else {
-                        ++cntNonEmpty;
-                        if (Block.getById(l).isTicking()) {
-                            ++cntTicking;
+            if (this.extBlockIds == null) { // No extended block IDs?  Don't waste time messing with them
+                for (int off = 0; off < blkIds.length; off++) {
+                    int l = blkIds[off] & 0xFF;
+                    if (l > 0) {
+                        if (Block.getById(l) == null) {
+                            blkIds[off] = 0;
+                        } else {
+                            ++cntNonEmpty;
+                            if (Block.getById(l).isTicking()) {
+                                ++cntTicking;
+                            }
                         }
                     }
                 }
+            } else {
+                byte[] ext = this.extBlockIds.a;
+                for (int off = 0, off2 = 0; off < blkIds.length;) {
+                    byte extid = ext[off2];
+                    int l = (blkIds[off] & 0xFF) | ((extid & 0xF) << 8); // Even data
+                    if (l > 0) {
+                        if (Block.getById(l) == null) {
+                            blkIds[off] = 0;
+                            ext[off2] &= 0xF0;
+                        } else {
+                            ++cntNonEmpty;
+                            if (Block.getById(l).isTicking()) {
+                                ++cntTicking;
+                            }
+                        }
+                    }
+                    off++;
+                    l = (blkIds[off] & 0xFF) | ((extid & 0xF0) << 4); // Odd data
+                    if (l > 0) {
+                        if (Block.getById(l) == null) {
+                            blkIds[off] = 0;
+                            ext[off2] &= 0x0F;
+                        } else {
+                            ++cntNonEmpty;
+                            if (Block.getById(l).isTicking()) {
+                                ++cntTicking;
+                            }
+                        }
+                    }
+                    off++;
+                    off2++;
+                }
             }
         }
-        // CobelPvP end
         this.nonEmptyBlockCount = cntNonEmpty;
         this.tickingBlockCount = cntTicking;
     }
@@ -311,8 +358,6 @@ public class ChunkSection {
         return this.blockIds;
     }
 
-    // CobelPvP start - 1.7 has no extended block IDs
-    /*
     public NibbleArray getExtendedIdArray() {
         // CraftBukkit start - Compact storage
         if (this.extBlockIds == null && this.compactExtId != 0) {
@@ -321,8 +366,6 @@ public class ChunkSection {
         // CraftBukkit end
         return this.extBlockIds;
     }
-    */
-    // CobelPvP end
 
     public NibbleArray getDataArray() {
         // CraftBukkit start - Compact storage
@@ -365,8 +408,6 @@ public class ChunkSection {
         this.blockIds = this.validateByteArray(abyte); // CraftBukkit - Validate data
     }
 
-    // CobelPvP start - 1.7 has no extended block IDs
-    /*
     public void setExtendedIdArray(NibbleArray nibblearray) {
         // CraftBukkit start - Compact storage
         if (nibblearray == null) {
@@ -380,8 +421,6 @@ public class ChunkSection {
         // CraftBukkit end
         this.extBlockIds = this.validateNibbleArray(nibblearray); // CraftBukkit - Validate data
     }
-    */
-    // CobelPvP end
 
     public void setDataArray(NibbleArray nibblearray) {
         // CraftBukkit start - Compact storage
@@ -446,48 +485,4 @@ public class ChunkSection {
         return byteArray;
     }
     // CraftBukkit end
-
-    // CobelPvP start - chunk snapshot api
-    public ChunkSectionSnapshot createSnapshot() {
-        return new ChunkSectionSnapshot(
-                nonEmptyBlockCount,
-                tickingBlockCount,
-                clone(blockIds),
-                clone(blockData),
-                clone(emittedLight),
-                clone(skyLight),
-                compactId,
-                compactData,
-                compactEmitted,
-                compactSky);
-    }
-
-    public void restoreSnapshot(ChunkSectionSnapshot snap) {
-        nonEmptyBlockCount = snap.getNonEmptyBlockCount();
-        tickingBlockCount = snap.getTickingBlockCount();
-        blockIds = clone(snap.getBlockIds());
-        blockData = clone(snap.getBlockData());
-        emittedLight = clone(snap.getEmittedLight());
-        skyLight = clone(snap.getSkyLight());
-        compactId = snap.getCompactId();
-        compactData = snap.getCompactData();
-        compactEmitted = snap.getCompactEmitted();
-        compactSky = snap.getCompactSky();
-        isDirty = true;
-    }
-
-    private static byte[] clone(byte[] array) {
-        if (array != null) {
-            return array.clone();
-        }
-        return null;
-    }
-
-    private static NibbleArray clone(NibbleArray array) {
-        if (array != null) {
-            return array.clone();
-        }
-        return null;
-    }
-    // CobelPvP end
 }

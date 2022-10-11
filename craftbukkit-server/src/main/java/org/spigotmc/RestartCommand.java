@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.List;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -22,7 +21,17 @@ public class RestartCommand extends Command
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args)
     {
-        sender.sendMessage(ChatColor.DARK_RED + "I'm sorry, but this command has been disabled. Please contact the server administrators if you believe that this is in error.");
+        if ( testPermission( sender ) )
+        {
+            MinecraftServer.getServer().processQueue.add( new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    restart();
+                }
+            } );
+        }
         return true;
     }
 

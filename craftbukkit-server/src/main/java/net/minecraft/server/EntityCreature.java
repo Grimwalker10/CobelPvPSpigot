@@ -8,13 +8,6 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityUnleashEvent;
 // CraftBukkit end
 
-// CobelPvP start
-import net.minecraft.optimizations.jobs.PathSearchJob;
-import net.minecraft.optimizations.jobs.PathSearchJobEntity;
-import net.minecraft.optimizations.jobs.PathSearchJobPosition;
-import net.minecraft.optimizations.jobs.PathSearchQueuingManager;
-// CobelPvP end
-
 public abstract class EntityCreature extends EntityInsentient {
 
     public static final UUID h = UUID.fromString("E199AD21-BA8A-4C53-8D13-6182D5C69D3A");
@@ -27,46 +20,6 @@ public abstract class EntityCreature extends EntityInsentient {
     private float br = -1.0F;
     private PathfinderGoal bs = new PathfinderGoalMoveTowardsRestriction(this, 1.0D);
     private boolean bt;
-
-    // CobelPvP start
-    private PathSearchQueuingManager queuingManager = new PathSearchQueuingManager();
-    private boolean searchIssued = false;
-    private PathEntity returnedPathEntity;
-
-    public boolean isSearchingForAPath() {
-        return this.queuingManager.hasAsyncSearchIssued();
-    }
-
-    public void cancelSearch(PathSearchJob pathSearch) {
-        this.queuingManager.checkLastSearchResult(pathSearch);
-        pathSearch.cleanup();
-    }
-
-    private void issueSearch(int x, int y, int z, float range) {
-        this.queuingManager.queueSearch(new PathSearchJobPosition(this, x, y, z, range, true, false, false, true));
-    }
-
-    private void issueSearch(Entity target, float range) {
-        this.queuingManager.queueSearch(new PathSearchJobEntity(this, target, range, true, false, false, true));
-    }
-
-    public void setSearchResult(PathSearchJobEntity pathSearchJobEntity, Entity target, PathEntity pathentity) {
-        this.queuingManager.checkLastSearchResult(pathSearchJobEntity);
-        if(this.target != null && this.target.equals(target)) {
-            this.returnedPathEntity = pathentity;
-        }
-    }
-
-    public void setSearchResult(PathSearchJobPosition pathSearchJobPosition, PathEntity pathentity) {
-        this.queuingManager.checkLastSearchResult(pathSearchJobPosition);
-        this.returnedPathEntity = pathentity;
-    }
-    // CobelPvP end
-
-    // CobelPvP start
-    private long lastRayTraceTick = -1L;
-    private boolean lastRayTraceResult = false;
-    // CobelPvP end
 
     public EntityCreature(World world) {
         super(world);
@@ -105,20 +58,12 @@ public abstract class EntityCreature extends EntityInsentient {
             // CraftBukkit end
 
             if (this.target != null) {
-                //this.pathEntity = this.world.findPath(this, this.target, f11, true, false, false, true);
-                this.issueSearch(this.target, f11); // CobelPvP
+                this.pathEntity = this.world.findPath(this, this.target, f11, true, false, false, true);
             }
         } else if (this.target.isAlive()) {
             float f1 = this.target.e((Entity) this);
 
-            // CobelPvP start - don't constantly ray trace
-            if (this.lastRayTraceTick + 50 < this.ticksLived) {
-                this.lastRayTraceTick = this.ticksLived;
-                this.lastRayTraceResult = this.hasLineOfSight(this.target);
-            }
-
-            if (this.lastRayTraceResult) {
-            // CobelPvP end
+            if (this.hasLineOfSight(this.target)) {
                 this.a(this.target, f1);
             }
         } else {
@@ -141,17 +86,8 @@ public abstract class EntityCreature extends EntityInsentient {
         }
 
         this.world.methodProfiler.b();
-
-        // CobelPvP start
-        if(this.returnedPathEntity != null) {
-            this.pathEntity = this.returnedPathEntity;
-            this.returnedPathEntity = null;
-        }
-        // CobelPvP end
-
         if (!this.bn && this.target != null && (this.pathEntity == null || this.random.nextInt(20) == 0)) {
-            //this.pathEntity = this.world.findPath(this, this.target, f11, true, false, false, true);
-            this.issueSearch(this.target, f11); // CobelPvP
+            this.pathEntity = this.world.findPath(this, this.target, f11, true, false, false, true);
         } else if (!this.bn && (this.pathEntity == null && this.random.nextInt(180) == 0 || this.random.nextInt(120) == 0 || this.bo > 0) && this.aU < 100) {
             this.bQ();
         }
@@ -254,8 +190,7 @@ public abstract class EntityCreature extends EntityInsentient {
         }
 
         if (flag) {
-            //this.pathEntity = this.world.a(this, i, j, k, 10.0F, true, false, false, true);
-            this.issueSearch(i, j, k, 10.0F); // CobelPvP
+            this.pathEntity = this.world.a(this, i, j, k, 10.0F, true, false, false, true);
         }
 
         this.world.methodProfiler.b();

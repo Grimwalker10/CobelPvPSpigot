@@ -55,10 +55,6 @@ public final class SpawnerCreature {
 
             for (i = 0; i < worldserver.players.size(); ++i) {
                 EntityHuman entityhuman = (EntityHuman) worldserver.players.get(i);
-                // PaperSpigot start - Affects spawning API
-                if (!entityhuman.affectsSpawning)
-                    continue;
-                // PaperSpigot end
                 int k = MathHelper.floor(entityhuman.locX / 16.0D);
 
                 j = MathHelper.floor(entityhuman.locZ / 16.0D);
@@ -76,7 +72,7 @@ public final class SpawnerCreature {
                         // CraftBukkit start - use LongHash and LongObjectHashMap
                         long chunkCoords = LongHash.toLong(l + k, i1 + j);
 
-                        if (!flag3 && worldserver.isChunkLoaded((i1 + l) >> 4, (k + j) >> 4)) { // CobelPvP
+                        if (!flag3) {
                             this.a.put(chunkCoords, false);
                         } else if (!this.a.containsKey(chunkCoords)) {
                             this.a.put(chunkCoords, true);
@@ -158,7 +154,7 @@ public final class SpawnerCreature {
                                                     float f1 = (float) i3;
                                                     float f2 = (float) j3 + 0.5F;
 
-                                                    if (worldserver.findNearbyPlayerWhoAffectsSpawning((double) f, (double) f1, (double) f2, 24.0D) == null) { // PaperSpigot
+                                                    if (worldserver.findNearbyPlayer((double) f, (double) f1, (double) f2, 24.0D) == null) {
                                                         float f3 = f - (float) chunkcoordinates.x;
                                                         float f4 = f1 - (float) chunkcoordinates.y;
                                                         float f5 = f2 - (float) chunkcoordinates.z;

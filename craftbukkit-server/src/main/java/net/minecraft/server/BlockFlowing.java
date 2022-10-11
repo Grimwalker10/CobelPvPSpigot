@@ -38,7 +38,7 @@ public class BlockFlowing extends BlockFluids {
         }
 
         boolean flag = true;
-        int i1 = this.getFlowSpeed(world, i, j, k); // PaperSpigot
+        int i1 = this.a(world);
         int j1;
 
         if (l > 0) {
@@ -73,7 +73,7 @@ public class BlockFlowing extends BlockFluids {
                 }
             }
 
-            if (!world.paperSpigotConfig.fastDrainLava && this.material == Material.LAVA && l < 8 && j1 < 8 && j1 > l && random.nextInt(4) != 0) { // PaperSpigot
+            if (this.material == Material.LAVA && l < 8 && j1 < 8 && j1 > l && random.nextInt(4) != 0) {
                 i1 *= 4;
             }
 
@@ -83,26 +83,17 @@ public class BlockFlowing extends BlockFluids {
                 }
             } else {
                 l = j1;
-                if (j1 < 0 || canFastDrain(world, i, j, k)) { // PaperSpigot - Fast draining
+                if (j1 < 0) {
                     world.setAir(i, j, k);
                 } else {
                     world.setData(i, j, k, j1, 2);
                     world.a(i, j, k, this, i1);
-                    // PaperSpigot start - Optimize draining
-                    world.e(i - 1, j, k, this);
-                    world.e(i + 1, j, k, this);
-                    world.e(i, j + 1, k, this);
-                    world.e(i, j, k - 1, this);
-                    world.e(i, j, k + 1, this);
-                    world.spigotConfig.antiXrayInstance.updateNearbyBlocks(world, i, j, k); // Spigot
-                    // PaperSpigot end
+                    world.applyPhysics(i, j, k, this);
                 }
             }
         } else {
             this.n(world, i, j, k);
         }
-
-        if (world.getType(i, j, k).getMaterial() != material) return; // PaperSpigot - Stop updating flowing block if material has changed
 
         if (this.q(world, i, j - 1, k)) {
             // CraftBukkit start - Send "down" to the server
@@ -298,76 +289,11 @@ public class BlockFlowing extends BlockFluids {
     public void onPlace(World world, int i, int j, int k) {
         super.onPlace(world, i, j, k);
         if (world.getType(i, j, k) == this) {
-            world.a(i, j, k, this, this.getFlowSpeed(world, i, j, k)); // PaperSpigot
+            world.a(i, j, k, this, this.a(world));
         }
     }
 
     public boolean L() {
         return true;
-    }
-
-    /**
-     * PaperSpigot - Get flow speed. Throttle if its water and flowing adjacent to lava
-     */
-    public int getFlowSpeed(World world, int x, int y, int z) {
-        if (this.getMaterial() == Material.LAVA) {
-            return world.worldProvider.g ? world.paperSpigotConfig.lavaFlowSpeedNether : world.paperSpigotConfig.lavaFlowSpeedNormal;
-        }
-        if (this.getMaterial() == Material.WATER && (
-                world.getType(x, y, z - 1).getMaterial() == Material.LAVA ||
-                world.getType(x, y, z + 1).getMaterial() == Material.LAVA ||
-                world.getType(x - 1, y, z).getMaterial() == Material.LAVA ||
-                world.getType(x + 1, y, z).getMaterial() == Material.LAVA)) {
-            return world.paperSpigotConfig.waterOverLavaFlowSpeed;
-        }
-        return super.a(world);
-    }
-
-    /**
-     * PaperSpigot - Data check method for fast draining
-     */
-    public int getData(World world, int x, int y, int z) {
-        int data = this.e(world, x, y, z);
-        return data < 8 ? data : 0;
-    }
-
-    /**
-     * PaperSpigot - Checks surrounding blocks to determine if block can be fast drained
-     */
-    public boolean canFastDrain(World world, int x, int y, int z) {
-        boolean result = false;
-        int data = getData(world, x, y, z);
-        if (this.material == Material.WATER) {
-            if (world.paperSpigotConfig.fastDrainWater) {
-                result = true;
-                if (getData(world, x, y - 1, z) < 0) {
-                    result = false;
-                } else if (world.getType(x, y, z - 1).getMaterial() == Material.WATER && getData(world, x, y, z - 1) < data) {
-                    result = false;
-                } else if (world.getType(x, y, z + 1).getMaterial() == Material.WATER && getData(world, x, y, z + 1) < data) {
-                    result = false;
-                } else if (world.getType(x - 1, y, z).getMaterial() == Material.WATER && getData(world, x - 1, y, z) < data) {
-                    result = false;
-                } else if (world.getType(x + 1, y, z).getMaterial() == Material.WATER && getData(world, x + 1, y, z) < data) {
-                    result = false;
-                }
-            }
-        } else if (this.material == Material.LAVA) {
-            if (world.paperSpigotConfig.fastDrainLava) {
-                result = true;
-                if (getData(world, x, y - 1, z) < 0 || world.getType(x, y + 1, z).getMaterial() != Material.AIR) {
-                    result = false;
-                } else if (world.getType(x, y, z - 1).getMaterial() == Material.LAVA && getData(world, x, y, z - 1) < data) {
-                    result = false;
-                } else if (world.getType(x, y, z + 1).getMaterial() == Material.LAVA && getData(world, x, y, z + 1) < data) {
-                    result = false;
-                } else if (world.getType(x - 1, y, z).getMaterial() == Material.LAVA && getData(world, x - 1, y, z) < data) {
-                    result = false;
-                } else if (world.getType(x + 1, y, z).getMaterial() == Material.LAVA && getData(world, x + 1, y, z) < data) {
-                    result = false;
-                }
-            }
-        }
-        return result;
     }
 }

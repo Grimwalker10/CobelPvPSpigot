@@ -138,11 +138,6 @@ public final class SimplePluginManager implements PluginManager {
                     server.getLogger().log( Level.WARNING, "Skipping loading of Orebfuscator as it does not work with Spigot 1.8 builds!" );
                     continue;
                 }
-                if ( name.equalsIgnoreCase( "EchoPet" ) )
-                {
-                    server.getLogger().log( Level.WARNING, "Skipping loading of EchoPet as it does not work with Spigot 1.8 builds!" );
-                    continue;
-                }
                 // Spigot End
                 if (name.equalsIgnoreCase("bukkit") || name.equalsIgnoreCase("minecraft") || name.equalsIgnoreCase("mojang")) {
                     server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + directory.getPath() + "': Restricted Name");

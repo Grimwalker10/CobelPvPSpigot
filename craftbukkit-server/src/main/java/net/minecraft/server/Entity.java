@@ -1,56 +1,43 @@
 package net.minecraft.server;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Server;
-import org.bukkit.TravelAgent;
-import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.SpigotTimings;
-import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.bukkit.entity.Hanging;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Painting;
-import org.bukkit.entity.Vehicle;
-import org.bukkit.event.entity.EntityCombustByEntityEvent;
-import org.bukkit.event.entity.EntityCombustEvent;
-import org.bukkit.event.entity.EntityPortalEvent;
-import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.painting.PaintingBreakByEntityEvent;
-import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.event.vehicle.VehicleExitEvent;
-import org.bukkit.plugin.PluginManager;
-import org.spigotmc.CustomTimingsHandler;
-
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
 // CraftBukkit start
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Server;
+import org.bukkit.TravelAgent;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Hanging;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Painting;
+import org.bukkit.entity.Vehicle;
+import org.spigotmc.CustomTimingsHandler; // Spigot
+import org.bukkit.event.entity.EntityCombustByEntityEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.painting.PaintingBreakByEntityEvent;
+import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.event.entity.EntityCombustEvent;
+import org.bukkit.event.entity.EntityPortalEvent;
+import org.bukkit.plugin.PluginManager;
 // CraftBukkit end
-// Poweruser start
-// Poweruser end
 
 public abstract class Entity {
 
     // CraftBukkit start
     private static final int CURRENT_LEVEL = 2;
-    public int inWebTick; // Anticheat
-    public int inPistonTick; // Anticheat
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
     }
-    // PaperSpigot start
-    public void retrack() {
-        final EntityTracker entityTracker = ((WorldServer) world).getTracker();
-        entityTracker.untrackEntity(this);
-        entityTracker.track(this);
-    }
-    // PaperSpigot end
     // CraftBukkit end
 
     private static int entityCount;
@@ -110,7 +97,7 @@ public abstract class Entity {
     protected DataWatcher datawatcher;
     private double g;
     private double h;
-    public boolean ag; public boolean isAddedToChunk() { return ag; } // PaperSpigot - EAR backport
+    public boolean ag;
     public int ah;
     public int ai;
     public int aj;
@@ -126,22 +113,15 @@ public abstract class Entity {
     public EnumEntitySize as;
     public boolean valid; // CraftBukkit
     public org.bukkit.projectiles.ProjectileSource projectileSource; // CraftBukkit - For projectiles only
-    public boolean inUnloadedChunk = false; // PaperSpigot - Remove entities in unloaded chunks
-    public boolean loadChunks = false; // PaperSpigot - Entities can load chunks they move through and keep them loaded
 
     // Spigot start
     public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getEntityTimings(this); // Spigot
     public final byte activationType = org.spigotmc.ActivationRange.initializeEntityActivationType(this);
     public final boolean defaultActivationState;
-    public long activatedTick = MinecraftServer.currentTick + 20; // Kohi - activate for 20 ticks on first adding to the world
+    public long activatedTick = 0;
     public boolean fromMobSpawner;
     public void inactiveTick() { }
     // Spigot end
-
-    // Poweruser start
-    private boolean isInLava;
-    private int lastLavaCheck;
-    // Poweruser end
 
     public int getId() {
         return this.id;
@@ -277,7 +257,6 @@ public abstract class Entity {
     }
 
     public void C() {
-        SpigotTimings.timerEntity_C.startTiming(); // Poweruser
         this.world.methodProfiler.a("entityBaseTick");
         if (this.vehicle != null && this.vehicle.dead) {
             this.vehicle = null;
@@ -309,9 +288,7 @@ public abstract class Entity {
                             b0 = -1;
                         }
 
-                        SpigotTimings.timerEntity_C_portal.startTiming(); // Poweruser
                         this.b(b0);
-                        SpigotTimings.timerEntity_C_portal.stopTiming(); // Poweruser
                     }
 
                     this.an = false;
@@ -378,7 +355,6 @@ public abstract class Entity {
 
         this.justCreated = false;
         this.world.methodProfiler.b();
-        SpigotTimings.timerEntity_C.stopTiming(); // Poweruser
     }
 
     public int D() {
@@ -438,28 +414,7 @@ public abstract class Entity {
         return !list.isEmpty() ? false : !this.world.containsLiquid(axisalignedbb);
     }
 
-    /**
-     * PaperSpigot - Load surrounding chunks the entity is moving through
-     */
-    public void loadChunks() {
-        int xstart = MathHelper.floor(this.locX);
-        int zstart = MathHelper.floor(this.locZ);
-        int xend = MathHelper.floor(this.locX + this.motX);
-        int zend = MathHelper.floor(this.locZ + this.motZ);
-
-        int xmin = Math.min(xstart, xend) - 3;
-        int xmax = Math.max(xstart, xend) + 3;
-        int zmin = Math.min(zstart, zend) - 3;
-        int zmax = Math.max(zstart, zend) + 3;
-        for (int cx = xmin >> 4; cx <= xmax >> 4; ++cx) {
-            for (int cz = zmin >> 4; cz <= zmax >> 4; ++cz) {
-                world.chunkProvider.getChunkAt(cx, cz);
-            }
-        }
-    }
-
     public void move(double d0, double d1, double d2) {
-        if (this.loadChunks) loadChunks(); // PaperSpigot - Load chunks
         // CraftBukkit start - Don't do anything if we aren't moving
         // We need to do this regardless of whether or not we are moving thanks to portals
         try {
@@ -489,7 +444,6 @@ public abstract class Entity {
             double d4 = this.locY;
             double d5 = this.locZ;
 
-            // if in web, make the entity's motion slower
             if (this.I) {
                 this.I = false;
                 d0 *= 0.25D;
@@ -945,19 +899,8 @@ public abstract class Entity {
     }
 
     public boolean P() {
-    // Poweruser start
-        return this.P(this.world);
+        return this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA);
     }
-
-    public boolean P(IBlockAccess iblockaccess) {
-        int currentTick = MinecraftServer.getServer().al();
-        if(this.lastLavaCheck != currentTick) {
-            this.lastLavaCheck = currentTick;
-            this.isInLava = this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA, iblockaccess);
-        }
-        return this.isInLava;
-    }
-    // Poweruser end
 
     public void a(float f, float f1, float f2) {
         float f3 = f * f + f1 * f1;
@@ -1382,16 +1325,7 @@ public abstract class Entity {
         return !this.dead;
     }
 
-    private int lastInBlockTick = -1;
-    private boolean lastInBlockResult = false;
-
     public boolean inBlock() {
-        int currentTick = MinecraftServer.currentTick;
-        
-        if (lastInBlockTick == currentTick) {
-            return lastInBlockResult;
-        }
-
         for (int i = 0; i < 8; ++i) {
             float f = ((float) ((i >> 0) % 2) - 0.5F) * this.width * 0.8F;
             float f1 = ((float) ((i >> 1) % 2) - 0.5F) * 0.1F;
@@ -1401,14 +1335,10 @@ public abstract class Entity {
             int l = MathHelper.floor(this.locZ + (double) f2);
 
             if (this.world.getType(j, k, l).r()) {
-                lastInBlockTick = currentTick;
-                lastInBlockResult = true;
                 return true;
             }
         }
 
-        lastInBlockTick = currentTick;
-        lastInBlockResult = false;
         return false;
     }
 
@@ -1812,7 +1742,6 @@ public abstract class Entity {
     public void as() {
         this.I = true;
         this.fallDistance = 0.0F;
-        this.inWebTick = MinecraftServer.currentTick; // Anticheat
     }
 
     public String getName() {
@@ -1920,7 +1849,7 @@ public abstract class Entity {
             // minecraftserver.getPlayerList().a(this, j, worldserver, worldserver1);
             boolean before = worldserver1.chunkProviderServer.forceChunkLoad;
             worldserver1.chunkProviderServer.forceChunkLoad = true;
-            //worldserver1.getMinecraftServer().getPlayerList().repositionEntity(this, exit, portal); // PaperSpigot - no... this entity is dead
+            worldserver1.getMinecraftServer().getPlayerList().repositionEntity(this, exit, portal);
             worldserver1.chunkProviderServer.forceChunkLoad = before;
             // CraftBukkit end
             this.world.methodProfiler.c("reloading");
@@ -1928,10 +1857,6 @@ public abstract class Entity {
 
             if (entity != null) {
                 entity.a(this, true);
-                // PaperSpigot start - move entity to new location
-                exit.getBlock(); // force load
-                entity.setLocation(exit.getX(), exit.getY(), exit.getZ(), exit.getYaw(), exit.getPitch());
-                // PaperSpigot end
                 /* CraftBukkit start - We need to do this...
                 if (j == 1 && i == 1) {
                     ChunkCoordinates chunkcoordinates = worldserver1.getSpawn();
@@ -1997,14 +1922,4 @@ public abstract class Entity {
     }
 
     public void i(int i) {}
-
-    public static double invSqrt(double x) {
-        double xhalf = 0.5 * x;
-        long i = Double.doubleToLongBits(x);
-        i = 6910470738111508698L - (i >> 1);
-        x = Double.longBitsToDouble(i);
-        x *= 1.5 - xhalf * x * x;
-        x *= 1.5 - xhalf * x * x;
-        return x;
-    }
 }

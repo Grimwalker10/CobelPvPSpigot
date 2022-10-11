@@ -4,19 +4,19 @@ import java.util.List;
 
 public class PacketPlayOutSpawnEntityLiving extends Packet {
 
-    public int a;
-    public int b;
-    public int c;
-    public int d;
-    public int e;
-    public int f;
-    public int g;
-    public int h;
-    public byte i;
-    public byte j;
-    public byte k;
-    public DataWatcher l;
-    public List m;
+    private int a;
+    private int b;
+    private int c;
+    private int d;
+    private int e;
+    private int f;
+    private int g;
+    private int h;
+    private byte i;
+    private byte j;
+    private byte k;
+    private DataWatcher l;
+    private List m;
 
     public PacketPlayOutSpawnEntityLiving() {}
 
@@ -61,7 +61,7 @@ public class PacketPlayOutSpawnEntityLiving extends Packet {
         this.f = (int) (d1 * 8000.0D);
         this.g = (int) (d2 * 8000.0D);
         this.h = (int) (d3 * 8000.0D);
-        this.l = entityliving.getDataWatcher().clone(); // CobelPvP
+        this.l = entityliving.getDataWatcher();
     }
 
     public void a(PacketDataSerializer packetdataserializer) {

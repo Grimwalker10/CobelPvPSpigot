@@ -10,13 +10,13 @@ import net.minecraft.util.com.mojang.authlib.properties.Property;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.util.com.mojang.authlib.Agent;
 // Spigot end
-
-import net.minecraft.optimizations.utils.ThreadingManager; // Poweruser
 
 public class TileEntitySkull extends TileEntity {
 
@@ -24,6 +24,11 @@ public class TileEntitySkull extends TileEntity {
     private int i;
     private GameProfile j = null;
     // Spigot start
+    public static final Executor executor = Executors.newFixedThreadPool(3,
+            new ThreadFactoryBuilder()
+                    .setNameFormat("Head Conversion Thread - %1$d")
+                    .build()
+    );
     public static final Cache<String, GameProfile> skinCache = CacheBuilder.newBuilder()
             .maximumSize( 5000 )
             .expireAfterAccess( 60, TimeUnit.MINUTES )
@@ -117,7 +122,7 @@ public class TileEntitySkull extends TileEntity {
                 // Spigot start - Handle async
                 final String name = this.j.getName();
                 setSkullType( 0 ); // Work around a client bug
-                ThreadingManager.queueHeadConversion(new Runnable() { // Poweruser
+                executor.execute(new Runnable() {
                     @Override
                     public void run() {
 

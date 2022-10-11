@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.WeakReference; // Spigot
 import java.util.Collections;
 import java.util.List;
 
@@ -10,7 +10,7 @@ public class PathfinderGoalNearestAttackableTarget extends PathfinderGoalTarget 
     private final int b;
     private final DistanceComparator e;
     private final IEntitySelector f;
-    private WeakReference<EntityLiving> g; // Spigot Update - 20140921a
+    private WeakReference<EntityLiving> g = new WeakReference<EntityLiving>(null); // Spigot
 
     public PathfinderGoalNearestAttackableTarget(EntityCreature entitycreature, Class oclass, int i, boolean flag) {
         this(entitycreature, oclass, i, flag, false);
@@ -22,7 +22,6 @@ public class PathfinderGoalNearestAttackableTarget extends PathfinderGoalTarget 
 
     public PathfinderGoalNearestAttackableTarget(EntityCreature entitycreature, Class oclass, int i, boolean flag, boolean flag1, IEntitySelector ientityselector) {
         super(entitycreature, flag, flag1);
-        this.g = new WeakReference<EntityLiving>(null);
         this.a = oclass;
         this.b = i;
         this.e = new DistanceComparator(entitycreature);
@@ -41,14 +40,14 @@ public class PathfinderGoalNearestAttackableTarget extends PathfinderGoalTarget 
             if (list.isEmpty()) {
                 return false;
             } else {
-                this.g = new WeakReference<EntityLiving>((EntityLiving) list.get(0));
+                this.g = new WeakReference<EntityLiving>((EntityLiving) list.get(0)); // Spigot
                 return true;
             }
         }
     }
 
     public void c() {
-        this.c.setGoalTarget(this.g.get());
+        this.c.setGoalTarget(this.g.get()); // Spigot
         super.c();
     }
 }

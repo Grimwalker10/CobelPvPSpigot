@@ -65,11 +65,4 @@ public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
 
         return null;
     }
-
-    // PaperSpigot start - Add FallingBlock and TNT source location API
-    @Override
-    public org.bukkit.Location getSourceLoc() {
-        return getHandle().sourceLoc;
-    }
-    // PaperSpigot end
 }

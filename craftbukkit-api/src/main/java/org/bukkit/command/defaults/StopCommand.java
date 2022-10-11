@@ -6,7 +6,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -23,11 +22,9 @@ public class StopCommand extends VanillaCommand {
 
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if(sender instanceof Player)
-        {
-            sender.sendMessage(ChatColor.DARK_RED + "Only console can perform this command.");
-            return false;
-        }
+        if (!testPermission(sender)) return true;
+
+        Command.broadcastCommandMessage(sender, "Stopping the server..");
         Bukkit.shutdown();
 
         String reason = this.createString(args, 0);

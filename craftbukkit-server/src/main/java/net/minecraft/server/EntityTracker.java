@@ -1,38 +1,40 @@
 package net.minecraft.server;
 
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import net.minecraft.optimizations.utils.IndexedLinkedHashSet;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class EntityTracker {
 
-    // CobelPvP start
-    private IndexedLinkedHashSet<EntityTrackerEntry> c = new IndexedLinkedHashSet<EntityTrackerEntry>();
+    private static final Logger a = LogManager.getLogger();
+    private final WorldServer world;
+    private Set c = new HashSet();
     public IntHashMap trackedEntities = new IntHashMap(); // CraftBukkit - private -> public
-
-    private int noTrackDistance = 0;
-
-    public int getNoTrackDistance() {
-        return this.noTrackDistance;
-    }
-
-    public void setNoTrackDistance(int noTrackDistance) {
-        this.noTrackDistance = noTrackDistance;
-    }
-    // CobelPvP end
     private int e;
 
-
     public EntityTracker(WorldServer worldserver) {
-        this.e = 128; // CobelPvP
+        this.world = worldserver;
+        this.e = worldserver.getMinecraftServer().getPlayerList().d();
     }
 
     public void track(Entity entity) {
         if (entity instanceof EntityPlayer) {
             this.addEntity(entity, 512, 2);
+            EntityPlayer entityplayer = (EntityPlayer) entity;
+            Iterator iterator = this.c.iterator();
+
+            while (iterator.hasNext()) {
+                EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
+
+                if (entitytrackerentry.tracker != entityplayer) {
+                    entitytrackerentry.updatePlayer(entityplayer);
+                }
+            }
         } else if (entity instanceof EntityFishingHook) {
             this.addEntity(entity, 64, 5, true);
         } else if (entity instanceof EntityArrow) {
@@ -100,13 +102,27 @@ public class EntityTracker {
                 throw new IllegalStateException("Entity is already tracked!");
             }
 
-            EntityTrackerEntry entitytrackerentry = new EntityTrackerEntry(this, entity, i, j, flag); // CobelPvP
+            EntityTrackerEntry entitytrackerentry = new EntityTrackerEntry(entity, i, j, flag);
 
             this.c.add(entitytrackerentry);
             this.trackedEntities.a(entity.getId(), entitytrackerentry);
-            entitytrackerentry.addNearPlayers();
+            entitytrackerentry.scanPlayers(this.world.players);
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            CrashReport crashreport = CrashReport.a(throwable, "Adding entity to track");
+            CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Entity To Track");
+
+            crashreportsystemdetails.a("Tracking range", (i + " blocks"));
+            crashreportsystemdetails.a("Update interval", (Callable) (new CrashReportEntityTrackerUpdateInterval(this, j)));
+            entity.a(crashreportsystemdetails);
+            CrashReportSystemDetails crashreportsystemdetails1 = crashreport.a("Entity That Is Already Tracked");
+
+            ((EntityTrackerEntry) this.trackedEntities.get(entity.getId())).tracker.a(crashreportsystemdetails1);
+
+            try {
+                throw new ReportedException(crashreport);
+            } catch (ReportedException reportedexception) {
+                a.error("\"Silently\" catching entity tracking error.", reportedexception);
+            }
         }
     }
 
@@ -131,32 +147,32 @@ public class EntityTracker {
         }
     }
 
-    // CobelPvP start - parallel tracking
-    private static int trackerThreads = 4; // <-- 3 non-this threads, one this
-    private static ExecutorService pool = Executors.newFixedThreadPool(trackerThreads - 1, new ThreadFactoryBuilder().setNameFormat("entity-tracker-%d").build());
     public void updatePlayers() {
-        int offset = 0;
-        final CountDownLatch latch = new CountDownLatch(trackerThreads);
-        for (int i = 1; i <= trackerThreads; i++) {
-            final int localOffset = offset++;
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    for (int i = localOffset; i < c.size(); i += trackerThreads) {
-                        c.get(i).update();
-                    }
-                    latch.countDown();
-                }
-            };
-            if (i < trackerThreads) pool.execute(runnable); else runnable.run();
+        ArrayList arraylist = new ArrayList();
+        Iterator iterator = this.c.iterator();
+
+        while (iterator.hasNext()) {
+            EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
+
+            entitytrackerentry.track(this.world.players);
+            if (entitytrackerentry.n && entitytrackerentry.tracker instanceof EntityPlayer) {
+                arraylist.add((EntityPlayer) entitytrackerentry.tracker);
+            }
         }
-        try {
-            latch.await();
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        for (int i = 0; i < arraylist.size(); ++i) {
+            EntityPlayer entityplayer = (EntityPlayer) arraylist.get(i);
+            Iterator iterator1 = this.c.iterator();
+
+            while (iterator1.hasNext()) {
+                EntityTrackerEntry entitytrackerentry1 = (EntityTrackerEntry) iterator1.next();
+
+                if (entitytrackerentry1.tracker != entityplayer) {
+                    entitytrackerentry1.updatePlayer(entityplayer);
+                }
+            }
         }
     }
-    // CobelPvP end
 
     public void a(Entity entity, Packet packet) {
         EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) this.trackedEntities.get(entity.getId());
@@ -181,6 +197,18 @@ public class EntityTracker {
             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
 
             entitytrackerentry.clear(entityplayer);
+        }
+    }
+
+    public void a(EntityPlayer entityplayer, Chunk chunk) {
+        Iterator iterator = this.c.iterator();
+
+        while (iterator.hasNext()) {
+            EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
+
+            if (entitytrackerentry.tracker != entityplayer && entitytrackerentry.tracker.ah == chunk.locX && entitytrackerentry.tracker.aj == chunk.locZ) {
+                entitytrackerentry.updatePlayer(entityplayer);
+            }
         }
     }
 }

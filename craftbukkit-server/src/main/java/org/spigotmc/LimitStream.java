@@ -19,21 +19,21 @@ public class LimitStream extends FilterInputStream
     @Override
     public int read() throws IOException
     {
-        limit.a( 8 ); // PaperSpigot - backport security fix
+        limit.a( 1 );
         return super.read();
     }
 
     @Override
     public int read(byte[] b) throws IOException
     {
-        limit.a( b.length * 8 ); // PaperSpigot - backport security fix
+        limit.a( b.length );
         return super.read( b );
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException
     {
-        limit.a( len * 8 ); // PaperSpigot - backport security fix
+        limit.a( len );
         return super.read( b, off, len );
     }
 }

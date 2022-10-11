@@ -24,16 +24,6 @@ public class EntitySkeleton extends EntityMonster implements IRangedEntity {
         }
     }
 
-    @Override
-    public void h() {
-        super.h();
-
-        // CobelPvP - Add mobsEnabled check.
-        if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
-            this.die();
-        }
-    }
-
     protected void aD() {
         super.aD();
         this.getAttributeInstance(GenericAttributes.d).setValue(0.25D);

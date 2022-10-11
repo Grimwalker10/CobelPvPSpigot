@@ -30,7 +30,7 @@ public class NextTickListEntry implements Comparable {
     }
 
     public int hashCode() {
-        return (c & 0xff) | ((a & 0x7fff) << 8) | ((b & 0x7fff) << 24) | ((a < 0) ? 0x0080000000 : 0) | ((b < 0) ? 0x0000008000 : 0);
+        return (this.a * 1024 * 1024 + this.c * 1024 + this.b) * 256;
     }
 
     public NextTickListEntry a(long i) {

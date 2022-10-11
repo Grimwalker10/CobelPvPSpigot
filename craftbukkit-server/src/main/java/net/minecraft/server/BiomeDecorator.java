@@ -1,6 +1,5 @@
 package net.minecraft.server;
 
-import com.cobelpvp.worldgen.GeneratorConfig;
 import java.util.Random;
 
 public class BiomeDecorator {
@@ -46,6 +45,12 @@ public class BiomeDecorator {
         this.g = new WorldGenSand(Blocks.GRAVEL, 6);
         this.h = new WorldGenMinable(Blocks.DIRT, 32);
         this.i = new WorldGenMinable(Blocks.GRAVEL, 32);
+        this.j = new WorldGenMinable(Blocks.COAL_ORE, 16);
+        this.k = new WorldGenMinable(Blocks.IRON_ORE, 8);
+        this.l = new WorldGenMinable(Blocks.GOLD_ORE, 8);
+        this.m = new WorldGenMinable(Blocks.REDSTONE_ORE, 7);
+        this.n = new WorldGenMinable(Blocks.DIAMOND_ORE, 7);
+        this.o = new WorldGenMinable(Blocks.LAPIS_ORE, 6);
         this.p = new WorldGenFlowers(Blocks.YELLOW_FLOWER);
         this.q = new WorldGenFlowers(Blocks.BROWN_MUSHROOM);
         this.r = new WorldGenFlowers(Blocks.RED_MUSHROOM);
@@ -69,14 +74,6 @@ public class BiomeDecorator {
             this.b = random;
             this.c = i;
             this.d = j;
-            // CobelPvP Start
-            this.j = new WorldGenMinable(Blocks.COAL_ORE, world.generatorConfig.coalSize, world.generatorConfig.coalMustTouchAir);
-            this.k = new WorldGenMinable(Blocks.IRON_ORE, world.generatorConfig.ironSize, world.generatorConfig.ironMustTouchAir);
-            this.l = new WorldGenMinable(Blocks.GOLD_ORE, world.generatorConfig.goldSize, world.generatorConfig.goldMustTouchAir);
-            this.m = new WorldGenMinable(Blocks.REDSTONE_ORE, world.generatorConfig.redstoneSize, world.generatorConfig.redstoneMustTouchAir);
-            this.n = new WorldGenMinable(Blocks.DIAMOND_ORE, world.generatorConfig.diamondSize, world.generatorConfig.diamondMustTouchAir);
-            this.o = new WorldGenMinable(Blocks.LAPIS_ORE, world.generatorConfig.lapisSize, world.generatorConfig.lapisMustTouchAir);
-            // CobelPvP end
             this.a(biomebase);
             this.a = null;
             this.b = null;
@@ -204,14 +201,14 @@ public class BiomeDecorator {
             this.r.generate(this.a, this.b, j, l, k);
         }
 
-        for (j = 0; j < this.C * this.a.generatorConfig.sugarCaneMultiplier; ++j) {
+        for (j = 0; j < this.C; ++j) {
             k = this.c + this.b.nextInt(16) + 8;
             l = this.d + this.b.nextInt(16) + 8;
             i1 = this.b.nextInt(this.getHighestBlockYAt(k, l) * 2); // Spigot
             this.t.generate(this.a, this.b, k, i1, l);
         }
 
-        for (j = 0; j < 10 * this.a.generatorConfig.sugarCaneMultiplier; ++j) {
+        for (j = 0; j < 10; ++j) {
             k = this.c + this.b.nextInt(16) + 8;
             l = this.d + this.b.nextInt(16) + 8;
             i1 = this.b.nextInt(this.getHighestBlockYAt(k, l) * 2); // Spigot
@@ -272,13 +269,12 @@ public class BiomeDecorator {
     protected void a() {
         this.a(20, this.h, 0, 256);
         this.a(10, this.i, 0, 256);
-        GeneratorConfig conf = this.a.generatorConfig;
-        if (conf.coalMultiplier > 0) this.a((int) (20 * conf.coalMultiplier + this.b.nextFloat()), this.j, 0, 128);
-        if (conf.ironMultiplier > 0) this.a((int) (20 * conf.ironMultiplier + this.b.nextFloat()), this.k, 0, 64);
-        if (conf.goldMultiplier > 0) this.a((int) (2 * conf.goldMultiplier + this.b.nextFloat()), this.l, 0, 32);
-        if (conf.redstoneMultiplier > 0) this.a((int) (8 * conf.redstoneMultiplier + this.b.nextFloat()), this.m, 0, 16);
-        if (conf.diamondMultiplier > 0) this.a((int) (1 * conf.diamondMultiplier + this.b.nextFloat()), this.n, 0, 16);
-        if (conf.lapisMultiplier > 0) this.b((int) (1 * conf.lapisMultiplier + this.b.nextFloat()), this.o, 16, 16);
+        this.a(20, this.j, 0, 128);
+        this.a(20, this.k, 0, 64);
+        this.a(2, this.l, 0, 32);
+        this.a(8, this.m, 0, 16);
+        this.a(1, this.n, 0, 16);
+        this.b(1, this.o, 16, 16);
     }
 
     // Spigot Start

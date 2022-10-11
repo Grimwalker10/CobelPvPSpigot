@@ -20,28 +20,6 @@ public class Village {
     private List aggressors = new ArrayList();
     private int ironGolemCount;
 
-    // Poweruser start
-    private int[][] positions = null;
-
-    private void calculateNewCheckPositions() {
-        this.positions = new int[][] { {(this.center.x - this.size) >> 4, (this.center.z - this.size) >> 4},
-                {(this.center.x - this.size) >> 4, (this.center.z + this.size) >> 4},
-                {(this.center.x + this.size) >> 4, (this.center.z - this.size) >> 4},
-                {(this.center.x + this.size) >> 4, (this.center.z + this.size) >> 4},
-                {this.center.x >> 4, this.center.z >> 4} };
-    }
-
-    public boolean isVillageAreaLoaded() {
-        for(int i = 0; this.positions != null && i < this.positions.length; i++) {
-            int[] pos = this.positions[i];
-            if(this.world.isChunkLoaded(pos[0], pos[1])) {
-                return true;
-            }
-        }
-        return false;
-    }
-    // Poweruser end
-
     public Village() {}
 
     public Village(World world) {
@@ -53,7 +31,6 @@ public class Village {
     }
 
     public void tick(int i) {
-        if(!this.isVillageAreaLoaded()) { return; } // Poweruser
         this.time = i;
         this.m();
         this.l();
@@ -353,7 +330,6 @@ public class Village {
 
             this.size = Math.max(32, (int) Math.sqrt((double) j) + 1);
         }
-        this.calculateNewCheckPositions(); // Poweruser
     }
 
     public int a(String s) {
@@ -403,7 +379,6 @@ public class Village {
 
             this.playerStandings.put(nbttagcompound2.getString("Name"), Integer.valueOf(nbttagcompound2.getInt("S")));
         }
-        this.calculateNewCheckPositions(); // Poweruser
     }
 
     public void b(NBTTagCompound nbttagcompound) {

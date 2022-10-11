@@ -3,7 +3,13 @@ package net.minecraft.server;
 import java.io.File;
 import java.net.SocketAddress;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import net.minecraft.util.com.google.common.base.Charsets;
@@ -14,7 +20,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
-import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
@@ -31,55 +36,19 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
-import org.spigotmc.SpigotConfig;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 // CraftBukkit end
 
 public abstract class PlayerList {
 
-    // CobelPvP start - Dedicated config directory
-    public static final File a = new File("config/misc", "banned-players.json");
-    public static final File b = new File("config/misc", "banned-ips.json");
-    public static final File c = new File("config/misc", "ops.json");
-    public static final File d = new File("config/misc", "whitelist.json");
-    // CobelPvP end
+    public static final File a = new File("banned-players.json");
+    public static final File b = new File("banned-ips.json");
+    public static final File c = new File("ops.json");
+    public static final File d = new File("whitelist.json");
     private static final Logger g = LogManager.getLogger();
     private static final SimpleDateFormat h = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
     private final MinecraftServer server;
     public final List players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
-    // PaperSpigot start - Player lookup improvements
-    public final Map<String, EntityPlayer> playerMap = new java.util.HashMap<String, EntityPlayer>() {
-        @Override
-        public EntityPlayer put(String key, EntityPlayer value) {
-            return super.put(key.toLowerCase(), value);
-        }
-
-        @Override
-        public EntityPlayer get(Object key) {
-            // put the .playerConnection check done in other places here
-            EntityPlayer player = super.get(key instanceof String ? ((String)key).toLowerCase() : key);
-            return (player != null && player.playerConnection != null) ? player : null;
-        }
-
-        @Override
-        public boolean containsKey(Object key) {
-            return get(key) != null;
-        }
-
-        @Override
-        public EntityPlayer remove(Object key) {
-            return super.remove(key instanceof String ? ((String)key).toLowerCase() : key);
-        }
-    };
-    public final Map<UUID, EntityPlayer> uuidMap = new java.util.HashMap<UUID, EntityPlayer>() {
-        @Override
-        public EntityPlayer get(Object key) {
-            // put the .playerConnection check done in other places here
-            EntityPlayer player = super.get(key instanceof String ? ((String)key).toLowerCase() : key);
-            return (player != null && player.playerConnection != null) ? player : null;
-        }
-    };
-    // PaperSpigot end
     private final GameProfileBanList j;
     private final IpBanList k;
     private final OpList operators;
@@ -168,6 +137,18 @@ public abstract class PlayerList {
         entityplayer.getStatisticManager().updateStatistics(entityplayer);
         this.sendScoreboard((ScoreboardServer) worldserver.getScoreboard(), entityplayer);
         this.server.az();
+        /* CraftBukkit start - login message is handled in the event
+        ChatMessage chatmessage;
+
+        if (!entityplayer.getName().equalsIgnoreCase(s)) {
+            chatmessage = new ChatMessage("multiplayer.player.joined.renamed", new Object[] { entityplayer.getScoreboardDisplayName(), s});
+        } else {
+            chatmessage = new ChatMessage("multiplayer.player.joined", new Object[] { entityplayer.getScoreboardDisplayName()});
+        }
+
+        chatmessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
+        this.sendMessage(chatmessage);
+        // CraftBukkit end */
         this.c(entityplayer);
         worldserver = this.server.getWorldServer(entityplayer.dimension); // CraftBukkit - Update in case join event changed it
         playerconnection.a(entityplayer.locX, entityplayer.locY, entityplayer.locZ, entityplayer.yaw, entityplayer.pitch);
@@ -197,7 +178,7 @@ public abstract class PlayerList {
         }
 
         // CraftBukkit - Moved from above, added world
-        g.info(entityplayer.getName() + " logged in at (" + entityplayer.world.worldData.getName() + ", " + String.format("%.1f", entityplayer.locX) + ", " + String.format("%.1f", entityplayer.locY) + ", " + String.format("%.1f", entityplayer.locZ) + ")");
+        g.info(entityplayer.getName() + "[" + s1 + "] logged in with entity id " + entityplayer.getId() + " at ([" + entityplayer.world.worldData.getName() + "] " + entityplayer.locX + ", " + entityplayer.locY + ", " + entityplayer.locZ + ")");
     }
 
     public void sendScoreboard(ScoreboardServer scoreboardserver, EntityPlayer entityplayer) { // CraftBukkit - protected -> public
@@ -226,8 +207,6 @@ public abstract class PlayerList {
                 hashset.add(scoreboardobjective);
             }
         }
-
-        scoreboardserver.addViewer(entityplayer);
     }
 
     public void setPlayerFileData(WorldServer[] aworldserver) {
@@ -243,7 +222,7 @@ public abstract class PlayerList {
         }
 
         worldserver1.getPlayerChunkMap().addPlayer(entityplayer);
-        worldserver1.chunkProviderServer.getChunkAt(MathHelper.floor(entityplayer.locX) >> 4, MathHelper.floor(entityplayer.locZ) >> 4);
+        worldserver1.chunkProviderServer.getChunkAt((int) entityplayer.locX >> 4, (int) entityplayer.locZ >> 4);
     }
 
     public int d() {
@@ -267,8 +246,6 @@ public abstract class PlayerList {
     }
 
     protected void b(EntityPlayer entityplayer) {
-        if (SpigotConfig.disableSaving) return;
-        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; }
         this.playerFileData.save(entityplayer);
         ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) this.n.get(entityplayer.getUniqueID());
 
@@ -279,16 +256,14 @@ public abstract class PlayerList {
 
     public void c(EntityPlayer entityplayer) {
         cserver.detectListNameConflict(entityplayer); // CraftBukkit
+        // this.sendAll(new PacketPlayOutPlayerInfo(entityplayer.getName(), true, 1000)); // CraftBukkit - replaced with loop below
         this.players.add(entityplayer);
-        this.playerMap.put(entityplayer.getName(), entityplayer); // PaperSpigot
-        this.uuidMap.put(entityplayer.getUniqueID(), entityplayer); // PaperSpigot
         WorldServer worldserver = this.server.getWorldServer(entityplayer.dimension);
 
         // CraftBukkit start
-
-        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(this.cserver.getPlayer(entityplayer), "\u00A7f" + entityplayer.getName() + " joined the game.");
-
+        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(this.cserver.getPlayer(entityplayer), "\u00A7e" + entityplayer.getName() + " joined the game.");
         this.cserver.getPluginManager().callEvent(playerJoinEvent);
+
         String joinMessage = playerJoinEvent.getJoinMessage();
 
         if ((joinMessage != null) && (joinMessage.length() > 0)) {
@@ -308,18 +283,17 @@ public abstract class PlayerList {
         }
         // CraftBukkit end
 
-        if (SpigotConfig.onlyCustomTab) return;
-
         // CraftBukkit start - sendAll above replaced with this loop
         PacketPlayOutPlayerInfo packet = PacketPlayOutPlayerInfo.addPlayer( entityplayer ); // Spigot - protocol patch
-        PacketPlayOutPlayerInfo displayPacket = PacketPlayOutPlayerInfo.updateDisplayName( entityplayer ); // Spigot Update - 20140927a
+        PacketPlayOutPlayerInfo displayPacket = PacketPlayOutPlayerInfo.updateDisplayName( entityplayer ); // Spigot - protocol patch
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
-            if (entityplayer1.getBukkitEntity().canSeeFromTab(entityplayer.getBukkitEntity())) {
+            if (entityplayer1.getBukkitEntity().canSee(entityplayer.getBukkitEntity())) {
                 entityplayer1.playerConnection.sendPacket(packet);
-                // Spigot start - Update 20140927a // Update - 20141001a
-                if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer1.playerConnection.networkManager.getVersion() > 28 ) {
+                // Spigot start - protocol patch
+                if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer1.playerConnection.networkManager.getVersion() > 28 )
+                {
                     entityplayer1.playerConnection.sendPacket( displayPacket );
                 }
                 // Spigot end
@@ -331,12 +305,14 @@ public abstract class PlayerList {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
             // CraftBukkit start
-            if (!entityplayer.getBukkitEntity().canSeeFromTab(entityplayer1.getBukkitEntity())) {
+            if (!entityplayer.getBukkitEntity().canSee(entityplayer1.getBukkitEntity())) {
                 continue;
             }
             // .name -> .listName
             entityplayer.playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( entityplayer1 )); // Spigot - protocol patch
-            if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 ) {
+            // Spigot start - protocol patch
+            if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 )
+            {
                 entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.updateDisplayName( entityplayer1 ) );
             }
             // Spigot end
@@ -346,7 +322,6 @@ public abstract class PlayerList {
 
     public void d(EntityPlayer entityplayer) {
         entityplayer.r().getPlayerChunkMap().movePlayer(entityplayer);
-        entityplayer.world.playerMap.move(entityplayer); // CobelPvP
     }
 
     public String disconnect(EntityPlayer entityplayer) { // CraftBukkit - return string
@@ -355,7 +330,7 @@ public abstract class PlayerList {
         // CraftBukkit start - Quitting must be before we do final save of data, in case plugins need to modify it
         org.bukkit.craftbukkit.event.CraftEventFactory.handleInventoryCloseEvent(entityplayer);
 
-        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(this.cserver.getPlayer(entityplayer), "\u00A7f" + entityplayer.getName() + " left the game.");
+        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(this.cserver.getPlayer(entityplayer), "\u00A7e" + entityplayer.getName() + " left the game.");
         this.cserver.getPluginManager().callEvent(playerQuitEvent);
         entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
         // CraftBukkit end
@@ -371,8 +346,6 @@ public abstract class PlayerList {
         worldserver.kill(entityplayer);
         worldserver.getPlayerChunkMap().removePlayer(entityplayer);
         this.players.remove(entityplayer);
-        this.playerMap.remove(entityplayer.getName()); // PaperSpigot
-        this.uuidMap.remove(entityplayer.getUniqueID()); // PaperSpigot
         this.n.remove(entityplayer.getUniqueID());
         ChunkIOExecutor.adjustPoolSize(this.getPlayerCount()); // CraftBukkit
 
@@ -382,8 +355,7 @@ public abstract class PlayerList {
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
-            if (entityplayer1.getBukkitEntity().canSeeFromTab(entityplayer.getBukkitEntity())) {
-                if (!SpigotConfig.playerListPackets) continue;
+            if (entityplayer1.getBukkitEntity().canSee(entityplayer.getBukkitEntity())) {
                 entityplayer1.playerConnection.sendPacket(packet);
             } else {
                 entityplayer1.getBukkitEntity().removeDisconnectingPlayer(entityplayer.getBukkitEntity());
@@ -398,6 +370,9 @@ public abstract class PlayerList {
 
     // CraftBukkit start - Whole method, SocketAddress to LoginListener, added hostname to signature, return EntityPlayer
     public EntityPlayer attemptLogin(LoginListener loginlistener, GameProfile gameprofile, String hostname) {
+        // Instead of kicking then returning, we need to store the kick reason
+        // in the event, check with plugins to see if it's ok, and THEN kick
+        // depending on the outcome.
         SocketAddress socketaddress = loginlistener.networkManager.getSocketAddress();
 
         EntityPlayer entity = new EntityPlayer(this.server, this.server.getWorldServer(0), gameprofile, new PlayerInteractManager(this.server.getWorldServer(0)));
@@ -447,13 +422,35 @@ public abstract class PlayerList {
 
     public EntityPlayer processLogin(GameProfile gameprofile, EntityPlayer player) { // CraftBukkit - added EntityPlayer
         UUID uuid = EntityHuman.a(gameprofile);
+        ArrayList arraylist = Lists.newArrayList();
 
         EntityPlayer entityplayer;
 
-        if ((entityplayer = uuidMap.get(uuid)) != null) {
-            // PaperSpigot end
+        for (int i = 0; i < this.players.size(); ++i) {
+            entityplayer = (EntityPlayer) this.players.get(i);
+            if (entityplayer.getUniqueID().equals(uuid)) {
+                arraylist.add(entityplayer);
+            }
+        }
+
+        Iterator iterator = arraylist.iterator();
+
+        while (iterator.hasNext()) {
+            entityplayer = (EntityPlayer) iterator.next();
             entityplayer.playerConnection.disconnect("You logged in from another location");
         }
+
+        /* CraftBukkit start
+        Object object;
+
+        if (this.server.R()) {
+            object = new DemoPlayerInteractManager(this.server.getWorldServer(0));
+        } else {
+            object = new PlayerInteractManager(this.server.getWorldServer(0));
+        }
+
+        return new EntityPlayer(this.server, this.server.getWorldServer(0), gameprofile, (PlayerInteractManager) object);
+        // */
         return player;
         // CraftBukkit end
     }
@@ -473,6 +470,18 @@ public abstract class PlayerList {
         ChunkCoordinates chunkcoordinates = entityplayer.getBed();
         boolean flag1 = entityplayer.isRespawnForced();
 
+        /* CraftBukkit start
+        entityplayer.dimension = i;
+        Object object;
+
+        if (this.server.R()) {
+            object = new DemoPlayerInteractManager(this.server.getWorldServer(entityplayer.dimension));
+        } else {
+            object = new PlayerInteractManager(this.server.getWorldServer(entityplayer.dimension));
+        }
+
+        EntityPlayer entityplayer1 = new EntityPlayer(this.server, this.server.getWorldServer(entityplayer.dimension), entityplayer.getProfile(), (PlayerInteractManager) object);
+        // */
         EntityPlayer entityplayer1 = entityplayer;
         org.bukkit.World fromWorld = entityplayer1.getBukkitEntity().getWorld();
         entityplayer1.viewingCredits = false;
@@ -481,6 +490,9 @@ public abstract class PlayerList {
         entityplayer1.playerConnection = entityplayer.playerConnection;
         entityplayer1.copyTo(entityplayer, flag);
         entityplayer1.d(entityplayer.getId());
+        // WorldServer worldserver = this.server.getWorldServer(entityplayer.dimension); // CraftBukkit - handled later
+
+        // this.a(entityplayer1, entityplayer, worldserver); // CraftBukkit - removed
         ChunkCoordinates chunkcoordinates1;
 
         // CraftBukkit start - fire PlayerRespawnEvent
@@ -501,8 +513,7 @@ public abstract class PlayerList {
             if (location == null) {
                 cworld = (CraftWorld) this.server.server.getWorlds().get(0);
                 chunkcoordinates = cworld.getHandle().getSpawn();
-
-                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5, cworld.getHandle().getWorldData().getSpawnYaw(), cworld.getHandle().getWorldData().getSpawnPitch()); // CobelPvP
+                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5);
             }
 
             Player respawnPlayer = this.cserver.getPlayer(entityplayer1);
@@ -523,7 +534,7 @@ public abstract class PlayerList {
         entityplayer1.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         // CraftBukkit end
 
-        worldserver.chunkProviderServer.getChunkAt(MathHelper.floor(entityplayer1.locX) >> 4, MathHelper.floor(entityplayer1.locZ) >> 4);
+        worldserver.chunkProviderServer.getChunkAt((int) entityplayer1.locX >> 4, (int) entityplayer1.locZ >> 4);
 
         while (avoidSuffocation && !worldserver.getCubes(entityplayer1, entityplayer1.boundingBox).isEmpty()) { // CraftBukkit
             entityplayer1.setPosition(entityplayer1.locX, entityplayer1.locY + 1.0D, entityplayer1.locZ);
@@ -611,8 +622,6 @@ public abstract class PlayerList {
         }
 
         TravelAgent agent = exit != null ? (TravelAgent) ((CraftWorld) exit.getWorld()).getHandle().getTravelAgent() : org.bukkit.craftbukkit.CraftTravelAgent.DEFAULT; // return arbitrary TA to compensate for implementation dependent plugins
-        agent.setCanCreatePortal(cause != TeleportCause.END_PORTAL); // PaperSpigot - Configurable end credits, don't allow End Portals to create portals
-
         PlayerPortalEvent event = new PlayerPortalEvent(entityplayer.getBukkitEntity(), enter, exit, agent, cause);
         event.useTravelAgent(useTravelAgent);
         Bukkit.getServer().getPluginManager().callEvent(event);
@@ -620,8 +629,7 @@ public abstract class PlayerList {
             return;
         }
 
-        // PaperSpigot - Configurable end credits, if a plugin sets to use a travel agent even if the cause is an end portal, ignore it
-        exit = cause != TeleportCause.END_PORTAL && event.useTravelAgent() ? event.getPortalTravelAgent().findOrCreate(event.getTo()) : event.getTo();
+        exit = event.useTravelAgent() ? event.getPortalTravelAgent().findOrCreate(event.getTo()) : event.getTo();
         if (exit == null) {
             return;
         }
@@ -658,12 +666,32 @@ public abstract class PlayerList {
         double d0 = enter.getX();
         double d1 = enter.getZ();
         double d2 = 8.0D;
+        /*
+        double d3 = entity.locX;
+        double d4 = entity.locY;
+        double d5 = entity.locZ;
+        float f = entity.yaw;
+
+        worldserver.methodProfiler.a("moving");
+        */
         if (worldserver1.dimension == -1) {
             d0 /= d2;
             d1 /= d2;
+            /*
+            entity.setPositionRotation(d0, entity.locY, d1, entity.yaw, entity.pitch);
+            if (entity.isAlive()) {
+                worldserver.entityJoinedWorld(entity, false);
+            }
+            */
         } else if (worldserver1.dimension == 0) {
             d0 *= d2;
             d1 *= d2;
+            /*
+            entity.setPositionRotation(d0, entity.locY, d1, entity.yaw, entity.pitch);
+            if (entity.isAlive()) {
+                worldserver.entityJoinedWorld(entity, false);
+            }
+            */
         } else {
             ChunkCoordinates chunkcoordinates;
 
@@ -672,22 +700,20 @@ public abstract class PlayerList {
                 worldserver1 = this.server.worlds.get(0);
                 chunkcoordinates = worldserver1.getSpawn();
             } else {
-                // Poweruser start
-                if(worldserver1.spigotConfig.useAlternateEndSpawn) {
-                    chunkcoordinates = worldserver1.getSpawn();
-                } else {
-                    chunkcoordinates = worldserver1.getDimensionSpawn();
-                }
-                // Poweruser end
+                chunkcoordinates = worldserver1.getDimensionSpawn();
             }
 
             d0 = (double) chunkcoordinates.x;
             y = (double) chunkcoordinates.y;
             d1 = (double) chunkcoordinates.z;
-            // Poweruser start
-            yaw = worldserver1.getWorldData().getSpawnYaw();
-            pitch = worldserver1.getWorldData().getSpawnPitch();
-            // Poweruser end
+            yaw = 90.0F;
+            pitch = 0.0F;
+            /*
+            entity.setPositionRotation(d0, entity.locY, d1, 90.0F, 0.0F);
+            if (entity.isAlive()) {
+                worldserver.entityJoinedWorld(entity, false);
+            }
+            */
         }
 
         // worldserver.methodProfiler.b();
@@ -695,6 +721,16 @@ public abstract class PlayerList {
             // worldserver.methodProfiler.a("placing");
             d0 = (double) MathHelper.a((int) d0, -29999872, 29999872);
             d1 = (double) MathHelper.a((int) d1, -29999872, 29999872);
+            /*
+            if (entity.isAlive()) {
+                worldserver1.addEntity(entity);
+                entity.setPositionRotation(d0, entity.locY, d1, entity.yaw, entity.pitch);
+                worldserver1.entityJoinedWorld(entity, false);
+                worldserver1.getTravelAgent().a(entity, d3, d4, d5, f);
+            }
+
+            worldserver.methodProfiler.b();
+            */
         }
 
         // entity.spawnIn(worldserver1);
@@ -706,16 +742,62 @@ public abstract class PlayerList {
         int i = entity.dimension;
         WorldServer worldserver = (WorldServer) entity.world;
         WorldServer worldserver1 = ((CraftWorld) exit.getWorld()).getHandle();
+        /*
+        double d0 = entity.locX;
+        double d1 = entity.locZ;
+        double d2 = 8.0D;
+        double d3 = entity.locX;
+        double d4 = entity.locY;
+        double d5 = entity.locZ;
+        float f = entity.yaw;
+        */
 
         worldserver.methodProfiler.a("moving");
         entity.setPositionRotation(exit.getX(), exit.getY(), exit.getZ(), exit.getYaw(), exit.getPitch());
         if (entity.isAlive()) {
             worldserver.entityJoinedWorld(entity, false);
         }
+        /*
+        if (entity.dimension == -1) {
+            d0 /= d2;
+            d1 /= d2;
+            entity.setPositionRotation(d0, entity.locY, d1, entity.yaw, entity.pitch);
+            if (entity.isAlive()) {
+                worldserver.entityJoinedWorld(entity, false);
+            }
+        } else if (entity.dimension == 0) {
+            d0 *= d2;
+            d1 *= d2;
+            entity.setPositionRotation(d0, entity.locY, d1, entity.yaw, entity.pitch);
+            if (entity.isAlive()) {
+                worldserver.entityJoinedWorld(entity, false);
+            }
+        } else {
+            ChunkCoordinates chunkcoordinates;
+
+            if (i == 1) {
+                chunkcoordinates = worldserver1.getSpawn();
+            } else {
+                chunkcoordinates = worldserver1.getDimensionSpawn();
+            }
+
+            d0 = (double) chunkcoordinates.x;
+            entity.locY = (double) chunkcoordinates.y;
+            d1 = (double) chunkcoordinates.z;
+            entity.setPositionRotation(d0, entity.locY, d1, 90.0F, 0.0F);
+            if (entity.isAlive()) {
+                worldserver.entityJoinedWorld(entity, false);
+            }
+        }
+        */
 
         worldserver.methodProfiler.b();
         if (i != 1) {
             worldserver.methodProfiler.a("placing");
+            /*
+            d0 = (double) MathHelper.a((int) d0, -29999872, 29999872);
+            d1 = (double) MathHelper.a((int) d1, -29999872, 29999872);
+            */
             if (entity.isAlive()) {
                 // entity.setPositionRotation(d0, entity.locY, d1, entity.yaw, entity.pitch)
                 // worldserver1.getTravelAgent().a(entity, d3, d4, d5, f);
@@ -745,20 +827,26 @@ public abstract class PlayerList {
             this.t = 0;
         }
 
+        /* CraftBukkit start - Remove updating of lag to players -- it spams way to much on big servers.
+        if (this.t < this.players.size()) {
+            EntityPlayer entityplayer = (EntityPlayer) this.players.get(this.p);
+
+            this.sendAll(new PacketPlayOutPlayerInfo(entityplayer.getName(), true, entityplayer.ping));
+        }
+        // CraftBukkit end */
+        // Spigot start
         try
         {
-            if ( !players.isEmpty() && SpigotConfig.updatePingOnTablist)
+            if ( !players.isEmpty() )
             {
                 currentPing = ( currentPing + 1 ) % this.players.size();
                 EntityPlayer player = (EntityPlayer) this.players.get( currentPing );
-                int oldPingToBars = pingToBars(player.lastPing);
-                int newPingToBars = pingToBars(player.ping);
-                if ( player.lastPing == -1 || oldPingToBars != newPingToBars )
+                if ( player.lastPing == -1 || Math.abs( player.ping - player.lastPing ) > 20 )
                 {
                     Packet packet = PacketPlayOutPlayerInfo.updatePing( player ); // Spigot - protocol patch
                     for ( EntityPlayer splayer : (List<EntityPlayer>) this.players )
                     {
-                        if ( splayer.getBukkitEntity().canSeeFromTab( player.getBukkitEntity() ) )
+                        if ( splayer.getBukkitEntity().canSee( player.getBukkitEntity() ) )
                         {
                             splayer.playerConnection.sendPacket( packet );
                         }
@@ -771,18 +859,6 @@ public abstract class PlayerList {
         }
         // Spigot end
     }
-
-    // CobelPvP start
-    private int pingToBars(int ping) {
-        if (ping < 0) return 5;
-        else if (ping < 150) return 0;
-        else if (ping < 300) return 1;
-        else if (ping < 600) return 2;
-        else if (ping < 1_000) return 3;
-        else if (ping < Short.MAX_VALUE) return 4;
-        else return 5;
-    }
-    // CobelPvP end
 
     public void sendAll(Packet packet) {
         for (int i = 0; i < this.players.size(); ++i) {
@@ -878,7 +954,6 @@ public abstract class PlayerList {
     }
 
     public EntityPlayer getPlayer(String s) {
-        if (true) { return playerMap.get(s); } // PaperSpigot
         Iterator iterator = this.players.iterator();
 
         EntityPlayer entityplayer;
@@ -1009,7 +1084,7 @@ public abstract class PlayerList {
             EntityPlayer entityplayer = (EntityPlayer) this.players.get(j);
 
             // CraftBukkit start - Test if player receiving packet can see the source of the packet
-            if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSeeFromTab(((EntityPlayer) entityhuman).getBukkitEntity())) {
+            if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSee(((EntityPlayer) entityhuman).getBukkitEntity())) {
                 continue;
             }
             // CraftBukkit end
@@ -1027,8 +1102,6 @@ public abstract class PlayerList {
     }
 
     public void savePlayers() {
-        if (SpigotConfig.disableSaving) return; // CobelPvP
-        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
         for (int i = 0; i < this.players.size(); ++i) {
             this.b((EntityPlayer) this.players.get(i));
         }
@@ -1063,6 +1136,10 @@ public abstract class PlayerList {
     public void b(EntityPlayer entityplayer, WorldServer worldserver) {
         entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(worldserver.getTime(), worldserver.getDayTime(), worldserver.getGameRules().getBoolean("doDaylightCycle")));
         if (worldserver.Q()) {
+            // CraftBukkit start - handle player weather
+            // entityplayer.playerConnection.sendPacket(new PacketPlayOutGameStateChange(1, 0.0F));
+            // entityplayer.playerConnection.sendPacket(new PacketPlayOutGameStateChange(7, worldserver.j(1.0F)));
+            // entityplayer.playerConnection.sendPacket(new PacketPlayOutGameStateChange(8, worldserver.h(1.0F)));
             entityplayer.setPlayerWeather(org.bukkit.WeatherType.DOWNFALL, false);
             // CraftBukkit end
         }
@@ -1169,6 +1246,14 @@ public abstract class PlayerList {
         if (serverstatisticmanager == null) {
             File file1 = new File(this.server.getWorldServer(0).getDataManager().getDirectory(), "stats");
             File file2 = new File(file1, uuid.toString() + ".json");
+
+            if (!file2.exists()) {
+                File file3 = new File(file1, entityhuman.getName() + ".json");
+
+                if (file3.exists() && file3.isFile()) {
+                    file3.renameTo(file2);
+                }
+            }
 
             serverstatisticmanager = new ServerStatisticManager(this.server, file2);
             serverstatisticmanager.a();

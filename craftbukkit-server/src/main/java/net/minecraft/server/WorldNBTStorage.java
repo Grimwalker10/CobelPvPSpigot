@@ -18,12 +18,6 @@ import java.util.UUID;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 // CraftBukkit end
 
-// Poweruser start
-import net.minecraft.optimizations.utils.PlayerDataCache;
-import net.minecraft.optimizations.utils.PlayerDataSaveJob;
-import net.minecraft.optimizations.utils.ThreadingManager;
-// Poweruser end
-
 public class WorldNBTStorage implements IDataManager, IPlayerFileData {
 
     private static final Logger a = LogManager.getLogger();
@@ -33,7 +27,6 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
     private final long sessionId = MinecraftServer.ar();
     private final String f;
     private UUID uuid = null; // CraftBukkit
-    private PlayerDataCache<File, NBTTagCompound> dataCache = new PlayerDataCache<File, NBTTagCompound>(); // Poweruser
 
     public WorldNBTStorage(File file1, String s, boolean flag) {
         this.baseDir = new File(file1, s);
@@ -47,14 +40,6 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
         }
 
         this.h();
-
-        // CobelPvP start - manually check lock on startup
-        try {
-            checkSession0();
-        } catch (Throwable t) {
-            org.spigotmc.SneakyThrow.sneaky(t);
-        }
-        // CobelPvP end
     }
 
     private void h() {
@@ -77,10 +62,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
         return this.baseDir;
     }
 
-    public void checkSession() throws ExceptionWorldConflict {} // CraftBukkit - throws ExceptionWorldConflict // CobelPvP - we can safely do so as the server will stop upon detecting a session conflict on startup
-
-    // CobelPvP start - locally used checkSession
-    private void checkSession0() throws ExceptionWorldConflict {
+    public void checkSession() throws ExceptionWorldConflict { // CraftBukkit - throws ExceptionWorldConflict
         try {
             File file1 = new File(this.baseDir, "session.lock");
             DataInputStream datainputstream = new DataInputStream(new FileInputStream(file1));
@@ -96,7 +78,6 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             throw new ExceptionWorldConflict("Failed to check session lock for world located at " + this.baseDir + ", aborting. Stop the server and delete the session.lock in this world to prevent further issues."); // Spigot
         }
     }
-    // CobelPvP end
 
     public IChunkLoader createChunkLoader(WorldProvider worldprovider) {
         throw new RuntimeException("Old Chunk Storage is no longer supported.");
@@ -196,14 +177,15 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             NBTTagCompound nbttagcompound = new NBTTagCompound();
 
             entityhuman.e(nbttagcompound);
-
-            // Poweruser start
+            File file1 = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat.tmp");
             File file2 = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat");
-            synchronized(this.dataCache) {
-                this.dataCache.put(file2, nbttagcompound);
+
+            NBTCompressedStreamTools.a(nbttagcompound, (OutputStream) (new FileOutputStream(file1)));
+            if (file2.exists()) {
+                file2.delete();
             }
-            ThreadingManager.saveNBTPlayerDataStatic(new PlayerDataSaveJob(file2, nbttagcompound));
-            // Poweruser end
+
+            file1.renameTo(file2);
         } catch (Exception exception) {
             a.warn("Failed to save player data for " + entityhuman.getName());
         }
@@ -216,21 +198,9 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             File file1 = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat");
             // Spigot Start
             boolean usingWrongFile = false;
-
-            // Poweruser start
-            NBTTagCompound playerdata = null;
-            synchronized(this.dataCache) {
-                playerdata = this.dataCache.get(file1);
-            }
-            if ( !file1.exists() && playerdata == null)
-            // Poweruser end
+            if ( !file1.exists() )
             {
                 file1 = new File( this.playerDir, UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
-                // Poweruser start
-                synchronized(this.dataCache) {
-                    playerdata = this.dataCache.get(file1);
-                }
-                // Poweruser end
                 if ( file1.exists() )
                 {
                     usingWrongFile = true;
@@ -239,11 +209,6 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             }
             // Spigot End
 
-            // Poweruser start
-            if (playerdata != null) {
-                nbttagcompound = playerdata;
-            } else
-            // Poweruser end
             if (file1.exists() && file1.isFile()) {
                 nbttagcompound = NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file1)));
             }

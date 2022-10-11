@@ -47,7 +47,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
                     if (throttleTracker.containsKey(address) && !"127.0.0.1".equals(address.getHostAddress()) && currentTime - throttleTracker.get(address) < connectionThrottle) {
                         throttleTracker.put(address, currentTime);
                         chatcomponenttext = new ChatComponentText("Connection throttled! Please wait before reconnecting.");
-                        this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext), NetworkManager.emptyListenerArray); // CobelPvP
+                        this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext), new GenericFutureListener[0]);
                         this.b.close(chatcomponenttext);
                         return;
                     }
@@ -74,11 +74,11 @@ public class HandshakeListener implements PacketHandshakingInListener {
 
             if (packethandshakinginsetprotocol.d() > 5 && packethandshakinginsetprotocol.d() != 47) { // Spigot
                 chatcomponenttext = new ChatComponentText( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedServerMessage, "1.7.10" ) ); // Spigot
-                this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext), NetworkManager.emptyListenerArray); // CobelPvP
+                this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext), new GenericFutureListener[0]);
                 this.b.close(chatcomponenttext);
             } else if (packethandshakinginsetprotocol.d() < 4) {
                 chatcomponenttext = new ChatComponentText( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedClientMessage, "1.7.10" ) ); // Spigot
-                this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext), NetworkManager.emptyListenerArray); // CobelPvP
+                this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext), new GenericFutureListener[0]);
                 this.b.close(chatcomponenttext);
             } else {
                 this.b.a((PacketListener) (new LoginListener(this.a, this.b)));
@@ -92,7 +92,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
                     } else
                     {
                         chatcomponenttext = new ChatComponentText("If you wish to use IP forwarding, please enable it in your BungeeCord config as well!");
-                        this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext), NetworkManager.emptyListenerArray); // CobelPvP
+                        this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext), new GenericFutureListener[0]);
                         this.b.close(chatcomponenttext);
                         return;
                     }

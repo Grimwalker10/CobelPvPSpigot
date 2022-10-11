@@ -147,7 +147,7 @@ public abstract class Command {
         }
 
         if (permissionMessage == null) {
-            target.sendMessage("Unknown command. Type \"/help\" for help.");
+            target.sendMessage(ChatColor.RED + "I'm sorry, but you do not have permission to perform this command. Please contact the server administrators if you believe that this is in error.");
         } else if (permissionMessage.length() != 0) {
             for (String line : permissionMessage.replace("<permission>", permission).split("\n")) {
                 target.sendMessage(line);
@@ -354,7 +354,7 @@ public abstract class Command {
     }
 
     public static void broadcastCommandMessage(CommandSender source, String message, boolean sendToSource) {
-        String result = (source.getName().equals("CONSOLE") ? ChatColor.RED : ChatColor.GREEN) + source.getName() + ChatColor.GRAY + " - " + ChatColor.YELLOW + message;
+        String result = source.getName() + ": " + message;
 
         if (source instanceof BlockCommandSender) {
             BlockCommandSender blockCommandSender = (BlockCommandSender) source;
@@ -373,7 +373,7 @@ public abstract class Command {
         }
 
         Set<Permissible> users = Bukkit.getPluginManager().getPermissionSubscriptions(Server.BROADCAST_CHANNEL_ADMINISTRATIVE);
-        String colored = ChatColor.DARK_GRAY + "[" + ChatColor.RED + ChatColor.BOLD.toString() + "OP" + ChatColor.DARK_GRAY + "] " + ChatColor.RESET + result;
+        String colored = ChatColor.GRAY + "" + ChatColor.ITALIC + "[" + result + ChatColor.GRAY + ChatColor.ITALIC + "]";
 
         if (sendToSource && !(source instanceof ConsoleCommandSender)) {
             source.sendMessage(message);
@@ -382,7 +382,12 @@ public abstract class Command {
         for (Permissible user : users) {
             if (user instanceof CommandSender) {
                 CommandSender target = (CommandSender) user;
-                target.sendMessage(colored);
+
+                if (target instanceof ConsoleCommandSender) {
+                    target.sendMessage(result);
+                } else if (target != source) {
+                    target.sendMessage(colored);
+                }
             }
         }
     }

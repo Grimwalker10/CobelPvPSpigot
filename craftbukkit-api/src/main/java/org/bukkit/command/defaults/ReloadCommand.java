@@ -6,7 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 public class ReloadCommand extends BukkitCommand {
     public ReloadCommand(String name) {
@@ -19,11 +18,7 @@ public class ReloadCommand extends BukkitCommand {
 
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if(sender instanceof Player)
-        {
-            sender.sendMessage(ChatColor.DARK_RED + "Only console can perform this command.");
-            return false;
-        }
+        if (!testPermission(sender)) return true;
 
         Bukkit.reload();
         Command.broadcastCommandMessage(sender, ChatColor.GREEN + "Reload complete.");

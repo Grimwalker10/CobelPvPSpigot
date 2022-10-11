@@ -1,9 +1,12 @@
 package net.minecraft.server;
 
 import java.util.Random;
+
+// CraftBukkit start
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockSpreadEvent;
+// CraftBukkit end
 
 public class BlockFire extends Block {
 
@@ -72,10 +75,11 @@ public class BlockFire extends Block {
 
     public void a(World world, int i, int j, int k, Random random) {
         if (world.getGameRules().getBoolean("doFireTick")) {
-            // Poweruser start
-            Block blockBeneath = world.getType(i, j - 1, k);
-            boolean flag = blockBeneath == Blocks.NETHERRACK || (world.worldProvider instanceof WorldProviderTheEnd && blockBeneath == Blocks.BEDROCK);
-            // Poweruser end
+            boolean flag = world.getType(i, j - 1, k) == Blocks.NETHERRACK;
+
+            if (world.worldProvider instanceof WorldProviderTheEnd && world.getType(i, j - 1, k) == Blocks.BEDROCK) {
+                flag = true;
+            }
 
             if (!this.canPlace(world, i, j, k)) {
                 fireExtinguished(world, i, j, k); // CraftBukkit - invalid place location
@@ -174,13 +178,11 @@ public class BlockFire extends Block {
     }
 
     private void a(World world, int i, int j, int k, int l, Random random, int i1) {
-        // Poweruser start
-        Block blockAtPos = world.getType(i, j, k);
-        int j1 = this.b[Block.getId(blockAtPos)];
+        int j1 = this.b[Block.getId(world.getType(i, j, k))];
 
         if (random.nextInt(l) < j1) {
-            boolean flag = blockAtPos == Blocks.TNT;
-        // Poweruser end
+            boolean flag = world.getType(i, j, k) == Blocks.TNT;
+
             // CraftBukkit start
             org.bukkit.block.Block theBlock = world.getWorld().getBlockAt(i, j, k);
 

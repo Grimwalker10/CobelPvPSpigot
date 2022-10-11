@@ -1,11 +1,13 @@
 package net.minecraft.server;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import net.minecraft.optimizations.utils.WrappedArrayMap;
 import net.minecraft.util.org.apache.commons.lang3.ObjectUtils;
 import org.spigotmc.ProtocolData; // Spigot - protocol patch
 
@@ -15,26 +17,17 @@ public class DataWatcher {
     private boolean b = true;
     // Spigot Start
     private static final net.minecraft.util.gnu.trove.map.TObjectIntMap classToId = new net.minecraft.util.gnu.trove.map.hash.TObjectIntHashMap( 10, 0.5f, -1 );
-    // private final net.minecraft.util.gnu.trove.map.TIntObjectMap dataValues = new net.minecraft.util.gnu.trove.map.hash.TIntObjectHashMap( 10, 0.5f, -1 ); // CobelPvP
-    private final WrappedArrayMap dataValues; // CobelPvP
+    private final net.minecraft.util.gnu.trove.map.TIntObjectMap dataValues = new net.minecraft.util.gnu.trove.map.hash.TIntObjectHashMap( 10, 0.5f, -1 );
     // These exist as an attempt at backwards compatability for (broken) NMS plugins
     private static final Map c = net.minecraft.util.gnu.trove.TDecorators.wrap( classToId );
+    private final Map d = net.minecraft.util.gnu.trove.TDecorators.wrap( dataValues );
     // Spigot End
     private boolean e;
-    // private ReadWriteLock f = new ReentrantReadWriteLock(); // CobelPvP
+    private ReadWriteLock f = new ReentrantReadWriteLock();
 
     public DataWatcher(Entity entity) {
         this.a = entity;
-        this.dataValues = new WrappedArrayMap(); // CobelPvP - lockless DataWatcher
     }
-
-    // CobelPvP start
-    public DataWatcher(DataWatcher dataWatcher) {
-        this.a = dataWatcher.a;
-        this.dataValues = dataWatcher.dataValues.clone();
-        this.e = dataWatcher.e;
-    }
-    // CobelPvP end
 
     public void a(int i, Object object) {
         int integer = classToId.get(object.getClass()); // Spigot
@@ -61,9 +54,9 @@ public class DataWatcher {
         } else {
             WatchableObject watchableobject = new WatchableObject(integer, i, object); // Spigot
 
-            // this.f.writeLock().lock(); // CobelPvP
+            this.f.writeLock().lock();
             this.dataValues.put(i, watchableobject); // Spigot
-            // this.f.writeLock().unlock(); // CobelPvP
+            this.f.writeLock().unlock();
             this.b = false;
         }
     }
@@ -71,9 +64,9 @@ public class DataWatcher {
     public void add(int i, int j) {
         WatchableObject watchableobject = new WatchableObject(j, i, null);
 
-        // this.f.writeLock().lock(); // CobelPvP
+        this.f.writeLock().lock();
         this.dataValues.put(i, watchableobject); // Spigot
-        // this.f.writeLock().unlock(); // CobelPvP
+        this.f.writeLock().unlock();
         this.b = false;
     }
 
@@ -114,7 +107,7 @@ public class DataWatcher {
     // Spigot end
 
     private WatchableObject i(int i) {
-        // this.f.readLock().lock(); // CobelPvP
+        this.f.readLock().lock();
 
         WatchableObject watchableobject;
 
@@ -128,7 +121,7 @@ public class DataWatcher {
             throw new ReportedException(crashreport);
         }
 
-        // this.f.readLock().unlock(); // CobelPvP
+        this.f.readLock().unlock();
         return watchableobject;
     }
 
@@ -176,21 +169,34 @@ public class DataWatcher {
         ArrayList arraylist = null;
 
         if (this.e) {
-            // CobelPvP start
-            for (int i = 0; i < this.dataValues.size(); i++) {
-                WatchableObject watchableobject = this.dataValues.get(i);
+            this.f.readLock().lock();
+            Iterator iterator = this.dataValues.valueCollection().iterator(); // Spigot
 
-                if (watchableobject != null && watchableobject.d()) {
+            while (iterator.hasNext()) {
+                WatchableObject watchableobject = (WatchableObject) iterator.next();
+
+                if (watchableobject.d()) {
                     watchableobject.a(false);
                     if (arraylist == null) {
                         arraylist = new ArrayList();
                     }
 
-                    arraylist.add(watchableobject.b() instanceof ItemStack ? new WatchableObject(watchableobject.c(), watchableobject.a(), ((ItemStack) watchableobject.b()).cloneItemStack()) : watchableobject.clone());
+                    // Spigot start - copy ItemStacks to prevent ConcurrentModificationExceptions
+                    if ( watchableobject.b() instanceof ItemStack )
+                    {
+                        watchableobject = new WatchableObject(
+                                watchableobject.c(),
+                                watchableobject.a(),
+                                ( (ItemStack) watchableobject.b() ).cloneItemStack()
+                        );
+                    }
+                    // Spigot end
+
+                    arraylist.add(watchableobject);
                 }
             }
 
-            // CobelPvP end
+            this.f.readLock().unlock();
         }
 
         this.e = false;
@@ -204,8 +210,8 @@ public class DataWatcher {
 
     public void a(PacketDataSerializer packetdataserializer, int version) {
     // Spigot end
-        // this.f.readLock().lock(); // CobelPvP
-        Iterator iterator = this.dataValues.values().iterator(); // Spigot // CobelPvP
+        this.f.readLock().lock();
+        Iterator iterator = this.dataValues.valueCollection().iterator(); // Spigot
 
         while (iterator.hasNext()) {
             WatchableObject watchableobject = (WatchableObject) iterator.next();
@@ -213,20 +219,33 @@ public class DataWatcher {
             a(packetdataserializer, watchableobject, version); // Spigot - protocol patch
         }
 
-        // this.f.readLock().unlock(); // CobelPvP
+        this.f.readLock().unlock();
         packetdataserializer.writeByte(127);
     }
+
     public List c() {
         ArrayList arraylist = new ArrayList(); // Spigot
 
-        // CobelPvP start
-        for (int i = 0; i < this.dataValues.size(); i++) {
-            WatchableObject watchableObject = this.dataValues.get(i);
-            if (watchableObject == null) continue;
+        this.f.readLock().lock();
 
-            arraylist.add(watchableObject.b() instanceof ItemStack ? new WatchableObject(watchableObject.c(), watchableObject.a(), ((ItemStack) watchableObject.b()).cloneItemStack()) : watchableObject.clone());
+        arraylist.addAll(this.dataValues.valueCollection()); // Spigot
+        // Spigot start - copy ItemStacks to prevent ConcurrentModificationExceptions
+        for ( int i = 0; i < arraylist.size(); i++ )
+        {
+            WatchableObject watchableobject = (WatchableObject) arraylist.get( i );
+            if ( watchableobject.b() instanceof ItemStack )
+            {
+                watchableobject = new WatchableObject(
+                        watchableobject.c(),
+                        watchableobject.a(),
+                        ( (ItemStack) watchableobject.b() ).cloneItemStack()
+                );
+                arraylist.set( i, watchableobject );
+            }
         }
-        // CobelPvP end
+        // Spigot end
+
+        this.f.readLock().unlock();
         return arraylist;
     }
 
@@ -358,12 +377,6 @@ public class DataWatcher {
     public void e() {
         this.e = false;
     }
-
-    // CobelPvP start
-    public DataWatcher clone() {
-        return new DataWatcher(this);
-    }
-    // CobelPvP end
 
     static {
         // Spigot Start - remove valueOf

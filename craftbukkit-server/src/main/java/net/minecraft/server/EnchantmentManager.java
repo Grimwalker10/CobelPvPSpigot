@@ -137,7 +137,7 @@ public class EnchantmentManager {
             b.a = 25;
         }
 
-        return b.a;
+        return (b.a + 1 >> 1) + random.nextInt((b.a >> 1) + 1);
     }
 
     public static float a(EntityLiving entityliving, EntityLiving entityliving1) {
@@ -158,8 +158,10 @@ public class EnchantmentManager {
         if (entity instanceof EntityHuman) {
             a((EnchantmentModifier) d, entityliving.be());
         }
+        // Spigot start
         d.b = null;
         d.a = null;
+        // Spigot end
     }
 
     public static void b(EntityLiving entityliving, Entity entity) {
@@ -169,8 +171,10 @@ public class EnchantmentManager {
         if (entityliving instanceof EntityHuman) {
             a((EnchantmentModifier) e, entityliving.be());
         }
+        // Spigot start
         e.a = null;
         e.b = null;
+        // Spigot end
     }
 
     public static int getKnockbackEnchantmentLevel(EntityLiving entityliving, EntityLiving entityliving1) {

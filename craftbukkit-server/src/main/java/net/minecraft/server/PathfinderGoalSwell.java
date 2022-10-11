@@ -3,6 +3,7 @@ package net.minecraft.server;
 public class PathfinderGoalSwell extends PathfinderGoal {
 
     EntityCreeper a;
+    // EntityLiving b; // Spigot
 
     public PathfinderGoalSwell(EntityCreeper entitycreeper) {
         this.a = entitycreeper;
@@ -17,11 +18,15 @@ public class PathfinderGoalSwell extends PathfinderGoal {
 
     public void c() {
         this.a.getNavigation().h();
+        // this.b = this.a.getGoalTarget(); // Spigot
     }
 
-    public void d() {}
+    public void d() {
+        // this.b = null; // Spigot
+    }
 
     public void e() {
+        // Spigot start
         EntityLiving b = this.a.getGoalTarget();
         if (b == null) {
             this.a.a(-1);
@@ -32,5 +37,6 @@ public class PathfinderGoalSwell extends PathfinderGoal {
         } else {
             this.a.a(1);
         }
+        // Spigot end
     }
 }

@@ -12,7 +12,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
-import net.minecraft.server.MinecraftServer;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -264,9 +263,7 @@ public final class AsynchronousExecutor<P, T, C, E extends Throwable> {
     public boolean drop(P parameter, C callback) throws IllegalStateException {
         final Task task = tasks.get(parameter);
         if (task == null) {
-            //throw new IllegalStateException("Unknown " + parameter);
-            MinecraftServer.getLogger().error("Unknown " + parameter + " while running AsynchronousExecutor.drop()!");
-            return false;
+            throw new IllegalStateException("Unknown " + parameter);
         }
         if (!task.callbacks.remove(callback)) {
             throw new IllegalStateException("Unknown " + callback + " for " + parameter);
@@ -352,6 +349,6 @@ public final class AsynchronousExecutor<P, T, C, E extends Throwable> {
     }
 
     public void setActiveThreads(final int coreSize) {
-        pool.setMaximumPoolSize(coreSize); // Poweruser
+        pool.setCorePoolSize(coreSize);
     }
 }

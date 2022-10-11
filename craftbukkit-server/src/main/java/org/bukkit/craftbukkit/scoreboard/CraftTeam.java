@@ -106,7 +106,7 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
     @Override
     public Set<String> getEntries() throws IllegalStateException {
         CraftScoreboard scoreboard = checkState();
-        
+
         ImmutableSet.Builder<String> entries = ImmutableSet.builder();
         for (Object o : team.getPlayerNameSet()){
             entries.add(o.toString());
@@ -126,7 +126,7 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
         // Spigot Start
         addEntry(player.getName());
     }
-    
+
     public void addEntry(String entry) throws IllegalStateException, IllegalArgumentException {
         Validate.notNull(entry, "Entry cannot be null");
         CraftScoreboard scoreboard = checkState();
@@ -140,7 +140,7 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
         // Spigot start
         return removeEntry(player.getName());
     }
-    
+
     public boolean removeEntry(String entry) throws IllegalStateException, IllegalArgumentException {
         Validate.notNull(entry, "Entry cannot be null");
         CraftScoreboard scoreboard = checkState();

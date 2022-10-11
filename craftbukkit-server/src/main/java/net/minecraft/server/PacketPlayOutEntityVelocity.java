@@ -2,10 +2,10 @@ package net.minecraft.server;
 
 public class PacketPlayOutEntityVelocity extends Packet {
 
-    public int a;
-    public int b;
-    public int c;
-    public int d;
+    private int a;
+    private int b;
+    private int c;
+    private int d;
 
     public PacketPlayOutEntityVelocity() {}
 

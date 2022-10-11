@@ -80,19 +80,16 @@ public class WatchdogThread extends Thread
                 }
                 log.log( Level.SEVERE, "------------------------------" );
 
-                /* 
-                 * Let's try and interrupt the main thread
-                 * 
-                 * */
-                
-                MinecraftServer.getServer().primaryThread.interrupt();
-                
+                if ( restart )
+                {
+                    RestartCommand.restart();
+                }
                 break;
             }
 
             try
             {
-                sleep( 1000 );
+                sleep( 10000 );
             } catch ( InterruptedException ex )
             {
                 interrupt();

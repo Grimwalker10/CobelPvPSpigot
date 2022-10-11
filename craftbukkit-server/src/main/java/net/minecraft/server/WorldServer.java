@@ -12,26 +12,26 @@ import java.util.TreeSet;
 import net.minecraft.util.com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.Bukkit;
+
 // CraftBukkit start
 import org.bukkit.WeatherType;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.util.LongHash;
-import org.bukkit.craftbukkit.util.HashTreeSet; // PaperSpigot
 
 import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 // CraftBukkit end
-import org.spigotmc.SpigotConfig;
 
 public class WorldServer extends World {
 
+    private static final Logger a = LogManager.getLogger();
     private final MinecraftServer server;
     public EntityTracker tracker; // CraftBukkit - private final -> public
     private final PlayerChunkMap manager;
-    public HashTreeSet<NextTickListEntry> N; // PaperSpigot
+    private Set M;
+    private TreeSet N;
     public ChunkProviderServer chunkProviderServer;
     public boolean savingDisabled;
     private boolean O;
@@ -41,10 +41,8 @@ public class WorldServer extends World {
     private BlockActionDataList[] S = new BlockActionDataList[] { new BlockActionDataList((BananaAPI) null), new BlockActionDataList((BananaAPI) null)};
     private int T;
     private static final StructurePieceTreasure[] U = new StructurePieceTreasure[] { new StructurePieceTreasure(Items.STICK, 0, 1, 3, 10), new StructurePieceTreasure(Item.getItemOf(Blocks.WOOD), 0, 1, 3, 10), new StructurePieceTreasure(Item.getItemOf(Blocks.LOG), 0, 1, 3, 10), new StructurePieceTreasure(Items.STONE_AXE, 0, 1, 1, 3), new StructurePieceTreasure(Items.WOOD_AXE, 0, 1, 1, 5), new StructurePieceTreasure(Items.STONE_PICKAXE, 0, 1, 1, 3), new StructurePieceTreasure(Items.WOOD_PICKAXE, 0, 1, 1, 5), new StructurePieceTreasure(Items.APPLE, 0, 2, 3, 5), new StructurePieceTreasure(Items.BREAD, 0, 2, 3, 3), new StructurePieceTreasure(Item.getItemOf(Blocks.LOG2), 0, 1, 3, 10)};
-    public List V = new ArrayList();
+    private List V = new ArrayList();
     private IntHashMap entitiesById;
-
-    private boolean ticking = false;
 
     // CraftBukkit start
     public final int dimension;
@@ -62,8 +60,12 @@ public class WorldServer extends World {
             this.entitiesById = new IntHashMap();
         }
 
+        if (this.M == null) {
+            this.M = new HashSet();
+        }
+
         if (this.N == null) {
-            this.N = new HashTreeSet<NextTickListEntry>(); // PaperSpigot
+            this.N = new TreeSet();
         }
 
         this.Q = new org.bukkit.craftbukkit.CraftTravelAgent(this); // CraftBukkit
@@ -77,20 +79,6 @@ public class WorldServer extends World {
 
         persistentscoreboard.a(this.scoreboard);
         ((ScoreboardServer) this.scoreboard).a(persistentscoreboard);
-    }
-
-    public boolean checkTicking() {
-        if (this.ticking && this.players.isEmpty()) {
-            this.ticking = false;
-            Bukkit.getLogger().info("Not ticking world " + this.getWorld().getName() + ". Unloading spawn...");
-            this.keepSpawnInMemory = false;
-        } else if (!this.players.isEmpty() && !this.ticking) {
-            this.ticking = true;
-            Bukkit.getLogger().info("Ticking world " + this.getWorld().getName() + ". Loading spawn...");
-            this.keepSpawnInMemory = true;
-        }
-
-        return this.ticking;
     }
 
     // CraftBukkit start
@@ -177,13 +165,13 @@ public class WorldServer extends World {
     // CraftBukkit end
 
     public void doTick() {
-        if (!SpigotConfig.disableWeatherTicking) super.doTick(); // CobelPvP
+        super.doTick();
         if (this.getWorldData().isHardcore() && this.difficulty != EnumDifficulty.HARD) {
             this.difficulty = EnumDifficulty.HARD;
         }
 
         this.worldProvider.e.b();
-        if (!SpigotConfig.disableSleepCheck && this.everyoneDeeplySleeping()) { // CobelPvP
+        if (this.everyoneDeeplySleeping()) {
             if (this.getGameRules().getBoolean("doDaylightCycle")) {
                 long i = this.worldData.getDayTime() + 24000L;
 
@@ -224,7 +212,7 @@ public class WorldServer extends World {
         timings.doTickPending.stopTiming(); // Spigot
         this.methodProfiler.c("tickBlocks");
         timings.doTickTiles.startTiming(); // Spigot
-        if (!SpigotConfig.disableBlockTicking) this.g(); // CobelPvP
+        this.g();
         timings.doTickTiles.stopTiming(); // Spigot
         this.methodProfiler.c("chunkMap");
         timings.doChunkMap.startTiming(); // Spigot
@@ -232,12 +220,8 @@ public class WorldServer extends World {
         timings.doChunkMap.stopTiming(); // Spigot
         this.methodProfiler.c("village");
         timings.doVillages.startTiming(); // Spigot
-        // CobelPvP start
-        if (!SpigotConfig.disableVillageTicking) {
-            this.villages.tick();
-            this.siegeManager.a();
-        }
-        // CobelPvP end
+        this.villages.tick();
+        this.siegeManager.a();
         timings.doVillages.stopTiming(); // Spigot
         this.methodProfiler.c("portalForcer");
         timings.doPortalForcer.startTiming(); // Spigot
@@ -341,36 +325,30 @@ public class WorldServer extends World {
         // CraftBukkit start
         // Iterator iterator = this.chunkTickList.iterator();
 
-        this.timings.doTickTiles_tickingChunks.startTiming(); // Poweruser
         // Spigot start
         for (net.minecraft.util.gnu.trove.iterator.TLongShortIterator iter = chunkTickList.iterator(); iter.hasNext();) {
             iter.advance();
             long chunkCoord = iter.key();
             int chunkX = World.keyToX(chunkCoord);
             int chunkZ = World.keyToZ(chunkCoord);
+            // If unloaded, or in procedd of being unloaded, drop it
+            if ( ( !this.isChunkLoaded( chunkX, chunkZ ) ) || ( this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ ) ) )
+            {
+                iter.remove();
+                continue;
+            }
             // Spigot end
             // ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator.next();
             int k = chunkX * 16;
             int l = chunkZ * 16;
 
             this.methodProfiler.a("getChunk");
-            this.timings.doTickTiles_tickingChunks_getChunk.startTiming(); // Poweruser
-            // Poweruser start
-            Chunk chunk = this.getChunkIfLoaded(chunkX, chunkZ);
-            if(chunk == null || !chunk.areNeighborsLoaded(1) || this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ )) {
-                iter.remove();
-                continue;
-            }
-            // Poweruser end
+            Chunk chunk = this.getChunkAt(chunkX, chunkZ);
             // CraftBukkit end
 
             this.a(k, l, chunk);
-            this.timings.doTickTiles_tickingChunks_getChunk.stopTiming(); // Poweruser
             this.methodProfiler.c("tickChunk");
-            this.timings.doTickTiles_tickingChunks_tickChunk.startTiming(); // Poweruser
             chunk.b(false);
-            this.timings.doTickTiles_tickingChunks_tickChunk.stopTiming(); // Poweruser
-            if (!chunk.areNeighborsLoaded(1)) continue; // CobelPvP
             this.methodProfiler.c("thunder");
             int i1;
             int j1;
@@ -390,7 +368,6 @@ public class WorldServer extends World {
 
             this.methodProfiler.c("iceandsnow");
             if (this.random.nextInt(16) == 0) {
-                this.timings.doTickTiles_tickingChunks_iceAndSnow.startTiming(); // Poweruser
                 this.k = this.k * 3 + 1013904223;
                 i1 = this.k >> 2;
                 j1 = i1 & 15;
@@ -429,11 +406,9 @@ public class WorldServer extends World {
                         this.getType(j1 + k, l1 - 1, k1 + l).l(this, j1 + k, l1 - 1, k1 + l);
                     }
                 }
-                this.timings.doTickTiles_tickingChunks_iceAndSnow.stopTiming(); // Poweruser
             }
 
             this.methodProfiler.c("tickBlocks");
-            this.timings.doTickTiles_tickingChunks_tickBlocks.startTiming(); // Poweruser
             ChunkSection[] achunksection = chunk.getSections();
 
             j1 = achunksection.length;
@@ -460,7 +435,6 @@ public class WorldServer extends World {
                     }
                 }
             }
-            this.timings.doTickTiles_tickingChunks_tickBlocks.stopTiming(); // Poweruser
 
             this.methodProfiler.b();
         }
@@ -470,7 +444,6 @@ public class WorldServer extends World {
             chunkTickList.clear();
         }
         // Spigot End
-        this.timings.doTickTiles_tickingChunks.stopTiming(); // Poweruser
     }
 
     public boolean a(int i, int j, int k, Block block) {
@@ -510,7 +483,8 @@ public class WorldServer extends World {
                 nextticklistentry.a(i1);
             }
 
-            if (!this.N.contains(nextticklistentry)) { // PaperSpigot
+            if (!this.M.contains(nextticklistentry)) {
+                this.M.add(nextticklistentry);
                 this.N.add(nextticklistentry);
             }
         }
@@ -524,7 +498,8 @@ public class WorldServer extends World {
             nextticklistentry.a((long) l + this.worldData.getTime());
         }
 
-        if (!this.N.contains(nextticklistentry)) { // PaperSpigot
+        if (!this.M.contains(nextticklistentry)) {
+            this.M.add(nextticklistentry);
             this.N.add(nextticklistentry);
         }
     }
@@ -549,10 +524,9 @@ public class WorldServer extends World {
     public boolean a(boolean flag) {
         int i = this.N.size();
 
-        if (false) { // PaperSpigot
+        if (i != this.M.size()) {
             throw new IllegalStateException("TickNextTick list out of synch");
         } else {
-            /* PaperSpigot start - Fix redstone lag issues
             if (i > 1000) {
                 // CraftBukkit start - If the server has too much to process over time, try to alleviate that
                 if (i > 20 * 1000) {
@@ -561,12 +535,7 @@ public class WorldServer extends World {
                     i = 1000;
                 }
                 // CraftBukkit end
-            } */
-
-            if (i > paperSpigotConfig.tickNextTickListCap) {
-                i = paperSpigotConfig.tickNextTickListCap;
             }
-            // PaperSpigot end
 
             this.methodProfiler.a("cleaning");
 
@@ -579,25 +548,9 @@ public class WorldServer extends World {
                 }
 
                 this.N.remove(nextticklistentry);
+                this.M.remove(nextticklistentry);
                 this.V.add(nextticklistentry);
             }
-
-            // PaperSpigot start - Allow redstone ticks to bypass the tickNextTickListCap
-            if (paperSpigotConfig.tickNextTickListCapIgnoresRedstone) {
-                Iterator<NextTickListEntry> iterator = this.N.iterator();
-                while (iterator.hasNext()) {
-                    NextTickListEntry next = iterator.next();
-                    if (!flag && next.d > this.worldData.getTime()) {
-                        break;
-                    }
-
-                    if (next.a().isPowerSource() || next.a() instanceof IContainer) {
-                        iterator.remove();
-                        this.V.add(next);
-                    }
-                }
-            }
-            // PaperSpigot end
 
             this.methodProfiler.b();
             this.methodProfiler.a("ticking");
@@ -641,14 +594,7 @@ public class WorldServer extends World {
         }
     }
 
-    private static int tookTooLongs = 0;
-
     public List a(Chunk chunk, boolean flag) {
-
-        if (Bukkit.getPluginManager().getPlugin("UHC") != null) {
-            return null;
-        }
-
         ArrayList arraylist = null;
         ChunkCoordIntPair chunkcoordintpair = chunk.l();
         int i = (chunkcoordintpair.x << 4) - 2;
@@ -659,26 +605,21 @@ public class WorldServer extends World {
         for (int i1 = 0; i1 < 2; ++i1) {
             Iterator iterator;
 
-            int size;
-            String ita;
             if (i1 == 0) {
                 iterator = this.N.iterator();
-                size = this.N.size();
-                ita = "N";
             } else {
                 iterator = this.V.iterator();
-                size = this.V.size();
-                ita = "V";
+                if (!this.V.isEmpty()) {
+                    a.debug("toBeTicked = " + this.V.size());
+                }
             }
 
-            long started = System.currentTimeMillis();
-
-
-            while (iterator.hasNext() && (System.currentTimeMillis() - started < 500) && tookTooLongs < 30) {
+            while (iterator.hasNext()) {
                 NextTickListEntry nextticklistentry = (NextTickListEntry) iterator.next();
 
                 if (nextticklistentry.a >= i && nextticklistentry.a < j && nextticklistentry.c >= k && nextticklistentry.c < l) {
                     if (flag) {
+                        this.M.remove(nextticklistentry);
                         iterator.remove();
                     }
 
@@ -688,13 +629,6 @@ public class WorldServer extends World {
 
                     arraylist.add(nextticklistentry);
                 }
-            }
-
-            if (1000 <= System.currentTimeMillis() - started) {
-                Bukkit.getLogger().info("Saving took too long :(");
-                Bukkit.getLogger().info("Iterator size: " + size + ". Iterator: " + ita);
-                Bukkit.getLogger().info("Removing from iterator? " + flag);
-                tookTooLongs++;
             }
         }
 
@@ -770,8 +704,12 @@ public class WorldServer extends World {
             this.entitiesById = new IntHashMap();
         }
 
+        if (this.M == null) {
+            this.M = new HashSet();
+        }
+
         if (this.N == null) {
-            this.N = new HashTreeSet<NextTickListEntry>(); // PaperSpigot
+            this.N = new TreeSet();
         }
 
         this.b(worldsettings);
@@ -812,7 +750,7 @@ public class WorldServer extends World {
                 i = chunkposition.x;
                 k = chunkposition.z;
             } else {
-                LogManager.getLogger().warn("Unable to find spawn biome");
+                a.warn("Unable to find spawn biome");
             }
 
             int l = 0;
@@ -852,32 +790,18 @@ public class WorldServer extends World {
         return this.worldProvider.h();
     }
 
-    // Poweruser start
-    public void saveOnlyLevel(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict {
-        if (SpigotConfig.disableSaving) return; // CobelPvP
+    public void save(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict { // CraftBukkit - added throws
         if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.a("Saving level");
             }
 
             this.a();
-        }
-    }
-
-    public boolean saveOnlyChunks(boolean flag, IProgressUpdate iprogressupdate) {
-        if (SpigotConfig.disableSaving) return true; // CobelPvP
-        if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.c("Saving chunks");
             }
 
-            return this.chunkProvider.saveChunks(flag, iprogressupdate);
-        }
-        return true;
-    }
-
-    public void unloadOnlyUnusedChunks(boolean flag, IProgressUpdate iprogressupdate) {
-        if (this.chunkProvider.canSave()) {
+            this.chunkProvider.saveChunks(flag, iprogressupdate);
             // CraftBukkit - ArrayList -> Collection
             Collection arraylist = this.chunkProviderServer.a();
             Iterator iterator = arraylist.iterator();
@@ -891,27 +815,14 @@ public class WorldServer extends World {
             }
         }
     }
-    // Poweruser end
-
-    public void save(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict { // CraftBukkit - added throws
-        if (this.chunkProvider.canSave()) {
-            // Poweruser start
-            this.saveOnlyLevel(flag, iprogressupdate);
-            this.saveOnlyChunks(flag, iprogressupdate);
-            this.unloadOnlyUnusedChunks(flag, iprogressupdate);
-            // Poweruser end
-        }
-    }
 
     public void flushSave() {
-        if (SpigotConfig.disableSaving) return; // CobelPvP
         if (this.chunkProvider.canSave()) {
             this.chunkProvider.c();
         }
     }
 
     protected void a() throws ExceptionWorldConflict { // CraftBukkit - added throws
-        if (SpigotConfig.disableSaving) return; // CobelPvP
         this.G();
         this.dataManager.saveWorldData(this.worldData, this.server.getPlayerList().t());
         // CraftBukkit start - save worldMaps once, rather than once per shared world

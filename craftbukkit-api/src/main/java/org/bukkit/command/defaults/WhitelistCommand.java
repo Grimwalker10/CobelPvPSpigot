@@ -32,19 +32,19 @@ public class WhitelistCommand extends VanillaCommand {
                 if (badPerm(sender, "reload")) return true;
 
                 Bukkit.reloadWhitelist();
-                Command.broadcastCommandMessage(sender, "Reloaded whitelist from file");
+                Command.broadcastCommandMessage(sender, "Reloaded white-list from file");
                 return true;
             } else if (args[0].equalsIgnoreCase("on")) {
                 if (badPerm(sender, "enable")) return true;
 
                 Bukkit.setWhitelist(true);
-                Command.broadcastCommandMessage(sender, "Turned on whitelisting");
+                Command.broadcastCommandMessage(sender, "Turned on white-listing");
                 return true;
             } else if (args[0].equalsIgnoreCase("off")) {
                 if (badPerm(sender, "disable")) return true;
 
                 Bukkit.setWhitelist(false);
-                Command.broadcastCommandMessage(sender, "Turned off whitelisting");
+                Command.broadcastCommandMessage(sender, "Turned off white-listing");
                 return true;
             } else if (args[0].equalsIgnoreCase("list")) {
                 if (badPerm(sender, "list")) return true;
@@ -53,14 +53,13 @@ public class WhitelistCommand extends VanillaCommand {
 
                 for (OfflinePlayer player : Bukkit.getWhitelistedPlayers()) {
                     if (result.length() > 0) {
-                        result.append(ChatColor.YELLOW + ", ");
+                        result.append(", ");
                     }
 
-                    result.append(ChatColor.GREEN + player.getName());
+                    result.append(player.getName());
                 }
 
-                sender.sendMessage(ChatColor.YELLOW + "Whitelisted (" + ChatColor.GREEN + Bukkit.getWhitelistedPlayers().size() + ChatColor.YELLOW + "):");
-                sender.sendMessage(result.toString());
+                sender.sendMessage("White-listed players: " + result.toString());
                 return true;
             }
         } else if (args.length == 2) {
@@ -69,14 +68,14 @@ public class WhitelistCommand extends VanillaCommand {
 
                 Bukkit.getOfflinePlayer(args[1]).setWhitelisted(true);
 
-                Command.broadcastCommandMessage(sender, "Added " + args[1] + " to whitelist");
+                Command.broadcastCommandMessage(sender, "Added " + args[1] + " to white-list");
                 return true;
             } else if (args[0].equalsIgnoreCase("remove")) {
                 if (badPerm(sender, "remove")) return true;
 
                 Bukkit.getOfflinePlayer(args[1]).setWhitelisted(false);
 
-                Command.broadcastCommandMessage(sender, "Removed " + args[1] + " from whitelist");
+                Command.broadcastCommandMessage(sender, "Removed " + args[1] + " from white-list");
                 return true;
             }
         }

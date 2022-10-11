@@ -51,11 +51,6 @@ public class EntityGhast extends EntityFlying implements IMonster {
             this.die();
         }
 
-        // CobelPvP - Add mobsEnabled check.
-        if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
-            this.die();
-        }
-
         this.w();
         this.bo = this.bp;
         double d0 = this.i - this.locX;
@@ -222,8 +217,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
     }
 
     public boolean canSpawn() {
-        // CobelPvP - Add mobsEnabled check.
-        return this.random.nextInt(20) == 0 && super.canSpawn() && this.world.difficulty != EnumDifficulty.PEACEFUL && this.world.spigotConfig.mobsEnabled;
+        return this.random.nextInt(20) == 0 && super.canSpawn() && this.world.difficulty != EnumDifficulty.PEACEFUL;
     }
 
     public int bB() {

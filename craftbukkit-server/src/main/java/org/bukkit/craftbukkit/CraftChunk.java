@@ -1,17 +1,12 @@
 package org.bukkit.craftbukkit;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
 
 import net.minecraft.server.BiomeBase;
 import net.minecraft.server.ChunkPosition;
 import net.minecraft.server.ChunkSection;
 import net.minecraft.server.EmptyChunk;
-import net.minecraft.server.IInventory;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.TileEntity;
 import net.minecraft.server.WorldChunkManager;
 import net.minecraft.server.WorldServer;
 
@@ -20,10 +15,8 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.block.CraftBlock;
-import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.ChunkSnapshot;
-import org.bukkit.entity.HumanEntity;
 
 public class CraftChunk implements Chunk {
     private WeakReference<net.minecraft.server.Chunk> weakChunk;
@@ -180,9 +173,7 @@ public class CraftChunk implements Chunk {
                     blockids[j] = (short) (baseids[j] & 0xFF);
                 }
 
-                // CobelPvP start - 1.7 has no extended block IDs
-                /*
-                if (cs[i].getExtendedIdArray() != null) { /* If we've got extended IDs *//*
+                if (cs[i].getExtendedIdArray() != null) { /* If we've got extended IDs */
                     byte[] extids = cs[i].getExtendedIdArray().a;
 
                     for (int j = 0; j < 2048; j++) {
@@ -196,8 +187,7 @@ public class CraftChunk implements Chunk {
                         blockids[(j<<1)+1] |= (b & 0xF0) << 4;
                     }
                 }
-                */
-                // CobelPvP end
+
                 sectionBlockIDs[i] = blockids;
 
                 /* Get block data nibbles */
@@ -327,69 +317,4 @@ public class CraftChunk implements Chunk {
     static {
         Arrays.fill(emptySkyLight, (byte) 0xFF);
     }
-
-    // CobelPvP start - chunk snapshot api
-    @Override
-    public com.cobelpvp.chunksnapshot.ChunkSnapshot takeSnapshot() {
-        net.minecraft.server.Chunk handle = getHandle();
-        com.cobelpvp.chunksnapshot.CraftChunkSnapshot snap = new com.cobelpvp.chunksnapshot.CraftChunkSnapshot();
-
-        // save chunk sections to snapshot
-        for (int i = 0; i < 16; i++) {
-            if (handle.getSections()[i] != null) {
-                snap.getSections()[i] = handle.getSections()[i].createSnapshot();
-            }
-        }
-
-        // save tile entities to snapshot
-        for (Map.Entry<ChunkPosition, TileEntity> entry : handle.tileEntities.entrySet()) {
-            NBTTagCompound nbt = new NBTTagCompound();
-            entry.getValue().b(nbt); // writeToNBT
-            snap.getTileEntities().add(nbt);
-        }
-        return snap;
-    }
-
-    @Override
-    public void restoreSnapshot(com.cobelpvp.chunksnapshot.ChunkSnapshot snapshot) {
-        com.cobelpvp.chunksnapshot.CraftChunkSnapshot snap = (com.cobelpvp.chunksnapshot.CraftChunkSnapshot) snapshot;
-        net.minecraft.server.Chunk handle = getHandle();
-
-        // add chunk sections from snapshot
-        for (int i = 0; i < 16; i++) {
-            if (snap.getSections()[i] == null) {
-                handle.getSections()[i] = null;
-            } else {
-                handle.getSections()[i] = new ChunkSection(i << 4, !worldServer.worldProvider.g);
-                handle.getSections()[i].restoreSnapshot(snap.getSections()[i]);
-            }
-        }
-
-        // clear tile entities currently in the chunk
-        for (TileEntity tileEntity : handle.tileEntities.values()) {
-            if (tileEntity instanceof IInventory) {
-                for (HumanEntity h : new ArrayList<HumanEntity>(((IInventory) tileEntity).getViewers())) {
-                    if (h instanceof CraftHumanEntity) {
-                        ((CraftHumanEntity) h).getHandle().closeInventory();
-                    }
-                }
-            }
-            worldServer.a(tileEntity);
-        }
-        handle.tileEntities.clear();
-
-        // add tile entities from snapshot
-        for (NBTTagCompound nbt : snap.getTileEntities()) {
-            // deserialize nbt to new tile entity instance
-            TileEntity tileEntity = TileEntity.c(nbt);
-            // move the tile entity into this chunk's space
-            tileEntity.x = (tileEntity.x & 15) | handle.locX << 4;
-            tileEntity.z = (tileEntity.z & 15) | handle.locZ << 4;
-            // add it
-            handle.a(tileEntity);
-        }
-        handle.n = true; // needs saving flag
-        worldServer.getPlayerChunkMap().resend(x, z);
-    }
-    // CobelPvP end
 }

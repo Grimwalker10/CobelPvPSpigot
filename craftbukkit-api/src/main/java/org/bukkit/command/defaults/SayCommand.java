@@ -21,24 +21,22 @@ public class SayCommand extends VanillaCommand {
 
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if (!sender.isOp())
-        {
-            sender.sendMessage(ChatColor.DARK_RED + "No permission.");
-            return false;
-        }
+        if (!testPermission(sender)) return true;
         if (args.length == 0)  {
             sender.sendMessage(ChatColor.RED + "Usage: " + usageMessage);
             return false;
         }
 
         StringBuilder message = new StringBuilder();
-        message.append(ChatColor.YELLOW).append("[");
+        message.append(ChatColor.LIGHT_PURPLE).append("[");
         if (sender instanceof ConsoleCommandSender) {
-            message.append(ChatColor.DARK_RED + "CONSOLE");
+            message.append("Server");
+        } else if (sender instanceof Player) {
+            message.append(((Player) sender).getDisplayName());
         } else {
-            message.append((sender.isOp() ? ChatColor.RED : ChatColor.GREEN) + sender.getName());
+            message.append(sender.getName());
         }
-        message.append(ChatColor.YELLOW).append("] ");
+        message.append(ChatColor.LIGHT_PURPLE).append("] ");
 
         if (args.length > 0) {
             message.append(args[0]);

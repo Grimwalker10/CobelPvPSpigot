@@ -2,7 +2,8 @@ package net.minecraft.server;
 
 import java.util.List;
 import java.util.Random;
-import org.bukkit.event.entity.EntityPortalEnterEvent;
+
+import org.bukkit.event.entity.EntityPortalEnterEvent; // CraftBukkit
 
 public class BlockEnderPortal extends BlockContainer {
 
@@ -49,6 +50,14 @@ public class BlockEnderPortal extends BlockContainer {
 
     public int b() {
         return -1;
+    }
+
+    public void onPlace(World world, int i, int j, int k) {
+        if (!a) {
+            if (world.worldProvider.dimension != 0) {
+                world.setAir(i, j, k);
+            }
+        }
     }
 
     public MaterialMapColor f(int i) {

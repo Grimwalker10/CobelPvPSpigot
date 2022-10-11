@@ -2,13 +2,13 @@ package net.minecraft.server;
 
 public class PacketPlayOutEntity extends Packet {
 
-    public int a;
-    public byte b;
-    public byte c;
-    public byte d;
-    public byte e;
-    public byte f;
-    public boolean g;
+    protected int a;
+    protected byte b;
+    protected byte c;
+    protected byte d;
+    protected byte e;
+    protected byte f;
+    protected boolean g;
 
     public PacketPlayOutEntity() {}
 

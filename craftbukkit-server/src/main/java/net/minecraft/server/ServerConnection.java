@@ -25,18 +25,6 @@ public class ServerConnection {
     private final List e = Collections.synchronizedList(new ArrayList());
     private final List f = Collections.synchronizedList(new ArrayList());
 
-    // Paper start - prevent blocking on adding a new network manager while the server is ticking
-    protected final List<NetworkManager> pending = Collections.synchronizedList(new ArrayList<NetworkManager>());
-    private void addPending() {
-        synchronized (pending) {
-            synchronized (this.f) {
-                this.f.addAll(pending);
-                pending.clear();
-            }
-        }
-    }
-    // Paper end
-
     public ServerConnection(MinecraftServer minecraftserver) {
         this.d = minecraftserver;
         this.a = true;
@@ -65,7 +53,6 @@ public class ServerConnection {
         List list = this.f;
 
         synchronized (this.f) {
-            addPending(); // Paper
             // Spigot Start
             // This prevents players from 'gaming' the server, and strategically relogging to increase their position in the tick order
             if ( org.spigotmc.SpigotConfig.playerShuffle > 0 && MinecraftServer.currentTick % org.spigotmc.SpigotConfig.playerShuffle == 0 )

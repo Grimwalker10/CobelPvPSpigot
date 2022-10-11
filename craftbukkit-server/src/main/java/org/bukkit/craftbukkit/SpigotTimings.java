@@ -1,10 +1,14 @@
 package org.bukkit.craftbukkit;
 
+import com.google.common.collect.Maps;
 import net.minecraft.server.*;
 import org.bukkit.plugin.java.JavaPluginLoader;
 import org.spigotmc.CustomTimingsHandler;
 import org.bukkit.scheduler.BukkitTask;
+
 import java.util.HashMap;
+import java.util.Map;
+
 import org.bukkit.craftbukkit.scheduler.CraftTask;
 
 public class SpigotTimings {
@@ -37,26 +41,6 @@ public class SpigotTimings {
 
     public static final CustomTimingsHandler entityActivationCheckTimer = new CustomTimingsHandler("entityActivationCheck");
     public static final CustomTimingsHandler checkIfActiveTimer = new CustomTimingsHandler("** checkIfActive");
-
-    // CobelPvP start
-    public static final HashMap<String, CustomTimingsHandler> packetHandlerTimingMap = new HashMap<String, CustomTimingsHandler>();
-    public static final CustomTimingsHandler timerEntity_C = new CustomTimingsHandler("** livingEntityBaseTick_Entity_C()");
-    public static final CustomTimingsHandler timerEntityInsentient_C = new CustomTimingsHandler("** livingEntityBaseTick_EntityInsentient_C()");
-    public static final CustomTimingsHandler timerEntityLiving_C = new CustomTimingsHandler("** livingEntityBaseTick_EntityLiving_C()");
-    public static final CustomTimingsHandler timerEntity_C_portal = new CustomTimingsHandler("** livingEntityBaseTick_Entity_C()_portal");
-    public static final CustomTimingsHandler connectionTimer_PacketFlying_move = new CustomTimingsHandler("** Connection Handler_PacketFlying_move");
-    public static final CustomTimingsHandler connectionTimer_PacketFlying_playerChunks = new CustomTimingsHandler("** Connection Handler_PacketFlying_airCheck");
-
-    public static CustomTimingsHandler getPacketHandlerTimings(Packet packet) {
-        String packetType = packet.getClass().getName();
-        CustomTimingsHandler result = packetHandlerTimingMap.get(packetType);
-        if (result == null) {
-            result = new CustomTimingsHandler("** Connection Handler - " + packetType, connectionTimer);
-            packetHandlerTimingMap.put(packetType, result);
-        }
-        return result;
-    }
-    // CobelPvP end
 
     public static final HashMap<String, CustomTimingsHandler> entityTypeTimingMap = new HashMap<String, CustomTimingsHandler>();
     public static final HashMap<String, CustomTimingsHandler> tileEntityTypeTimingMap = new HashMap<String, CustomTimingsHandler>();
@@ -104,7 +88,7 @@ public class SpigotTimings {
      * @return
      */
     public static CustomTimingsHandler getEntityTimings(Entity entity) {
-        String entityType = entity.getClass().getName();
+        String entityType = entity.getClass().getSimpleName();
         CustomTimingsHandler result = entityTypeTimingMap.get(entityType);
         if (result == null) {
             result = new CustomTimingsHandler("** tickEntity - " + entityType, activatedEntityTimer);
@@ -119,7 +103,7 @@ public class SpigotTimings {
      * @return
      */
     public static CustomTimingsHandler getTileEntityTimings(TileEntity entity) {
-        String entityType = entity.getClass().getName();
+        String entityType = entity.getClass().getSimpleName();
         CustomTimingsHandler result = tileEntityTypeTimingMap.get(entityType);
         if (result == null) {
             result = new CustomTimingsHandler("** tickTileEntity - " + entityType, tickTileEntityTimer);
@@ -134,16 +118,9 @@ public class SpigotTimings {
     public static class WorldTimingsHandler {
         public final CustomTimingsHandler mobSpawn;
         public final CustomTimingsHandler doChunkUnload;
-        public final CustomTimingsHandler doChunkUnloadSave;
         public final CustomTimingsHandler doPortalForcer;
         public final CustomTimingsHandler doTickPending;
         public final CustomTimingsHandler doTickTiles;
-        public final CustomTimingsHandler doTickTiles_buildList;
-        public final CustomTimingsHandler doTickTiles_tickingChunks;
-        public final CustomTimingsHandler doTickTiles_tickingChunks_getChunk;
-        public final CustomTimingsHandler doTickTiles_tickingChunks_tickChunk;
-        public final CustomTimingsHandler doTickTiles_tickingChunks_iceAndSnow;
-        public final CustomTimingsHandler doTickTiles_tickingChunks_tickBlocks;
         public final CustomTimingsHandler doVillages;
         public final CustomTimingsHandler doChunkMap;
         public final CustomTimingsHandler doChunkGC;
@@ -154,8 +131,6 @@ public class SpigotTimings {
         public final CustomTimingsHandler tracker;
         public final CustomTimingsHandler doTick;
         public final CustomTimingsHandler tickEntities;
-        public final CustomTimingsHandler entityPlayerTickNormal;
-        public final CustomTimingsHandler entityPlayerTickOnMove;
 
         public final CustomTimingsHandler syncChunkLoadTimer;
         public final CustomTimingsHandler syncChunkLoadDataTimer;
@@ -170,15 +145,8 @@ public class SpigotTimings {
 
             mobSpawn = new CustomTimingsHandler("** " + name + "mobSpawn");
             doChunkUnload = new CustomTimingsHandler("** " + name + "doChunkUnload");
-            doChunkUnloadSave = new CustomTimingsHandler("** " + name + "doChunkUnload_save");
             doTickPending = new CustomTimingsHandler("** " + name + "doTickPending");
             doTickTiles = new CustomTimingsHandler("** " + name + "doTickTiles");
-            doTickTiles_buildList = new CustomTimingsHandler("** " + name + "doTickTiles_buildList");
-            doTickTiles_tickingChunks = new CustomTimingsHandler("** " + name + "doTickTiles_tickingChunks");
-            doTickTiles_tickingChunks_getChunk = new CustomTimingsHandler("** " + name + "doTickTiles_tickingChunks_getChunk");
-            doTickTiles_tickingChunks_tickChunk = new CustomTimingsHandler("** " + name + "doTickTiles_tickingChunks_tickChunk");
-            doTickTiles_tickingChunks_iceAndSnow = new CustomTimingsHandler("** " + name + "doTickTiles_tickingChunks_iceAndSnow");
-            doTickTiles_tickingChunks_tickBlocks = new CustomTimingsHandler("** " + name + "doTickTiles_tickingChunks_tickBlocks");
             doVillages = new CustomTimingsHandler("** " + name + "doVillages");
             doChunkMap = new CustomTimingsHandler("** " + name + "doChunkMap");
             doSounds = new CustomTimingsHandler("** " + name + "doSounds");
@@ -187,10 +155,6 @@ public class SpigotTimings {
             entityTick = new CustomTimingsHandler("** " + name + "entityTick");
             tileEntityTick = new CustomTimingsHandler("** " + name + "tileEntityTick");
             tileEntityPending = new CustomTimingsHandler("** " + name + "tileEntityPending");
-            // CobelPvP start
-            entityPlayerTickNormal = new CustomTimingsHandler("** " + name + "entityPlayerTick_normal");
-            entityPlayerTickOnMove = new CustomTimingsHandler("** " + name + "entityPlayerTick_onMove");
-            // CobelPvP end
 
             syncChunkLoadTimer = new CustomTimingsHandler("** " + name + "syncChunkLoad");
             syncChunkLoadDataTimer = new CustomTimingsHandler("** " + name + "syncChunkLoad - Data");

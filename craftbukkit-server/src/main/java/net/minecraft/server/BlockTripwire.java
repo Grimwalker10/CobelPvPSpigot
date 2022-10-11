@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.event.entity.EntityInteractEvent; // CraftBukkit
-import org.spigotmc.SpigotConfig;
 
 public class BlockTripwire extends Block {
 

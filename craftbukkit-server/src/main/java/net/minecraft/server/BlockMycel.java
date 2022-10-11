@@ -19,10 +19,7 @@ public class BlockMycel extends Block {
 
     public void a(World world, int i, int j, int k, Random random) {
         if (!world.isStatic) {
-            // CobelPvP start
-            int lightLevel = world.getLightLevel(i, j + 1, k);
-            if (lightLevel < 4 && world.getType(i, j + 1, k).k() > 2) {
-            // CobelPvP end
+            if (world.getLightLevel(i, j + 1, k) < 4 && world.getType(i, j + 1, k).k() > 2) {
                 // CraftBukkit start
                 org.bukkit.World bworld = world.getWorld();
                 BlockState blockState = bworld.getBlockAt(i, j, k).getState();
@@ -35,7 +32,7 @@ public class BlockMycel extends Block {
                     blockState.update(true);
                 }
                 // CraftBukkit end
-            } else if (lightLevel >= 9) { // CobelPvP
+            } else if (world.getLightLevel(i, j + 1, k) >= 9) {
                 int numGrowth = Math.min(4, Math.max(20, (int) (4 * 100F / world.growthOdds))); // Spigot
                 for (int l = 0; l < numGrowth; ++l) { // Spigot
                     int i1 = i + random.nextInt(3) - 1;

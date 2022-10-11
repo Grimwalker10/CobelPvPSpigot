@@ -169,13 +169,7 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
     }
 
     public boolean bM() {
-        // PaperSpigot start - Configurable undead horse leashing
-        if (this.world.paperSpigotConfig.allowUndeadHorseLeashing) {
-            return super.bM();
-        } else {
-            return !this.cE() && super.bM();
-        }
-        // PaperSpigot end
+        return !this.cE() && super.bM();
     }
 
     protected void o(float f) {
@@ -628,7 +622,7 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
                 }
 
                 if (flag) {
-                    if (!entityhuman.abilities.canInstantlyBuild && --itemstack.count <= 0) { // EMC
+                    if (!entityhuman.abilities.canInstantlyBuild && --itemstack.count == 0) {
                         entityhuman.inventory.setItem(entityhuman.inventory.itemInHandIndex, (ItemStack) null);
                     }
 

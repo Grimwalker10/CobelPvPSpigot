@@ -255,7 +255,7 @@ public class TileEntityChest extends TileEntity implements IInventory {
         ++this.ticks;
         float f;
 
-        if (!this.world.isStatic && this.o != 0 && (this.ticks + this.x + this.y + this.z) % 10 == 0) { // PaperSpigot Reduced 200 -> 10 interval due to reduced tick rate from Improved Tick Handling
+        if (!this.world.isStatic && this.o != 0 && (this.ticks + this.x + this.y + this.z) % 200 == 0) {
             this.o = 0;
             f = 5.0F;
             List list = this.world.a(EntityHuman.class, AxisAlignedBB.a((double) ((float) this.x - f), (double) ((float) this.y - f), (double) ((float) this.z - f), (double) ((float) (this.x + 1) + f), (double) ((float) (this.y + 1) + f), (double) ((float) (this.z + 1) + f)));
@@ -275,9 +275,6 @@ public class TileEntityChest extends TileEntity implements IInventory {
         }
 
         this.n = this.m;
-
-        // PaperSpigot start - Move chest sound handling out of the tick loop
-        /*
         f = 0.1F;
         double d0;
 
@@ -330,8 +327,6 @@ public class TileEntityChest extends TileEntity implements IInventory {
                 this.m = 0.0F;
             }
         }
-        */
-        // PaperSpigot end
     }
 
     public boolean c(int i, int j) {
@@ -354,26 +349,6 @@ public class TileEntityChest extends TileEntity implements IInventory {
         if (this.world == null) return; // CraftBukkit
         this.world.playBlockAction(this.x, this.y, this.z, this.q(), 1, this.o);
 
-        // PaperSpigot start - Move chest open sound handling down to here
-        this.i();
-        double d0;
-
-        if (this.o > 0 && this.m == 0.0F && this.i == null && this.k == null) {
-            double d1 = (double) this.x + 0.5D;
-
-            d0 = (double) this.z + 0.5D;
-            if (this.l != null) {
-                d0 += 0.5D;
-            }
-
-            if (this.j != null) {
-                d1 += 0.5D;
-            }
-
-            this.world.makeSound(d1, (double) this.y + 0.5D, d0, "random.chestopen", 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
-        }
-        // PaperSpigot end
-
         // CraftBukkit start - Call redstone event
         if (this.q() == Blocks.TRAPPED_CHEST) {
             int newPower = Math.max(0, Math.min(15, this.o));
@@ -395,26 +370,6 @@ public class TileEntityChest extends TileEntity implements IInventory {
             --this.o;
             if (this.world == null) return; // CraftBukkit
             this.world.playBlockAction(this.x, this.y, this.z, this.q(), 1, this.o);
-
-            // PaperSpigot start - Move chest close sound handling down to here
-            this.i();
-            double d0;
-
-            if (this.o == 0 && this.i == null && this.k == null) {
-                d0 = (double) this.x + 0.5D;
-                double d2 = (double) this.z + 0.5D;
-
-                if (this.l != null) {
-                    d2 += 0.5D;
-                }
-
-                if (this.j != null) {
-                    d0 += 0.5D;
-                }
-
-                this.world.makeSound(d0, (double) this.y + 0.5D, d2, "random.chestclosed", 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
-            }
-            // PaperSpigot end
 
             // CraftBukkit start - Call redstone event
             if (this.q() == Blocks.TRAPPED_CHEST) {

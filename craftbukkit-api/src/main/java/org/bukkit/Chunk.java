@@ -121,10 +121,4 @@ public interface Chunk {
      * @return true if the chunk has unloaded successfully, otherwise false
      */
     boolean unload();
-
-
-    // CobelPvP start - chunk snapshot api
-    com.cobelpvp.chunksnapshot.ChunkSnapshot takeSnapshot();
-    void restoreSnapshot(com.cobelpvp.chunksnapshot.ChunkSnapshot snapshot);
-    // CobelPvP end
 }

@@ -20,7 +20,6 @@ import net.minecraft.util.com.google.gson.JsonObject;
 import net.minecraft.util.org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spigotmc.SpigotConfig;
 
 public class JsonList {
 
@@ -128,7 +127,6 @@ public class JsonList {
     }
 
     public void save() throws IOException { // CraftBukkit - Added throws
-        if (SpigotConfig.disableSaving) return; // CobelPvP
         Collection collection = this.d.values();
         String s = this.b.toJson(collection);
         BufferedWriter bufferedwriter = null;

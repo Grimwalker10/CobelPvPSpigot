@@ -1,17 +1,14 @@
 package net.minecraft.server;
 
 import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 import javax.crypto.SecretKey;
 
-import com.cobelpvp.CobelSpigot;
-import com.cobelpvp.handler.PacketHandler;
 import net.minecraft.util.com.google.common.collect.Queues;
 import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.util.com.mojang.authlib.properties.Property;
 import net.minecraft.util.io.netty.channel.Channel;
+import net.minecraft.util.io.netty.channel.ChannelFutureListener;
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
 import net.minecraft.util.io.netty.channel.SimpleChannelInboundHandler;
 import net.minecraft.util.io.netty.channel.local.LocalChannel;
@@ -27,15 +24,9 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 // Spigot start
 import com.google.common.collect.ImmutableSet;
-import org.bukkit.Bukkit;
-import org.bukkit.event.player.AnticheatEvent;
 import org.spigotmc.SpigotCompressor;
 import org.spigotmc.SpigotDecompressor;
 // Spigot end
-// CobelPvP start
-import org.spigotmc.CustomTimingsHandler;
-import org.bukkit.craftbukkit.SpigotTimings;
-// CobelPvP end
 
 public class NetworkManager extends SimpleChannelInboundHandler {
 
@@ -50,6 +41,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public static final NetworkStatistics h = new NetworkStatistics();
     private final boolean j;
     private final Queue k = Queues.newConcurrentLinkedQueue();
+    private final Queue l = Queues.newConcurrentLinkedQueue();
     private Channel m;
     // Spigot Start
     public SocketAddress n;
@@ -76,50 +68,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
     // Spigot End
 
-    // CobelPvP start
-    private boolean lockDownIncomingTraffic = false;
-
-    protected boolean lockDownIncomingTraffic() {
-        boolean oldValue = this.lockDownIncomingTraffic;
-        this.lockDownIncomingTraffic = true;
-        return oldValue;
-    }
-    // CobelPvP end
-
-    // Anticheat start
-    private Packet[] packets = new Packet[10];
-    private long[] limitTimes = new long[12];
-    public long lastTickNetworkProcessed = MinecraftServer.currentTick;
-    public long ticksSinceLastPacket = -1L;
-    private int numOfKillAuraB = 0;
-    private List<Long> numOfKillAuraBLogs = new ArrayList<Long>();
-    private int numOfT = 0;
-    private List<Long> numOfKillAuraTLogs = new ArrayList<Long>();
-    private long lastKillAuraKTick = MinecraftServer.currentTick;
-    public long currentTime = System.currentTimeMillis();
-    public long lastVehicleTime = -1L;
-    public int numOfFlyingPacketsInARow = 0;
-    // Anticheat end
-
-    public static final GenericFutureListener[] emptyListenerArray = new GenericFutureListener[0]; // CobelPvP
-
     public NetworkManager(boolean flag) {
         this.j = flag;
-
-        // Anticheat start
-        this.limitTimes[0] = 4000L;
-        this.limitTimes[1] = 4000L;
-        this.limitTimes[2] = 4000L;
-        this.limitTimes[3] = 4000L;
-        this.limitTimes[4] = 5000L;
-        this.limitTimes[5] = 6000L;
-        this.limitTimes[6] = 7000L;
-        this.limitTimes[7] = 7000L;
-        this.limitTimes[8] = 7000L;
-        this.limitTimes[9] = 7000L;
-        this.limitTimes[10] = 7000L;
-        this.limitTimes[11] = 7000L;
-        // Anticheat end
     }
 
     public void channelActive(ChannelHandlerContext channelhandlercontext) throws Exception { // CraftBukkit - throws Exception
@@ -158,22 +108,9 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     protected void a(ChannelHandlerContext channelhandlercontext, Packet packet) {
-        if (this.m.isOpen() && !this.lockDownIncomingTraffic) { // Poweruser
+        if (this.m.isOpen()) {
             if (packet.a()) {
                 packet.handle(this.o);
-                if (packet instanceof PacketPlayInKeepAlive) {
-                    this.k.add(packet);
-                }
-
-                if (this.o instanceof PlayerConnection) {
-                    try {
-                        for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
-                            handler.handleReceivedPacket((PlayerConnection) this.o, packet);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
             } else {
                 this.k.add(packet);
             }
@@ -188,8 +125,10 @@ public class NetworkManager extends SimpleChannelInboundHandler {
 
     public void handle(Packet packet, GenericFutureListener... agenericfuturelistener) {
         if (this.m != null && this.m.isOpen()) {
+            this.i();
             this.b(packet, agenericfuturelistener);
         } else {
+            this.l.add(new QueuedPacket(packet, agenericfuturelistener));
         }
     }
 
@@ -203,14 +142,28 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         }
 
         if (this.m.eventLoop().inEventLoop()) {
-            QueuedProtocolSwitch.execute(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener); // CobelPvP
+            if (enumprotocol != enumprotocol1) {
+                this.a(enumprotocol);
+            }
+
+            this.m.writeAndFlush(packet).addListeners(agenericfuturelistener).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {
             this.m.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener));
         }
     }
 
+    private void i() {
+        if (this.m != null && this.m.isOpen()) {
+            while (!this.l.isEmpty()) {
+                QueuedPacket queuedpacket = (QueuedPacket) this.l.poll();
+
+                this.b(QueuedPacket.a(queuedpacket), QueuedPacket.b(queuedpacket));
+            }
+        }
+    }
+
     public void a() {
-        // this.i(); // MineHQ
+        this.i();
         EnumProtocol enumprotocol = (EnumProtocol) this.m.attr(d).get();
 
         if (this.p != enumprotocol) {
@@ -222,78 +175,15 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         }
 
         if (this.o != null) {
-            boolean processed = false; // Anticheat
-            // PaperSpigot start - Improve Network Manager packet handling - Configurable packets per player per tick processing
-            Packet packet;
-            for (int i = org.github.paperspigot.PaperSpigotConfig.maxPacketsPerPlayer; (packet = (Packet) this.k.poll()) != null && i >= 0; --i) {
-                // PaperSpigot end
+            for (int i = 1000; !this.k.isEmpty() && i >= 0; --i) {
+                Packet packet = (Packet) this.k.poll();
 
                 // CraftBukkit start
                 if (!this.isConnected() || !this.m.config().isAutoRead()) {
                     continue;
                 }
                 // CraftBukkit end
-
-                // Poweruser start
-                if(this.lockDownIncomingTraffic) {
-                    this.k.clear();
-                    break;
-                }
-                // Poweruser end
-
-                // Anticheat start
-                if (!processed) {
-                    this.ticksSinceLastPacket = (MinecraftServer.currentTick - this.lastTickNetworkProcessed);
-                    this.lastTickNetworkProcessed = MinecraftServer.currentTick;
-                    this.currentTime = System.currentTimeMillis();
-                    processed = true;
-                }
-
-                if (o instanceof PlayerConnection) {
-                    PlayerConnection connection = (PlayerConnection) o;
-
-                    if ((packet instanceof PacketPlayInKeepAlive)) {
-                        ((PlayerConnection)this.o).handleKeepAliveSync((PacketPlayInKeepAlive)packet);
-                        continue;
-                    }
-
-                    if (((packet instanceof PacketPlayInChat)) || ((packet instanceof PacketPlayInCustomPayload))) {
-                        packet.handle(this.o);
-
-                        try {
-                            for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
-                                handler.handleReceivedPacket((PlayerConnection) this.o, packet);
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        continue;
-                    }
-                }
-                // Anticheat end
-
-                // Poweruser start
-                CustomTimingsHandler packetHandlerTimer = SpigotTimings.getPacketHandlerTimings(packet);
-                packetHandlerTimer.startTiming();
-                try {
-                    packet.handle(this.o);
-                } finally {
-                    packetHandlerTimer.stopTiming();
-                }
-
-                if (this.o instanceof PlayerConnection) {
-                    try {
-                        for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
-                            handler.handleReceivedPacket((PlayerConnection) this.o, packet);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                // Poweruser end
-
-
+                packet.handle(this.o);
             }
 
             this.o.a();
@@ -302,18 +192,6 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         this.m.flush();
     }
 
-    // Anticheat start
-    private void runSync(final AnticheatEvent event) {
-        MinecraftServer.getServer().processQueue.add(new Runnable() {
-
-            public void run() {
-                Bukkit.getPluginManager().callEvent(event);
-            }
-
-        });
-    }
-    // Anticheat end
-
     public SocketAddress getSocketAddress() {
         return this.n;
     }
@@ -321,7 +199,8 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public void close(IChatBaseComponent ichatbasecomponent) {
         // Spigot Start
         this.preparing = false;
-        this.k.clear(); // Spigot Update - 20140921a
+        this.k.clear();
+        this.l.clear();
         // Spigot End
         if (this.m.isOpen()) {
             this.m.close();

@@ -150,7 +150,7 @@ public class PacketDataSerializer extends ByteBuf {
                 return null;
             }
             readerIndex(index);
-            return NBTCompressedStreamTools.a( new ByteBufInputStream( a ), new NBTReadLimiter( 2097152L ) ); // PaperSpigot - backport security fix
+            return NBTCompressedStreamTools.a( new DataInputStream( new ByteBufInputStream( a ) ) );
         }
     }
     // Spigot end

@@ -37,8 +37,4 @@ public class PacketPlayOutKeepAlive extends Packet {
     public void handle(PacketListener packetlistener) {
         this.a((PacketPlayOutListener) packetlistener);
     }
-
-    public int getA() {
-        return this.a;
-    }
 }

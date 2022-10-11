@@ -2,7 +2,6 @@ package net.minecraft.server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -149,12 +148,11 @@ public class ScoreboardServer extends Scoreboard {
 
     public void e(ScoreboardObjective scoreboardobjective) {
         List list = this.getScoreboardScorePacketsForObjective(scoreboardobjective);
-        // CobelPvP start
-        Iterator<EntityPlayer> iterator = viewers.iterator();
+        Iterator iterator = this.a.getPlayerList().players.iterator();
 
         while (iterator.hasNext()) {
-            EntityPlayer entityplayer = iterator.next();
-        // CobelPvP end
+            EntityPlayer entityplayer = (EntityPlayer) iterator.next();
+            if (entityplayer.getBukkitEntity().getScoreboard().getHandle() != this) continue; // CraftBukkit - Only players on this board
             Iterator iterator1 = list.iterator();
 
             while (iterator1.hasNext()) {
@@ -183,12 +181,11 @@ public class ScoreboardServer extends Scoreboard {
 
     public void g(ScoreboardObjective scoreboardobjective) {
         List list = this.f(scoreboardobjective);
-        // CobelPvP start
-        Iterator<EntityPlayer> iterator = viewers.iterator();
+        Iterator iterator = this.a.getPlayerList().players.iterator();
 
         while (iterator.hasNext()) {
-            EntityPlayer entityplayer = iterator.next();
-        // CobelPvP end
+            EntityPlayer entityplayer = (EntityPlayer) iterator.next();
+            if (entityplayer.getBukkitEntity().getScoreboard().getHandle() != this) continue; // CraftBukkit - Only players on this board
             Iterator iterator1 = list.iterator();
 
             while (iterator1.hasNext()) {
@@ -215,7 +212,11 @@ public class ScoreboardServer extends Scoreboard {
 
     // CraftBukkit start - Send to players
     private void sendAll(Packet packet) {
-        if (viewers != Collections.EMPTY_SET) for (EntityPlayer entityPlayer : viewers) entityPlayer.playerConnection.sendPacket(packet); // CobelPvP
+        for (EntityPlayer entityplayer : (List<EntityPlayer>) this.a.getPlayerList().players) {
+            if (entityplayer.getBukkitEntity().getScoreboard().getHandle() == this) {
+                entityplayer.playerConnection.sendPacket(packet);
+            }
+        }
     }
     // CraftBukkit end
 }

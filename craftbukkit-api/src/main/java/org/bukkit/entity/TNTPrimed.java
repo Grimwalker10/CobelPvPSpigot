@@ -35,6 +35,4 @@ public interface TNTPrimed extends Explosive {
      * @return the source of this primed TNT
      */
     public Entity getSource();
-
-    org.bukkit.Location getSourceLoc(); // PaperSpigot - Add FallingBlock and TNT source location API
 }

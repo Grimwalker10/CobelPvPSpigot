@@ -238,7 +238,7 @@ public class SpigotWorldConfig
         arrowDespawnRate = getInt( "arrow-despawn-rate", 1200  );
         log( "Arrow Despawn Rate: " + arrowDespawnRate );
     }
-    
+
     public boolean antiXray;
     public int engineMode;
     public List<Integer> hiddenBlocks;
@@ -302,7 +302,7 @@ public class SpigotWorldConfig
     public int maxCollisionsPerEntity;
     private void maxEntityCollision()
     {
-        maxCollisionsPerEntity = getInt( "max-entity-collisions", 6 );
+        maxCollisionsPerEntity = getInt( "max-entity-collisions", 8 );
         log( "Max Entity Collisions: " + maxCollisionsPerEntity );
     }
 
@@ -334,9 +334,9 @@ public class SpigotWorldConfig
     private void initHunger()
     {
         walkExhaustion = (float) getDouble( "hunger.walk-exhaustion", 0.2 );
-        sprintExhaustion = (float) getDouble( "hunger.sprint-exhaustion", 0.6 );
+        sprintExhaustion = (float) getDouble( "hunger.sprint-exhaustion", 0.8 );
         combatExhaustion = (float) getDouble( "hunger.combat-exhaustion", 0.3 );
-        regenExhaustion = (float) getDouble( "hunger.regen-exhaustion", 2.6 );
+        regenExhaustion = (float) getDouble( "hunger.regen-exhaustion", 3 );
     }
 
     public int currentPrimedTnt = 0;
@@ -355,36 +355,4 @@ public class SpigotWorldConfig
     {
         hangingTickFrequency = getInt( "hanging-tick-frequency", 100 );
     }
-
-    public int expDespawnRate;
-
-    private void expDespawnRate() {
-        expDespawnRate = getInt( "exp-despawn-rate", 6000 );
-        log( "Experience Orb Despawn Rate: " + expDespawnRate );
-    }
-
-    public boolean mobsEnabled;
-
-    private void mobsEnabled() {
-        mobsEnabled = getBoolean("mobs-enabled", true);
-        log("Mobs enabled: " + mobsEnabled);
-    }
-
-    // Poweruser start
-    public boolean enderPearlsCanPassNonSolidBlocks;
-    private void enderPearlsCanPassNonSolidBlocks() {
-        enderPearlsCanPassNonSolidBlocks = getBoolean("enderPearlsCanPassNonSolidBlocks", false);
-        log("Enderpearls can pass non-solid blocks: " + enderPearlsCanPassNonSolidBlocks);
-    }
-
-    public boolean updateMapItemsInPlayerInventory;
-    private void dontUpdateMapItemsInPlayerInventory() {
-        updateMapItemsInPlayerInventory = getBoolean( "updateMapItemsInPlayerInventory" , false);
-    }
-
-    public boolean useAlternateEndSpawn;
-    private void useAlternateEndSpawn() {
-        useAlternateEndSpawn = getBoolean( "useAlternateEndSpawn", false);
-    }
-    // Poweruser end
 }

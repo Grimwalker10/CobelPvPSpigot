@@ -2,12 +2,11 @@ package net.minecraft.server;
 
 public class PacketPlayOutBlockChange extends Packet {
 
-    public int a;
-    public int b;
-    public int c;
+    private int a;
+    private int b;
+    private int c;
     public Block block; // CraftBukkit - public
     public int data; // CraftBukkit - public
-    public boolean fake = false;
 
     public PacketPlayOutBlockChange() {}
 

@@ -836,14 +836,6 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
     public void hidePlayer(Player player);
 
     /**
-     * Hides a player from this player
-     *
-     * @param player Player to hide
-     * @param hideFromTab if true, hides the player from the tablist aswell
-     */
-    public void hidePlayer(Player player, boolean hideFromTab);
-
-    /**
      * Allows this player to see a player that was previously hidden
      *
      * @param player Player to show
@@ -858,15 +850,6 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
      *     player
      */
     public boolean canSee(Player player);
-
-    /**
-     * Checks to see if a player has been hidden from the tablist for this player
-     *
-     * @param player Player to check
-     * @return True if the provided player is not being hidden from this
-     *     player's tablist
-     */
-    public boolean canSeeFromTab(Player player);
 
     /**
      * Checks to see if this player is currently standing on a block. This
@@ -1139,48 +1122,6 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
         public void sendMessage(net.md_5.bungee.api.chat.BaseComponent ...components)
         {
             throw new UnsupportedOperationException( "Not supported yet." );
-        }
-
-        /**
-         * Get whether the player affects mob spawning
-         *
-         * @return whether or not the player affects
-         * mob spawning.
-         */
-        public boolean getAffectsSpawning()
-        {
-            throw new  UnsupportedOperationException( "Not supported yet." );
-        }
-
-        /**
-         * Set whether or not the player affects mob spawning
-         *
-         * @param affects whether or not the player should affect
-         * spawning or not.
-         */
-        public void setAffectsSpawning(boolean affects)
-        {
-            throw new UnsupportedOperationException( "Not supported yet" );
-        }
-
-        /**
-         * Get the view distance for this player
-         *
-         * @return View distance
-         */
-        public int getViewDistance()
-        {
-            throw new UnsupportedOperationException( "Not supported yet" );
-        }
-
-        /**
-         * Set the view distance for this player
-         *
-         * @param viewDistance View distance
-         */
-        public void setViewDistance(int viewDistance)
-        {
-            throw new UnsupportedOperationException( "Not supported yet" );
         }
     }
 

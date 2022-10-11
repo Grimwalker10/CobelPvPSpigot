@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
@@ -127,13 +128,6 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * @return The chunk that contains the given block
      */
     public Chunk getChunkAt(Block block);
-
-    public static interface ChunkLoadCallback {
-        public void onLoad(Chunk chunk);
-    }
-    public void getChunkAtAsync(int x, int z, ChunkLoadCallback cb);
-    public void getChunkAtAsync(Location location, ChunkLoadCallback cb);
-    public void getChunkAtAsync(Block block, ChunkLoadCallback cb);
 
     /**
      * Checks if the specified {@link Chunk} is loaded
@@ -472,18 +466,6 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * @return True if it was successfully set.
      */
     public boolean setSpawnLocation(int x, int y, int z);
-
-    /**
-     * Sets the spawn location of the world
-     *
-     * @param x X coordinate
-     * @param y Y coordinate
-     * @param z Z coordinate
-     * @param yaw left-right rotation
-     * @param pitch up-down rotation
-     * @return True if it was successfully set.
-     */
-    public boolean setSpawnLocation(int x, int y, int z, float yaw, float pitch);
 
     /**
      * Gets the relative in-game time of this world.
@@ -1173,6 +1155,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      */
     public boolean isGameRule(String rule);
 
+    // Spigot start
     public class Spigot
     {
 
@@ -1217,19 +1200,19 @@ public interface World extends PluginMessageRecipient, Metadatable {
         {
             throw new UnsupportedOperationException( "Not supported yet." );
         }
-        
+
         /**
          * Strikes lightning at the given {@link Location} and possibly without sound
          *
          * @param loc The location to strike lightning
          * @param isSilent Whether this strike makes no sound
          * @return The lightning entity.
-         */        
+         */
         public LightningStrike strikeLightning(Location loc, boolean isSilent)
         {
             throw new UnsupportedOperationException( "Not supported yet." );
         }
-        
+
         /**
          * Strikes lightning at the given {@link Location} without doing damage and possibly without sound
          *
@@ -1244,6 +1227,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
     }
 
     Spigot spigot();
+    // Spigot end
 
     /**
      * Represents various map environment types that a world may be

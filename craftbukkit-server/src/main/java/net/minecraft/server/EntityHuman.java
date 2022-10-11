@@ -3,25 +3,23 @@ package net.minecraft.server;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 
 // CraftBukkit start
-import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.entity.CraftItem;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
-import org.bukkit.event.inventory.EquipmentSetEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerBedEnterEvent;
+import org.bukkit.event.player.PlayerBedLeaveEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 // CraftBukkit end
 import org.spigotmc.ProtocolData; // Spigot - protocol patch
-import org.spigotmc.SpigotConfig;
 
 public abstract class EntityHuman extends EntityLiving implements ICommandListener {
 
@@ -44,7 +42,6 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     public boolean sleeping; // protected -> public
     public boolean fauxSleeping;
     public String spawnWorld = "";
-    public boolean affectsSpawning = true; // PaperSpigot
 
     @Override
     public CraftHumanEntity getBukkitEntity() {
@@ -69,7 +66,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     protected float bI = 0.1F;
     protected float bJ = 0.02F;
     private int h;
-    public GameProfile i;
+    private final GameProfile i;
     public EntityFishingHook hookedFish;
 
     public EntityHuman(World world, GameProfile gameprofile) {
@@ -81,7 +78,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         this.height = 1.62F;
         ChunkCoordinates chunkcoordinates = world.getSpawn();
 
-        this.setPositionRotation((double) chunkcoordinates.x + 0.5D, (double) (chunkcoordinates.y + 1), (double) chunkcoordinates.z + 0.5D, world.getWorldData().getSpawnYaw(), world.getWorldData().getSpawnPitch()); // Poweruser
+        this.setPositionRotation((double) chunkcoordinates.x + 0.5D, (double) (chunkcoordinates.y + 1), (double) chunkcoordinates.z + 0.5D, 0.0F, 0.0F);
         this.aZ = 180.0F;
         this.maxFireTicks = 20;
     }
@@ -93,10 +90,10 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
 
     protected void c() {
         super.c();
-        this.datawatcher.a(16, new ProtocolData.DualByte((byte) 0, (byte) 0)); // Spigot - protocol patch, handle metadata usage change (show cape -> collisions)
+        this.datawatcher.a( 16, new ProtocolData.DualByte( (byte) 0, (byte) 0 ) ); // Spigot - protocol patch, handle metadata usage change (show cape -> collisions)
         this.datawatcher.a(17, Float.valueOf(0.0F));
         this.datawatcher.a(18, Integer.valueOf(0));
-        this.datawatcher.a(10, new ProtocolData.HiddenByte((byte) 0)); // Spigot - protocol patch, handle new metadata value
+        this.datawatcher.a( 10, new ProtocolData.HiddenByte( (byte) 0 ) ); // Spigot - protocol patch, handle new metadata value
     }
 
     public boolean by() {
@@ -287,7 +284,6 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                     ((EntityPlayer) this).getBukkitEntity().updateScaledHealth();
                     // Spigot End
                 }
-                this.g = this.f.n(); // Poweruser
                 return;
             }
 
@@ -333,7 +329,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     public void setPassengerOf(Entity entity) {
         // CraftBukkit end
         if (this.vehicle != null && entity == null) {
-            world.getServer().getPluginManager().callEvent(new org.spigotmc.event.entity.EntityDismountEvent(this.getBukkitEntity(), this.vehicle.getBukkitEntity())); // Spigot
+            world.getServer().getPluginManager().callEvent( new org.spigotmc.event.entity.EntityDismountEvent( this.getBukkitEntity(), this.vehicle.getBukkitEntity() ) ); // Spigot
             // CraftBukkit start - use parent method instead to correctly fire VehicleExitEvent
             Entity originalVehicle = this.vehicle;
             // First statement moved down, second statement handled in parent method.
@@ -536,7 +532,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     public EntityItem a(ItemStack itemstack, boolean flag, boolean flag1) {
         if (itemstack == null) {
             return null;
-        } else if (itemstack.count <= 0) { // EMC
+        } else if (itemstack.count == 0) {
             return null;
         } else {
             EntityItem entityitem = new EntityItem(this.world, this.locX, this.locY - 0.30000001192092896D + (double) this.getHeadHeight(), this.locZ, itemstack);
@@ -706,26 +702,19 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         nbttagcompound.set("EnderItems", this.enderChest.h());
     }
 
-    public void openContainer(IInventory iinventory) {
-    }
+    public void openContainer(IInventory iinventory) {}
 
-    public void openHopper(TileEntityHopper tileentityhopper) {
-    }
+    public void openHopper(TileEntityHopper tileentityhopper) {}
 
-    public void openMinecartHopper(EntityMinecartHopper entityminecarthopper) {
-    }
+    public void openMinecartHopper(EntityMinecartHopper entityminecarthopper) {}
 
-    public void openHorseInventory(EntityHorse entityhorse, IInventory iinventory) {
-    }
+    public void openHorseInventory(EntityHorse entityhorse, IInventory iinventory) {}
 
-    public void startEnchanting(int i, int j, int k, String s) {
-    }
+    public void startEnchanting(int i, int j, int k, String s) {}
 
-    public void openAnvil(int i, int j, int k) {
-    }
+    public void openAnvil(int i, int j, int k) {}
 
-    public void startCrafting(int i, int j, int k) {
-    }
+    public void startCrafting(int i, int j, int k) {}
 
     public float getHeadHeight() {
         return 0.12F;
@@ -837,7 +826,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         // CraftBukkit end
         if (!this.isInvulnerable()) {
             if (!damagesource.ignoresArmor() && this.isBlocking() && f > 0.0F) {
-                f = (1.0F + f) * this.world.paperSpigotConfig.playerBlockingDamageMultiplier; // PaperSpigot - Configurable damage multiplier for blocking
+                f = (1.0F + f) * 0.5F;
             }
 
             f = this.applyArmorModifier(damagesource, f);
@@ -857,29 +846,21 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         return false; // CraftBukkit
     }
 
-    public void openFurnace(TileEntityFurnace tileentityfurnace) {
-    }
+    public void openFurnace(TileEntityFurnace tileentityfurnace) {}
 
-    public void openDispenser(TileEntityDispenser tileentitydispenser) {
-    }
+    public void openDispenser(TileEntityDispenser tileentitydispenser) {}
 
-    public void a(TileEntity tileentity) {
-    }
+    public void a(TileEntity tileentity) {}
 
-    public void a(CommandBlockListenerAbstract commandblocklistenerabstract) {
-    }
+    public void a(CommandBlockListenerAbstract commandblocklistenerabstract) {}
 
-    public void openBrewingStand(TileEntityBrewingStand tileentitybrewingstand) {
-    }
+    public void openBrewingStand(TileEntityBrewingStand tileentitybrewingstand) {}
 
-    public void openBeacon(TileEntityBeacon tileentitybeacon) {
-    }
+    public void openBeacon(TileEntityBeacon tileentitybeacon) {}
 
-    public void openTrade(IMerchant imerchant, String s) {
-    }
+    public void openTrade(IMerchant imerchant, String s) {}
 
-    public void b(ItemStack itemstack) {
-    }
+    public void b(ItemStack itemstack) {}
 
     public boolean q(Entity entity) {
         ItemStack itemstack = this.bF();
@@ -944,7 +925,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                 }
 
                 if (f > 0.0F || f1 > 0.0F) {
-                    boolean flag = !world.paperSpigotConfig.disablePlayerCrits && this.fallDistance > 0.0F && !this.onGround && !this.h_() && !this.M() && !this.hasEffect(MobEffectList.BLINDNESS) && this.vehicle == null && entity instanceof EntityLiving;
+                    boolean flag = this.fallDistance > 0.0F && !this.onGround && !this.h_() && !this.M() && !this.hasEffect(MobEffectList.BLINDNESS) && this.vehicle == null && entity instanceof EntityLiving;
 
                     if (flag && f > 0.0F) {
                         f *= 1.5F;
@@ -966,56 +947,15 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                         // CraftBukkit end
                     }
 
-                    // Kohi start
-                    // Save the victim's velocity before they are potentially knocked back
-                    double victimMotX = entity.motX;
-                    double victimMotY = entity.motY;
-                    double victimMotZ = entity.motZ;
-                    // Kohi end
-
                     boolean flag2 = entity.damageEntity(DamageSource.playerAttack(this), f);
 
                     if (flag2) {
                         if (i > 0) {
-                            // Kohi start - configurable knockback
-                            entity.g(
-                                    (double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * SpigotConfig.knockbackExtraHorizontal),
-                                    SpigotConfig.knockbackExtraVertical,
-                                    (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * SpigotConfig.knockbackExtraHorizontal));
-                            // Kohi end
+                            entity.g((double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * 0.5F), 0.1D, (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * 0.5F));
                             this.motX *= 0.6D;
                             this.motZ *= 0.6D;
                             this.setSprinting(false);
                         }
-
-                        // Kohi start
-                        // If the attack caused knockback, send the new velocity to the victim's client immediately,
-                        // and undo the change. Otherwise, if movement packets from the victim are processed before
-                        // the end of the tick, then friction may reduce the velocity considerably before it's sent
-                        // to the client, particularly if the victim was standing on the ground when those packets
-                        // were generated. And because this glitch is also likely to make server-side velocity very
-                        // inconsistent, we simply reverse the knockback after sending it so that KB, like most other
-                        // things, doesn't affect server velocity at all.
-                        if (entity instanceof EntityPlayer && entity.velocityChanged) {
-                            EntityPlayer attackedPlayer = (EntityPlayer) entity;
-                            PlayerVelocityEvent event = new PlayerVelocityEvent(attackedPlayer.getBukkitEntity(), attackedPlayer.getBukkitEntity().getVelocity());
-                            this.world.getServer().getPluginManager().callEvent(event);
-
-                            if (!event.isCancelled()) {
-                                attackedPlayer.getBukkitEntity().setVelocityDirect(event.getVelocity());
-                                attackedPlayer.playerConnection.sendPacket(new PacketPlayOutEntityVelocity(attackedPlayer));
-                            }
-
-                            // Anticheat start
-                            attackedPlayer.playerConnection.lastMotionTick = MinecraftServer.currentTick;
-                            // Anticheat end
-
-                            attackedPlayer.velocityChanged = false;
-                            attackedPlayer.motX = victimMotX;
-                            attackedPlayer.motY = victimMotY;
-                            attackedPlayer.motZ = victimMotZ;
-                        }
-                        // Kohi end
 
                         if (flag) {
                             this.b(entity);
@@ -1077,11 +1017,9 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         }
     }
 
-    public void b(Entity entity) {
-    }
+    public void b(Entity entity) {}
 
-    public void c(Entity entity) {
-    }
+    public void c(Entity entity) {}
 
     public void die() {
         super.die();
@@ -1153,20 +1091,20 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
             float f1 = 0.5F;
 
             switch (i1) {
-                case 0:
-                    f1 = 0.9F;
-                    break;
+            case 0:
+                f1 = 0.9F;
+                break;
 
-                case 1:
-                    f = 0.1F;
-                    break;
+            case 1:
+                f = 0.1F;
+                break;
 
-                case 2:
-                    f1 = 0.1F;
-                    break;
+            case 2:
+                f1 = 0.1F;
+                break;
 
-                case 3:
-                    f = 0.9F;
+            case 3:
+                f = 0.9F;
             }
 
             this.w(i1);
@@ -1190,20 +1128,20 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         this.bC = 0.0F;
         this.bD = 0.0F;
         switch (i) {
-            case 0:
-                this.bD = -1.8F;
-                break;
+        case 0:
+            this.bD = -1.8F;
+            break;
 
-            case 1:
-                this.bC = 1.8F;
-                break;
+        case 1:
+            this.bC = 1.8F;
+            break;
 
-            case 2:
-                this.bD = 1.8F;
-                break;
+        case 2:
+            this.bD = 1.8F;
+            break;
 
-            case 3:
-                this.bC = -1.8F;
+        case 3:
+            this.bC = -1.8F;
         }
     }
 
@@ -1290,10 +1228,10 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
 
     // Spigot start - protocol patch, handle metadata usage change (show cape -> collisions)
     protected void b(int i, boolean flag, int version) {
-        ProtocolData.DualByte db = this.datawatcher.getDualByte(16);
+        ProtocolData.DualByte db = this.datawatcher.getDualByte( 16 );
         byte b0 = version >= 16 ? db.value2 : db.value;
         if (flag) {
-            b0 = (byte) (b0 | 1 << i);
+            b0 = (byte) ( b0 | 1 << i );
         } else {
             b0 = (byte) (b0 & ~(1 << i));
         }
@@ -1306,8 +1244,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     }
     // Spigot end
 
-    public void b(IChatBaseComponent ichatbasecomponent) {
-    }
+    public void b(IChatBaseComponent ichatbasecomponent) {}
 
     public ChunkCoordinates getBed() {
         return this.c;
@@ -1333,13 +1270,11 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         this.a(statistic, 1);
     }
 
-    public void a(Statistic statistic, int i) {
-    }
+    public void a(Statistic statistic, int i) {}
 
     public void bj() {
         super.bj();
         this.a(StatisticList.r, 1);
-
         if (this.isSprinting()) {
             this.applyExhaustion(world.spigotConfig.sprintExhaustion); // Spigot - Change to use configurable value
         } else {
@@ -1351,7 +1286,6 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         double d0 = this.locX;
         double d1 = this.locY;
         double d2 = this.locZ;
-        World world = this.world;
 
         if (this.abilities.isFlying && this.vehicle == null) {
             double d3 = this.motY;
@@ -1365,10 +1299,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
             super.e(f, f1);
         }
 
-        // Kohi - don't check if world changed
-        if (this.world == world) {
-            this.checkMovement(this.locX - d0, this.locY - d1, this.locZ - d2);
-        }
+        this.checkMovement(this.locX - d0, this.locY - d1, this.locZ - d2);
     }
 
     public float bl() {
@@ -1379,23 +1310,23 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         if (this.vehicle == null) {
             int i;
 
-            if (this.a(Material.WATER)) { // in water
+            if (this.a(Material.WATER)) {
                 i = Math.round(MathHelper.sqrt(d0 * d0 + d1 * d1 + d2 * d2) * 100.0F);
                 if (i > 0) {
                     this.a(StatisticList.m, i);
-                    this.applyExhaustion(world.paperSpigotConfig.playerSwimmingExhaustion * (float) i * 0.01F); // PaperSpigot - Configurable swimming exhaustion
+                    this.applyExhaustion(0.015F * (float) i * 0.01F);
                 }
-            } else if (this.M()) { // in water
+            } else if (this.M()) {
                 i = Math.round(MathHelper.sqrt(d0 * d0 + d2 * d2) * 100.0F);
                 if (i > 0) {
                     this.a(StatisticList.i, i);
-                    this.applyExhaustion(world.paperSpigotConfig.playerSwimmingExhaustion * (float) i * 0.01F); // PaperSpigot - Configurable swimming (diving) exhaustion
+                    this.applyExhaustion(0.015F * (float) i * 0.01F);
                 }
-            } else if (this.h_()) { // on ladder or vine
+            } else if (this.h_()) {
                 if (d1 > 0.0D) {
                     this.a(StatisticList.k, (int) Math.round(d1 * 100.0D));
                 }
-            } else if (this.onGround) { // on ground
+            } else if (this.onGround) {
                 i = Math.round(MathHelper.sqrt(d0 * d0 + d2 * d2) * 100.0F);
                 if (i > 0) {
                     this.a(StatisticList.h, i);
@@ -1607,11 +1538,9 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         return !this.abilities.isFlying;
     }
 
-    public void updateAbilities() {
-    }
+    public void updateAbilities() {}
 
-    public void a(EnumGamemode enumgamemode) {
-    }
+    public void a(EnumGamemode enumgamemode) {}
 
     public String getName() {
         return this.i.getName();
@@ -1634,15 +1563,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     }
 
     public void setEquipment(int i, ItemStack itemstack) {
-        ItemStack previous = this.inventory.armor[i];
-        if (!Objects.equals(previous, itemstack)) {
-            if (previous != null && EquipmentSetEvent.getHandlerList().getRegisteredListeners().length != 0) {
-                previous = previous.cloneItemStack();
-            }
-
-            this.inventory.armor[i] = itemstack;
-            Bukkit.getPluginManager().callEvent(new EquipmentSetEvent(getBukkitEntity(), i, CraftItemStack.asBukkitCopy(previous), CraftItemStack.asBukkitCopy(itemstack)));
-        }
+        this.inventory.armor[i] = itemstack;
     }
 
     public ItemStack[] getEquipment() {
@@ -1674,15 +1595,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
             f = 0.0F;
         }
 
-        float previous = getAbsorptionHearts(); // CobelPvP
-
         this.getDataWatcher().watch(17, Float.valueOf(f));
-
-        // CobelPvP start
-        if (previous != f) {
-            Bukkit.getPluginManager().callEvent(new PlayerHealthChangeEvent(((CraftPlayer) getBukkitEntity()), getHealth(), getHealth()));
-        }
-        // CobelPvP end
     }
 
     public float getAbsorptionHearts() {

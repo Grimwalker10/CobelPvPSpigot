@@ -98,26 +98,9 @@ public class CraftWorld implements World {
     }
 
     public Location getSpawnLocation() {
-    // Poweruser start
-        WorldData worlddata = world.getWorldData();
-        return new Location(this, worlddata.c(), worlddata.d(), worlddata.e(), worlddata.getSpawnYaw(), worlddata.getSpawnPitch());
+        ChunkCoordinates spawn = world.getSpawn();
+        return new Location(this, spawn.x, spawn.y, spawn.z);
     }
-
-    public boolean setSpawnLocation(int x, int y, int z, float yaw, float pitch) {
-        try {
-            Location previousLocation = getSpawnLocation();
-            world.worldData.setSpawn(x, y, z, yaw, pitch);
-
-            // Notify anyone who's listening.
-            SpawnChangeEvent event = new SpawnChangeEvent(this, previousLocation);
-            server.getPluginManager().callEvent(event);
-
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-    // Poweruser end
 
     public boolean setSpawnLocation(int x, int y, int z) {
         try {
@@ -133,24 +116,6 @@ public class CraftWorld implements World {
             return false;
         }
     }
-
-    // PaperSpigot start - Async chunk load API
-    public void getChunkAtAsync(final int x, final int z, final ChunkLoadCallback callback) {
-        final ChunkProviderServer cps = this.world.chunkProviderServer;
-        cps.getChunkAt(x, z, new Runnable() {
-            @Override
-            public void run() {
-                callback.onLoad(cps.getChunkAt(x, z).bukkitChunk);
-            }
-        });
-    }
-    public void getChunkAtAsync(Block block, ChunkLoadCallback callback) {
-        getChunkAtAsync(block.getX() >> 4, block.getZ() >> 4, callback);
-    }
-    public void getChunkAtAsync(Location location, ChunkLoadCallback callback) {
-        getChunkAtAsync(location.getBlockX() >> 4, location.getBlockZ() >> 4, callback);
-    }
-    // PaperSpigot end
 
     public Chunk getChunkAt(int x, int z) {
         return this.world.chunkProviderServer.getChunkAt(x, z).bukkitChunk;
@@ -198,28 +163,22 @@ public class CraftWorld implements World {
 
     public boolean unloadChunkRequest(int x, int z, boolean safe) {
         org.spigotmc.AsyncCatcher.catchOp( "chunk unload"); // Spigot
-        if (isChunkInUse(x, z)) { // CobelPvP - never unload in-use chunks
+        if (safe && isChunkInUse(x, z)) {
             return false;
         }
 
-        world.chunkProviderServer.queueUnload(x, z, true); // CobelPvP
+        world.chunkProviderServer.queueUnload(x, z);
 
         return true;
     }
 
     public boolean unloadChunk(int x, int z, boolean save, boolean safe) {
         org.spigotmc.AsyncCatcher.catchOp( "chunk unload"); // Spigot
-        if (isChunkInUse(x, z)) { // CobelPvP - never unload in-use chunks
+        if (safe && isChunkInUse(x, z)) {
             return false;
         }
 
-        net.minecraft.server.Chunk chunk = world.chunkProviderServer.getChunkIfLoaded(x, z);
-        // PaperSpigot start - Don't create a chunk just to unload it
-        if (chunk == null) {
-            return false;
-        }
-        // PaperSpigot end
-
+        net.minecraft.server.Chunk chunk = world.chunkProviderServer.getOrCreateChunk(x, z);
         if (chunk.mustSave) {   // If chunk had previously been queued to save, must do save to avoid loss of that data
             save = true;
         }
@@ -232,7 +191,7 @@ public class CraftWorld implements World {
         }
 
         world.chunkProviderServer.unloadQueue.remove(x, z);
-        world.chunkProviderServer.chunks.remove(x, z); // CobelPvP
+        world.chunkProviderServer.chunks.remove(LongHash.toLong(x, z));
 
         return true;
     }
@@ -290,7 +249,7 @@ public class CraftWorld implements World {
         }
 
         world.chunkProviderServer.unloadQueue.remove(x, z);
-        net.minecraft.server.Chunk chunk = world.chunkProviderServer.chunks.get(LongHash.toLong(x, z)); // CobelPvP
+        net.minecraft.server.Chunk chunk = world.chunkProviderServer.chunks.get(LongHash.toLong(x, z));
 
         if (chunk == null) {
             world.timings.syncChunkLoadTimer.startTiming(); // Spigot
@@ -304,7 +263,7 @@ public class CraftWorld implements World {
 
     private void chunkLoadPostProcess(net.minecraft.server.Chunk chunk, int x, int z) {
         if (chunk != null) {
-            world.chunkProviderServer.chunks.put(LongHash.toLong(x, z), chunk); // CobelPvP
+            world.chunkProviderServer.chunks.put(LongHash.toLong(x, z), chunk);
 
             chunk.addEntities();
 
@@ -713,7 +672,7 @@ public class CraftWorld implements World {
     public List<Player> getPlayers() {
         List<Player> list = new ArrayList<Player>();
 
-        for (Object o : world.players) {
+        for (Object o : world.entityList) {
             if (o instanceof net.minecraft.server.Entity) {
                 net.minecraft.server.Entity mcEnt = (net.minecraft.server.Entity) o;
                 Entity bukkitEntity = mcEnt.getBukkitEntity();
@@ -728,18 +687,12 @@ public class CraftWorld implements World {
     }
 
     public void save() {
-        // PaperSpigot start - Improved autosave
-        save(true);
-    }
-
-    public void save(boolean forceSave) {
-        // PaperSpigot end
         this.server.checkSaveState();
         try {
             boolean oldSave = world.savingDisabled;
 
             world.savingDisabled = false;
-            world.save(forceSave, null); // PaperSpigot
+            world.save(true, null);
 
             world.savingDisabled = oldSave;
         } catch (ExceptionWorldConflict ex) {
@@ -884,10 +837,7 @@ public class CraftWorld implements World {
         double y = location.getBlockY() + 0.5;
         double z = location.getBlockZ() + 0.5;
 
-        // PaperSpigot start - Add FallingBlock and TNT source location API
-        location = location.clone();
-        EntityFallingBlock entity = new EntityFallingBlock(location, world, x, y, z, net.minecraft.server.Block.getById(material.getId()), data);
-        // PaperSpigot end
+        EntityFallingBlock entity = new EntityFallingBlock(world, x, y, z, net.minecraft.server.Block.getById(material.getId()), data);
         entity.ticksLived = 1;
 
         world.addEntity(entity, SpawnReason.CUSTOM);
@@ -922,10 +872,7 @@ public class CraftWorld implements World {
             int type = world.getTypeId((int) x, (int) y, (int) z);
             int data = world.getData((int) x, (int) y, (int) z);
 
-            // PaperSpigot start - Add FallingBlock and TNT source location API
-            location = location.clone();
-            entity = new EntityFallingBlock(location, world, x + 0.5, y + 0.5, z + 0.5, net.minecraft.server.Block.getById(type), data);
-            // PaperSpigot end
+            entity = new EntityFallingBlock(world, x + 0.5, y + 0.5, z + 0.5, net.minecraft.server.Block.getById(type), data);
         } else if (Projectile.class.isAssignableFrom(clazz)) {
             if (Snowball.class.isAssignableFrom(clazz)) {
                 entity = new EntitySnowball(world, x, y, z);
@@ -1095,10 +1042,7 @@ public class CraftWorld implements World {
                 throw new IllegalArgumentException("Cannot spawn hanging entity for " + clazz.getName() + " at " + location);
             }
         } else if (TNTPrimed.class.isAssignableFrom(clazz)) {
-            // PaperSpigot start - Add FallingBlock and TNT source location API
-            org.bukkit.Location loc = new org.bukkit.Location(world.getWorld(), x, y, z);
-            entity = new EntityTNTPrimed(loc, world, x, y, z, null);
-            // PaperSpigot end
+            entity = new EntityTNTPrimed(world, x, y, z, null);
         } else if (ExperienceOrb.class.isAssignableFrom(clazz)) {
             entity = new EntityExperienceOrb(world, x, y, z, 0);
         } else if (Weather.class.isAssignableFrom(clazz)) {

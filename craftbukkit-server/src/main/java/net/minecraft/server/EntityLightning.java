@@ -14,7 +14,7 @@ public class EntityLightning extends EntityWeather {
     public boolean isEffect = false;
 
     public boolean isSilent = false; // Spigot
-    
+
     public EntityLightning(World world, double d0, double d1, double d2) {
         this(world, d0, d1, d2, false);
     }

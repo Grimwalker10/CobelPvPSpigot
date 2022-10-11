@@ -42,10 +42,7 @@ final class DispenseBehaviorTNT extends DispenseBehaviorItem {
             }
         }
 
-        // PaperSpigot start - Add FallingBlock and TNT source location API
-        org.bukkit.Location loc = new org.bukkit.Location(world.getWorld(), event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ());
-        EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(loc, world, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), (EntityLiving) null);
-        // PaperSpigot end
+        EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(world, event.getVelocity().getX(), event.getVelocity().getY(), event.getVelocity().getZ(), (EntityLiving) null);
         // CraftBukkit end
 
         world.addEntity(entitytntprimed);

@@ -39,6 +39,6 @@ public class PacketPlayOutRelEntityMove extends PacketPlayOutEntity {
     }
 
     public void handle(PacketListener packetlistener) {
-        this.a((PacketPlayOutListener) packetlistener);
+        super.a((PacketPlayOutListener) packetlistener);
     }
 }

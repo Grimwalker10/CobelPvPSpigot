@@ -45,7 +45,7 @@ public class TileEntityBeacon extends TileEntity implements IInventory {
     public TileEntityBeacon() {}
 
     public void h() {
-        if (true || this.world.getTime() % 80L == 0L) { // PaperSpigot - controlled by Improved Tick handling
+        if (this.world.getTime() % 80L == 0L) {
             this.y();
             this.x();
         }
@@ -59,9 +59,12 @@ public class TileEntityBeacon extends TileEntity implements IInventory {
             if (this.l >= 4 && this.m == this.n) {
                 b0 = 1;
             }
-            
-            List<EntityPlayer> list = world.playerMap.getNearbyPlayersIgnoreHeight(this.x, this.y, this.z, d0);
-            Iterator<EntityPlayer> iterator = list.iterator();
+
+            AxisAlignedBB axisalignedbb = AxisAlignedBB.a((double) this.x, (double) this.y, (double) this.z, (double) (this.x + 1), (double) (this.y + 1), (double) (this.z + 1)).grow(d0, d0, d0);
+
+            axisalignedbb.e = (double) this.world.getHeight();
+            List list = this.world.a(EntityHuman.class, axisalignedbb);
+            Iterator iterator = list.iterator();
 
             EntityHuman entityhuman;
 
@@ -118,6 +121,16 @@ public class TileEntityBeacon extends TileEntity implements IInventory {
 
             if (this.l == 0) {
                 this.k = false;
+            }
+        }
+
+        if (!this.world.isStatic && this.l == 4 && i < this.l) {
+            Iterator iterator = this.world.a(EntityHuman.class, AxisAlignedBB.a((double) this.x, (double) this.y, (double) this.z, (double) this.x, (double) (this.y - 4), (double) this.z).grow(10.0D, 5.0D, 10.0D)).iterator();
+
+            while (iterator.hasNext()) {
+                EntityHuman entityhuman = (EntityHuman) iterator.next();
+
+                entityhuman.a((Statistic) AchievementList.K);
             }
         }
     }

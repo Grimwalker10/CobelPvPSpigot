@@ -1,6 +1,5 @@
 package org.spigotmc;
 
-import com.cobelpvp.commands.*;
 import com.google.common.base.Throwables;
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +30,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class SpigotConfig
 {
-    private static final File CONFIG_FILE = new File( "config/server", "spigot.yml" );
+
+    private static final File CONFIG_FILE = new File( "spigot.yml" );
     private static final String HEADER = "This is the main configuration file for Spigot.\n"
             + "As you can see, there's tons to configure. Some options may impact gameplay, so use\n"
             + "with caution, and make sure you know what each option does before configuring.\n"
@@ -43,9 +43,11 @@ public class SpigotConfig
             + "\n"
             + "IRC: #spigot @ irc.spi.gt ( http://www.spigotmc.org/pages/irc/ )\n"
             + "Forums: http://www.spigotmc.org/\n";
+    /*========================================================================*/
     public static YamlConfiguration config;
     static int version;
     static Map<String, Command> commands;
+    /*========================================================================*/
     private static Metrics metrics;
 
     public static void init()
@@ -206,7 +208,7 @@ public class SpigotConfig
         outdatedServerMessage = transform( getString( "messages.outdated-server", outdatedServerMessage ) );
     }
 
-    public static int timeoutTime = 10;
+    public static int timeoutTime = 60;
     public static boolean restartOnCrash = true;
     public static String restartScript = "./start.sh";
     public static String restartMessage;
@@ -217,7 +219,6 @@ public class SpigotConfig
         restartScript = getString( "settings.restart-script", restartScript );
         restartMessage = transform( getString( "messages.restart", "Server is restarting" ) );
         commands.put( "restart", new RestartCommand( "restart" ) );
-        commands.put("pvparmor", new PvPArmorCommand("pvparmor"));
         WatchdogThread.doStart( timeoutTime, restartOnCrash );
     }
 
@@ -243,10 +244,12 @@ public class SpigotConfig
         lateBind = getBoolean( "settings.late-bind", false );
     }
 
-    public static boolean disableStatSaving = true;
+    public static boolean disableStatSaving;
     public static TObjectIntHashMap<String> forcedStats = new TObjectIntHashMap<String>();
     private static void stats()
     {
+        disableStatSaving = getBoolean( "stats.disable-saving", false );
+
         if ( !config.contains( "stats.forced-stats" ) ) {
             config.createSection( "stats.forced-stats" );
         }
@@ -262,7 +265,9 @@ public class SpigotConfig
 
         if ( disableStatSaving && section.getInt( "achievement.openInventory", 0 ) < 1 )
         {
-            forcedStats.put("achievement.openInventory", 1);
+            Bukkit.getLogger().warning( "*** WARNING *** stats.disable-saving is true but stats.forced-stats.achievement.openInventory" +
+                    " isn't set to 1. Disabling stat saving without forcing the achievement may cause it to get stuck on the player's " +
+                    "screen." );
         }
     }
 
@@ -316,13 +321,13 @@ public class SpigotConfig
         replaceCommands = new HashSet<String>( (List<String>) getList( "commands.replace-commands",
                 Arrays.asList( "setblock", "summon", "testforblock", "tellraw" ) ) );
     }
-    
+
     public static int userCacheCap;
     private static void userCacheCap()
     {
         userCacheCap = getInt( "settings.user-cache-size", 1000 );
     }
-    
+
     public static boolean saveUserCacheOnStopOnly;
     private static void saveUserCacheOnStopOnly()
     {
@@ -393,162 +398,4 @@ public class SpigotConfig
             Bukkit.getLogger().info( "Debug logging is disabled" );
         }
     }
-
-    // Poweruser start
-    public static boolean disablePlayerFileSaving;
-    private static void playerFiles() {
-        disablePlayerFileSaving = getBoolean( "settings.disable-player-file-saving", false );
-        if (disablePlayerFileSaving) {
-            disableStatSaving = true;
-        }
-    }
-
-    public static boolean logRemainingAsyncThreadsDuringShutdown;
-    private static void logRemainingAsyncThreadsDuringShutdown() {
-        logRemainingAsyncThreadsDuringShutdown = getBoolean( "settings.logRemainingAsyncThreadsDuringShutdown" , true);
-    }
-
-    private static void powertpsCommand()
-    {
-        commands.put( "tpsgraph", new TPSCommand( "tpsgraph" ) );
-    }
-
-    private static void worldstatsCommand() {
-        commands.put( "worldstats", new WorldStatsCommand( "worldstats" ) );
-    }
-
-    private static void setviewdistanceCommand() {
-        commands.put( "setviewdistance", new SetViewDistanceCommand( "setviewdistance" ) );
-    }
-
-    public static int playersPerChunkIOThread;
-    private static void playersPerChunkIOThread() {
-        playersPerChunkIOThread = Math.max(1, getInt( "settings.chunkio.players-per-thread", 150) );
-    }
-
-    public static int autoSaveChunksPerTick;
-    private static void autoSaveChunksPerTick() {
-        autoSaveChunksPerTick = getInt( "settings.autosave.chunks-per-tick" , 200 );
-    }
-
-    // Anticheat start
-    public static boolean anticheatEnabled;
-    private static void anticheatEnabled() {
-        anticheatEnabled = getBoolean("settings.anticheat.enabled", true);
-    }
-
-    public static boolean anticheatTesting;
-    private static void anticheatTesting() {
-        anticheatTesting = getBoolean("settings.anticheat.testing", false);
-    }
-    // Anticheat end
-
-    public static boolean autoSaveFireWorldSaveEvent;
-    private static void autoSaveFireWorldSaveEvent() {
-        autoSaveFireWorldSaveEvent = getBoolean ( "settings.autosave.fire-WorldSaveEvent", false);
-    }
-
-    public static boolean autoSaveClearRegionFileCache;
-    private static void autoSaveClearRegionFileCache() {
-        autoSaveClearRegionFileCache = getBoolean ( "settings.autosave.clear-RegionFileCache", false);
-    }
-
-    public static boolean lagSpikeLoggerEnabled;
-    private static void lagSpikeLoggerEnabled() {
-        lagSpikeLoggerEnabled = getBoolean ( "settings.lagSpikeLogger.enabled", true);
-    }
-
-    public static long lagSpikeLoggerTickLimitNanos;
-    private static void lagSpikeLoggerTickLimitNanos() {
-        lagSpikeLoggerTickLimitNanos = ((long) getInt( "settings.lagSpikeLogger.tickLimitInMilliseconds", 100)) * 1000000L;
-    }
-
-    public static int brewingMultiplier;
-    private static void brewingMultiplier() {
-        brewingMultiplier = getInt("settings.brewingMultiplier", 1);
-    }
-
-    public static int smeltingMultiplier;
-    private static void smeltingMultiplier() {
-        smeltingMultiplier = getInt("settings.smeltingMultiplier", 1);
-    }
-
-    public static boolean instantRespawn;
-    private static void instantRespawn()  {
-        instantRespawn = getBoolean("settings.instantRespawn", false);
-    }
-
-    private static void noTrackCommand() {
-        commands.put( "notrack", new NoTrackCommand( "notrack" ) );
-    }
-
-    public static boolean disableTracking;
-    private static void disableTracking() {
-        disableTracking = getBoolean("settings.disable.entityTracking", false);
-    }
-
-    public static boolean disableBlockTicking;
-    private static void disableBlockTicking() {
-        disableBlockTicking = getBoolean("settings.disable.ticking.blocks", false);
-    }
-
-    public static boolean disableVillageTicking;
-    private static void disableVillageTicking() {
-        disableVillageTicking = getBoolean("settings.disable.ticking.villages", false);
-    }
-
-    public static boolean disableWeatherTicking;
-    private static void disableWeatherTicking() {
-        disableWeatherTicking = getBoolean("settings.disable.ticking.weather", false);
-    }
-
-    public static boolean disableSleepCheck;
-    private static void disableSleepCheck() {
-        disableSleepCheck = getBoolean("settings.disable.general.sleepcheck", false);
-    }
-
-    public static boolean disableEntityCollisions;
-    private static void disableEntityCollisions() {
-        disableEntityCollisions = getBoolean("settings.disable.general.entity-collisions", false);
-    }
-
-    public static boolean cacheChunkMaps;
-    private static void cacheChunkMaps() {
-        cacheChunkMaps = getBoolean("settings.cache-chunk-maps", false);
-    }
-
-    public static boolean disableSaving;
-    private static void disableSaving() {
-        disableSaving = getBoolean("settings.disableSaving", false);
-    }
-
-    public static boolean playerListPackets;
-    public static boolean updatePingOnTablist;
-    public static boolean onlyCustomTab;
-    private static void packets() {
-        onlyCustomTab = getBoolean("settings.only-custom-tab", false);
-
-        if (!onlyCustomTab) {
-            playerListPackets = !getBoolean("settings.disable.player-list-packets", false);
-            updatePingOnTablist = getBoolean("settings.disable.ping-update-packets", false);
-        }
-    }
-
-    public static boolean reduceArmorDamage;
-    private static void reduceArmorDamage() {
-        reduceArmorDamage = getBoolean("settings.reduce-armor-damage", true);
-    }
-
-    public static boolean pearlThroughGates = false;
-    private static void pearls() {
-        pearlThroughGates = getBoolean("settings.pearl-through-gates", true);
-    }
-
-    public static double knockbackFriction = 1.8D;
-    public static double knockbackHorizontal = 0.32D;
-    public static double knockbackVertical = 0.39D;
-    public static double knockbackVerticalLimit = 0.33D;
-    public static double knockbackExtraHorizontal = 0.425D;
-    public static double knockbackExtraVertical = 0.085D;
-    
 }

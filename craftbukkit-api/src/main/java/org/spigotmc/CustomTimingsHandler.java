@@ -15,14 +15,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
-import java.util.ArrayDeque; // Poweruser
 /**
  * Provides custom timing sections for /timings merged.
  */
 public class CustomTimingsHandler
 {
 
-    protected static Queue<CustomTimingsHandler> HANDLERS = new ConcurrentLinkedQueue<CustomTimingsHandler>();
+    private static Queue<CustomTimingsHandler> HANDLERS = new ConcurrentLinkedQueue<CustomTimingsHandler>();
     /*========================================================================*/
     private final String name;
     private final CustomTimingsHandler parent;
@@ -32,8 +31,6 @@ public class CustomTimingsHandler
     private long totalTime = 0;
     private long curTickTotal = 0;
     private long violations = 0;
-    private ArrayDeque<Long> currentTimings;
-    private long currentTimingsSum;
 
     public CustomTimingsHandler(String name)
     {
@@ -44,8 +41,6 @@ public class CustomTimingsHandler
     {
         this.name = name;
         this.parent = parent;
-        this.currentTimings = new ArrayDeque<Long>();
-        this.currentTimingsSum = 0L;
         HANDLERS.add( this );
     }
 
@@ -106,13 +101,12 @@ public class CustomTimingsHandler
         {
             for ( CustomTimingsHandler timings : HANDLERS )
             {
-                timings.updateAverageCalculation();
-                if ( timings.curTickTotal > 50000000L )
+                if ( timings.curTickTotal > 50000000 )
                 {
-                    timings.violations += Math.ceil( timings.curTickTotal / 50000000L );
+                    timings.violations += Math.ceil( timings.curTickTotal / 50000000 );
                 }
                 timings.curTickTotal = 0;
-                timings.timingDepth = 0;
+                timings.timingDepth = 0; // incase reset messes this up
             }
         }
     }
@@ -122,6 +116,7 @@ public class CustomTimingsHandler
      */
     public void startTiming()
     {
+        // If second condtion fails we are already timing
         if ( Bukkit.getPluginManager().useTimings() && ++timingDepth == 1 )
         {
             start = System.nanoTime();
@@ -166,38 +161,5 @@ public class CustomTimingsHandler
         totalTime = 0;
         start = 0;
         timingDepth = 0;
-        this.currentTimings.clear();
-        this.currentTimingsSum = 0L;
-    }
-
-    private void updateAverageCalculation() {
-        this.currentTimingsSum += this.curTickTotal;
-        this.currentTimings.add(this.curTickTotal);
-        while(this.currentTimings.size() > 20) {
-            Long value = this.currentTimings.poll();
-            this.currentTimingsSum -= value.longValue();
-        }
-    }
-
-    /**
-     * Returns the average tick time over the last 20 ticks
-     */
-    public long getRecentAverage() {
-        if(!this.currentTimings.isEmpty()) {
-            return this.currentTimingsSum / this.currentTimings.size();
-        }
-        return 0L;
-    }
-
-    public long getCurrentTickTotal() {
-        return this.curTickTotal;
-    }
-
-    public long getCurrentCount() {
-        return this.count;
-    }
-
-    public String getName() {
-        return this.name;
     }
 }

@@ -59,15 +59,15 @@ public class BlockOre extends Block {
             int j1 = 0;
 
             if (this == Blocks.COAL_ORE) {
-                j1 = MathHelper.nextInt(world.random, 0, 2 * (i1 + 1)); // Kohi - boosted
+                j1 = MathHelper.nextInt(world.random, 0, 2);
             } else if (this == Blocks.DIAMOND_ORE) {
-                j1 = MathHelper.nextInt(world.random, 3, 7 * (i1 + 1)); // Kohi - boosted
+                j1 = MathHelper.nextInt(world.random, 3, 7);
             } else if (this == Blocks.EMERALD_ORE) {
-                j1 = MathHelper.nextInt(world.random, 3, 7 * (i1 + 1)); // Kohi - boosted
+                j1 = MathHelper.nextInt(world.random, 3, 7);
             } else if (this == Blocks.LAPIS_ORE) {
-                j1 = MathHelper.nextInt(world.random, 2, 5 * (i1 + 1)); // Kohi - boosted
+                j1 = MathHelper.nextInt(world.random, 2, 5);
             } else if (this == Blocks.QUARTZ_ORE) {
-                j1 = MathHelper.nextInt(world.random, 2, 5 * (i1 + 1)); // Kohi - boosted
+                j1 = MathHelper.nextInt(world.random, 2, 5);
             }
 
             return j1;

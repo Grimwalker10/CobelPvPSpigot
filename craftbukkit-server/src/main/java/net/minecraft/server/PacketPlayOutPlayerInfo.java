@@ -9,21 +9,29 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 
 public class PacketPlayOutPlayerInfo extends Packet {
 
-    public static final int ADD_PLAYER = 0;
-    public static final int UPDATE_GAMEMODE = 1;
-    public static final int UPDATE_LATENCY = 2;
-    public static final int UPDATE_DISPLAY_NAME = 3;
-    public static final int REMOVE_PLAYER = 4;
+    private static final int ADD_PLAYER = 0;
+    private static final int UPDATE_GAMEMODE = 1;
+    private static final int UPDATE_LATENCY = 2;
+    private static final int UPDATE_DISPLAY_NAME = 3;
+    private static final int REMOVE_PLAYER = 4;
 
-    public int action;
+    private int action;
     // private int length; We don't batch (yet)
-    public GameProfile player;
+    private GameProfile player;
 
-    public int gamemode;
-    public int ping;
-    public String username;
+    private int gamemode;
+    private int ping;
+    private String username;
 
     public PacketPlayOutPlayerInfo() {}
+
+    /* removed to force breaking
+    public PacketPlayOutPlayerInfo(String s, boolean flag, int i) {
+        this.a = s;
+        this.b = flag;
+        this.c = i;
+    }
+    */
 
     public static PacketPlayOutPlayerInfo addPlayer(EntityPlayer player) {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo();
@@ -74,12 +82,6 @@ public class PacketPlayOutPlayerInfo extends Packet {
     }
 
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
-        // PaperSpigot start - Fix scoreboard prefix and suffix in tab list
-        String username = this.username;
-        if (packetdataserializer.version >= 47 && action == ADD_PLAYER && username != null && username.equals(player.getName())) {
-            username = null;
-        }
-        // PaperSpigot end
         if ( packetdataserializer.version >= 20 )
         {
             packetdataserializer.b( action );

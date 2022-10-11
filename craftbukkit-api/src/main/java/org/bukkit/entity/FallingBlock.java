@@ -45,6 +45,4 @@ public interface FallingBlock extends Entity {
      * @param drop true to break into an item when obstructed
      */
     void setDropItem(boolean drop);
-
-    org.bukkit.Location getSourceLoc(); // PaperSpigot - Add FallingBlock and TNT source location API
 }

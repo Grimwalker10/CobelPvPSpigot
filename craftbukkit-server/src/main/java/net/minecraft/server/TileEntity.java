@@ -38,7 +38,7 @@ public class TileEntity {
             }
         }
     }
-    
+
     // Called from update when the contents have changed, so hoppers need updates.
     // Check all 6 faces.
     public void scheduleTicks() {
@@ -56,12 +56,6 @@ public class TileEntity {
             }
         }
     }
-
-    // Optimized TileEntity Tick changes
-    private static int tileEntityCounter = 0;
-    public boolean isAdded = false;
-    public int tileId = tileEntityCounter++;
-
     // Spigot end
 
     public TileEntity() {}
@@ -187,10 +181,7 @@ public class TileEntity {
 
     public void a(CrashReportSystemDetails crashreportsystemdetails) {
         crashreportsystemdetails.a("Name", (Callable) (new CrashReportTileEntityName(this)));
-        Block block = this.q(); // PaperSpigot
-        if (block != null) { // PaperSpigot
         CrashReportSystemDetails.a(crashreportsystemdetails, this.x, this.y, this.z, this.q(), this.p());
-        } // PaperSpigot
         crashreportsystemdetails.a("Actual block type", (Callable) (new CrashReportTileEntityType(this)));
         crashreportsystemdetails.a("Actual block data value", (Callable) (new CrashReportTileEntityData(this)));
     }

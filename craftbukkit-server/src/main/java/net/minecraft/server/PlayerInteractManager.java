@@ -2,13 +2,6 @@ package net.minecraft.server;
 
 // CraftBukkit start
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDropItemsEvent;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
@@ -117,8 +110,6 @@ public class PlayerInteractManager {
                 if (tileentity != null) {
                     this.player.playerConnection.sendPacket(tileentity.getUpdatePacket());
                 }
-
-                this.player.playerConnection.isDigging = false; // Anticheat
                 return;
             }
             // CraftBukkit end
@@ -154,8 +145,6 @@ public class PlayerInteractManager {
                     if (f > 1.0f) {
                         ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, this.world));
                     }
-
-                    this.player.playerConnection.isDigging = false; // Anticheat
                     return;
                 }
                 org.bukkit.event.block.BlockDamageEvent blockEvent = CraftEventFactory.callBlockDamageEvent(this.player, i, j, k, this.player.inventory.getItemInHand(), f >= 1.0f);
@@ -172,8 +161,6 @@ public class PlayerInteractManager {
                 // CraftBukkit end
 
                 if (block.getMaterial() != Material.AIR && f >= 1.0F) {
-                    this.player.playerConnection.isDigging = false; // Anticheat
-
                     this.breakBlock(i, j, k);
                 } else {
                     this.d = true;
@@ -322,19 +309,7 @@ public class PlayerInteractManager {
                 }
 
                 if (flag && flag1) {
-                    // CobelPvP start
-                    List<org.bukkit.entity.Item> items = new ArrayList<org.bukkit.entity.Item>(1);
-                    block.droppedItemsCatcher = items;
                     block.a(this.world, this.player, i, j, k, l);
-                    block.droppedItemsCatcher = null;
-                    BlockDropItemsEvent dropItemsEvent = new BlockDropItemsEvent(this.world.getWorld().getBlockAt(i, j, k), this.player.getBukkitEntity(), items);
-                    Bukkit.getPluginManager().callEvent(dropItemsEvent);
-                    if (!dropItemsEvent.isCancelled() && dropItemsEvent.getToDrop() != null) {
-                        for (final org.bukkit.entity.Item item : dropItemsEvent.getToDrop()) {
-                            this.world.addEntity(((CraftItem) item).getHandle());
-                        }
-                    }
-                    // CobelPvP end
                 }
             }
 
@@ -371,7 +346,7 @@ public class PlayerInteractManager {
                 }
             }
 
-            if (itemstack1.count <= 0) { // EMC
+            if (itemstack1.count == 0) {
                 entityhuman.inventory.items[entityhuman.inventory.itemInHandIndex] = null;
             }
 
@@ -420,18 +395,7 @@ public class PlayerInteractManager {
                 int j1 = itemstack.getData();
                 int k1 = itemstack.count;
 
-                // CobelPvP start - hack to silence sounds from cancelled block place
-                try {
-                    world.interceptSounds();
-                    result = itemstack.placeItem(entityhuman, world, i, j, k, l, f, f1, f2);
-                } finally {
-                    if (result) {
-                        world.sendInterceptedSounds();
-                    } else {
-                        world.clearInterceptedSounds();
-                    }
-                }
-                // CobelPvP end
+                result = itemstack.placeItem(entityhuman, world, i, j, k, l, f, f1, f2);
 
                 // The item count should not decrement in Creative mode.
                 if (this.isCreative()) {
@@ -441,7 +405,7 @@ public class PlayerInteractManager {
             }
 
             // If we have 'true' and no explicit deny *or* an explicit allow -- run the item part of the hook
-            if (itemstack != null && ((!result && event.useItemInHand() != Event.Result.DENY && !(block == Blocks.FENCE || block == Blocks.NETHER_FENCE)) || event.useItemInHand() == Event.Result.ALLOW)) { // Poweruser - special case fences
+            if (itemstack != null && ((!result && event.useItemInHand() != Event.Result.DENY) || event.useItemInHand() == Event.Result.ALLOW)) {
                 this.useItem(entityhuman, world, itemstack);
             }
         }

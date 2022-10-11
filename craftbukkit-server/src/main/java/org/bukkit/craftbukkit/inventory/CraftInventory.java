@@ -24,7 +24,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 
 public class CraftInventory implements Inventory {
@@ -79,7 +78,7 @@ public class CraftInventory implements Inventory {
         }
     }
 
-    public void setItem(int index, ItemStack item) {    
+    public void setItem(int index, ItemStack item) {
         getInventory().setItem(index, ((item == null || item.getTypeId() == 0) ? null : CraftItemStack.asNMSCopy(item)));
     }
 
@@ -314,15 +313,11 @@ public class CraftInventory implements Inventory {
                     // Check if it fully fits
                     if (amount + partialAmount <= maxAmount) {
                         partialItem.setAmount(amount + partialAmount);
-                        // To make sure the packet is sent to the client
-                        setItem(firstPartial, partialItem);
                         break;
                     }
 
                     // It fits partially
                     partialItem.setAmount(maxAmount);
-                    // To make sure the packet is sent to the client
-                    setItem(firstPartial, partialItem);
                     item.setAmount(amount + partialAmount - maxAmount);
                 }
             }
@@ -333,7 +328,7 @@ public class CraftInventory implements Inventory {
     public HashMap<Integer, ItemStack> removeItem(ItemStack... items) {
         Validate.notNull(items, "Items cannot be null");
         HashMap<Integer, ItemStack> leftover = new HashMap<Integer, ItemStack>();
-        
+
         // TODO: optimization
 
         for (int i = 0; i < items.length; i++) {

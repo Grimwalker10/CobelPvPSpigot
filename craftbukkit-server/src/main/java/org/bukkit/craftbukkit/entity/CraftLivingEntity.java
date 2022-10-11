@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+
 import net.minecraft.server.DamageSource;
 import net.minecraft.server.EntityArrow;
 import net.minecraft.server.EntityEgg;
@@ -61,7 +62,6 @@ import org.bukkit.util.NumberConversions;
 import org.bukkit.util.Vector;
 
 public class CraftLivingEntity extends CraftEntity implements LivingEntity {
-
     private CraftEntityEquipment equipment;
 
     public CraftLivingEntity(final CraftServer server, final EntityLiving entity) {
@@ -81,11 +81,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             throw new IllegalArgumentException("Health must be between 0 and " + getMaxHealth());
         }
 
-        getHandle().setHealth((float) health);
-
         if (entity instanceof EntityPlayer && health == 0) {
             ((EntityPlayer) entity).die(DamageSource.GENERIC);
         }
+
+        getHandle().setHealth((float) health);
     }
 
     public double getMaxHealth() {
@@ -285,7 +285,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
     public Collection<PotionEffect> getActivePotionEffects() {
         List<PotionEffect> effects = new ArrayList<PotionEffect>();
-        for (Object raw : getHandle().getEffects()) {
+        for (Object raw : getHandle().effects.values()) {
             if (!(raw instanceof MobEffect))
                 continue;
             MobEffect handle = (MobEffect) raw;

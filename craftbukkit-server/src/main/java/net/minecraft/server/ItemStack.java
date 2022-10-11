@@ -18,8 +18,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.world.StructureGrowEvent;
 // CraftBukkit end
 
-import net.minecraft.optimizations.utils.ThreadingManager; // Poweruser
-
 public final class ItemStack {
 
     public static final DecimalFormat a = new DecimalFormat("#.###");
@@ -66,7 +64,6 @@ public final class ItemStack {
         ItemStack itemstack = new ItemStack();
 
         itemstack.c(nbttagcompound);
-        if (itemstack.count < 0) itemstack.count = 0; // EMC
         return itemstack.getItem() != null ? itemstack : null;
     }
 
@@ -248,7 +245,7 @@ public final class ItemStack {
             }
 
             final String finalOwner = owner;
-            ThreadingManager.queueHeadConversion(new Runnable() // Poweruser
+            TileEntitySkull.executor.execute( new Runnable()
             {
                 @Override
                 public void run()
@@ -273,7 +270,7 @@ public final class ItemStack {
         }
     }
     // Spigot end
-    
+
     public int getMaxStackSize() {
         return this.getItem().getMaxStackSize();
     }
@@ -444,20 +441,6 @@ public final class ItemStack {
 
         return itemstack;
     }
-
-    // Spigot start
-    public static boolean fastMatches(ItemStack itemstack, ItemStack itemstack1) {
-        if (itemstack == null && itemstack1 == null) {
-            return true;
-        }
-
-        if (itemstack != null && itemstack1 != null) {
-            return itemstack.item == itemstack1.item && itemstack.count == itemstack1.count && itemstack.damage == itemstack1.damage;
-        }
-
-        return false;
-    }
-    // Spigot End
 
     public static boolean equals(ItemStack itemstack, ItemStack itemstack1) {
         return itemstack == null && itemstack1 == null ? true : (itemstack != null && itemstack1 != null ? (itemstack.tag == null && itemstack1.tag != null ? false : itemstack.tag == null || itemstack.tag.equals(itemstack1.tag)) : false);

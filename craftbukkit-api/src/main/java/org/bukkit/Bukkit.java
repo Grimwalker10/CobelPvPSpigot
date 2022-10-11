@@ -11,7 +11,10 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.bukkit.Warning.WarningState;
-import org.bukkit.command.*;
+import org.bukkit.command.CommandException;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.help.HelpMap;
@@ -40,10 +43,6 @@ public final class Bukkit {
      * Static class cannot be initialized.
      */
     private Bukkit() {}
-
-    public static SimpleCommandMap getCommandMap() {
-        return Bukkit.server.getCommandMap();
-    }
 
     /**
      * Gets the current {@link Server} singleton
@@ -144,13 +143,6 @@ public final class Bukkit {
      */
     public static String getServerName() {
         return server.getServerName();
-    }
-
-    /**
-     * @see Server#getServerGroup()
-     */
-    public static String getServerGroup() {
-        return server.getServerGroup();
     }
 
     /**
@@ -745,29 +737,6 @@ public final class Bukkit {
     public static int getIdleTimeout() {
         return server.getIdleTimeout();
     }
-
-    // CobelAnticheat start
-    /**
-     * @see Server#isAnticheatEnabled()
-     */
-    public static boolean isAnticheatEnabled() {
-        return server.isAnticheatEnabled();
-    }
-
-    /**
-     * @see Server#setAnticheatEnabled(boolean)
-     */
-    public static void setAnticheatEnabled(boolean enabled) {
-        server.setAnticheatEnabled(enabled);
-    }
-
-    /**
-     * @see Server#shouldAnticheatAct()
-     */
-    public static boolean shouldAnticheatAct() {
-        return server.shouldAnticheatAct();
-    }
-    // CobelAnticheat end
 
     /**
      * @see Server#getUnsafe()

@@ -50,10 +50,14 @@ public class AnsiWindowsTerminal
     private static OutputStream wrapOutputStream(final OutputStream stream) {
         String os = System.getProperty("os.name");
         if( os.startsWith("Windows") ) {
+            // On windows we know the console does not interpret ANSI codes..
             try {
                 return new WindowsAnsiOutputStream(stream);
             } catch (Throwable ignore) {
+                // this happens when JNA is not in the path.. or
+                // this happens when the stdout is being redirected to a file.
             }
+            // Use the ANSIOutputStream to strip out the ANSI escape sequences.
             return new AnsiOutputStream(stream);
         }
         return stream;

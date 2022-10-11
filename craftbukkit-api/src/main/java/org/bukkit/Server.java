@@ -11,8 +11,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
+
 import org.bukkit.Warning.WarningState;
-import org.bukkit.command.*;
+import org.bukkit.command.CommandException;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
@@ -31,8 +35,10 @@ import org.bukkit.plugin.messaging.PluginMessageRecipient;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.util.CachedServerIcon;
+
 import com.avaje.ebean.config.ServerConfig;
 import com.google.common.collect.ImmutableList;
+
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -48,8 +54,6 @@ public interface Server extends PluginMessageRecipient {
      * For use in {@link #broadcast(java.lang.String, java.lang.String)}.
      */
     public static final String BROADCAST_CHANNEL_ADMINISTRATIVE = "bukkit.broadcast.admin";
-
-    SimpleCommandMap getCommandMap();
 
     /**
      * Used for all announcement messages, such as informing users that a
@@ -158,13 +162,6 @@ public interface Server extends PluginMessageRecipient {
      * @return the name of this server
      */
     public String getServerName();
-
-    /**
-     * Get the server group of this server.
-     *
-     * @return the server group of this server
-     */
-    public String getServerGroup();
 
     /**
      * Get an ID of this server. The ID is a simple generally alphanumeric ID
@@ -905,27 +902,6 @@ public interface Server extends PluginMessageRecipient {
      */
     public int getIdleTimeout();
 
-    // CobelAnticheat start
-
-    /**
-     * @return Whether Anticheat is enabled or not.
-     */
-    public boolean isAnticheatEnabled();
-
-    /**
-     * Set whether Anticheat is enabled or not.
-     *
-     * @param enabled - The new state to set to
-     */
-    public void setAnticheatEnabled(boolean enabled);
-
-    /**
-     * @return Whether Anticheat should do checks in the server's
-     * current conditions or not.
-     */
-    public boolean shouldAnticheatAct();
-    // CobelAnticheat end
-
     /**
      * @see UnsafeValues
      */
@@ -957,11 +933,6 @@ public interface Server extends PluginMessageRecipient {
          * @param components the components to send
          */
         public void broadcast(net.md_5.bungee.api.chat.BaseComponent ...components)
-        {
-            throw new UnsupportedOperationException( "Not supported yet." );
-        }
-
-        public double[] getTPS()
         {
             throw new UnsupportedOperationException( "Not supported yet." );
         }

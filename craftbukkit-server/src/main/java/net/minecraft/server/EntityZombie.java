@@ -17,8 +17,7 @@ public class EntityZombie extends EntityMonster {
 
     protected static final IAttribute bp = (new AttributeRanged("zombie.spawnReinforcements", 0.0D, 0.0D, 1.0D)).a("Spawn Reinforcements Chance");
     private static final UUID bq = UUID.fromString("B9766B59-9566-4402-BC1F-2EE2A276D836");
-    // PaperSpigot - Configurable baby zombie movement speed
-    private static final AttributeModifier br = new AttributeModifier(bq, "Baby speed boost", org.github.paperspigot.PaperSpigotConfig.babyZombieMovementSpeed, 1);
+    private static final AttributeModifier br = new AttributeModifier(bq, "Baby speed boost", 0.5D, 1);
     private final PathfinderGoalBreakDoor bs = new PathfinderGoalBreakDoor(this);
     private int bt;
     private boolean bu = false;
@@ -45,8 +44,7 @@ public class EntityZombie extends EntityMonster {
 
     protected void aD() {
         super.aD();
-        // Kohi - change follow range from 40.0 to 16.0 for performance
-        this.getAttributeInstance(GenericAttributes.b).setValue(16.0D);
+        this.getAttributeInstance(GenericAttributes.b).setValue(40.0D);
         this.getAttributeInstance(GenericAttributes.d).setValue(0.23000000417232513D);
         this.getAttributeInstance(GenericAttributes.e).setValue(3.0D);
         this.getAttributeMap().b(bp).setValue(this.random.nextDouble() * 0.10000000149011612D);
@@ -187,7 +185,7 @@ public class EntityZombie extends EntityMonster {
                     int j1 = j + MathHelper.nextInt(this.random, 7, 40) * MathHelper.nextInt(this.random, -1, 1);
                     int k1 = k + MathHelper.nextInt(this.random, 7, 40) * MathHelper.nextInt(this.random, -1, 1);
 
-                    if (World.a((IBlockAccess) this.world, i1, j1 - 1, k1) && !this.world.isLightLevel(i1, j1, k1, 10)) { // CobelPvP
+                    if (World.a((IBlockAccess) this.world, i1, j1 - 1, k1) && this.world.getLightLevel(i1, j1, k1) < 10) {
                         entityzombie.setPosition((double) i1, (double) j1, (double) k1);
                         if (this.world.b(entityzombie.boundingBox) && this.world.getCubes(entityzombie, entityzombie.boundingBox).isEmpty() && !this.world.containsLiquid(entityzombie.boundingBox)) {
                             this.world.addEntity(entityzombie, CreatureSpawnEvent.SpawnReason.REINFORCEMENTS); // CraftBukkit

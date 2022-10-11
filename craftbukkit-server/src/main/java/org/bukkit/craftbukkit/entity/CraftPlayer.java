@@ -1,24 +1,47 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.MapMaker;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.server.*;
+
 import net.minecraft.util.com.mojang.authlib.GameProfile;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.Validate;
-import org.bukkit.Achievement;
+import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.*;
-import org.bukkit.Material;
+import org.bukkit.Achievement;
+import org.bukkit.BanList;
 import org.bukkit.Statistic;
+import org.bukkit.Material;
 import org.bukkit.Statistic.Type;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ManuallyAbandonedConversationCanceller;
-import org.bukkit.craftbukkit.*;
 import org.bukkit.craftbukkit.block.CraftSign;
 import org.bukkit.craftbukkit.conversations.ConversationTracker;
+import org.bukkit.craftbukkit.CraftEffect;
+import org.bukkit.craftbukkit.CraftOfflinePlayer;
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftSound;
+import org.bukkit.craftbukkit.CraftStatistic;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.map.RenderData;
 import org.bukkit.craftbukkit.scoreboard.CraftScoreboard;
@@ -26,23 +49,16 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerRegisterChannelEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerUnregisterChannelEvent;
 import org.bukkit.inventory.InventoryView.Property;
 import org.bukkit.map.MapView;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.util.Vector;
-import org.spigotmc.SpigotConfig;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @DelegateDeserialization(CraftOfflinePlayer.class)
 public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -52,7 +68,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private final ConversationTracker conversationTracker = new ConversationTracker();
     private final Set<String> channels = new HashSet<String>();
     private final Set<UUID> hiddenPlayers = new HashSet<UUID>();
-    private final Set<UUID> hiddenPlayersFromTab = new HashSet<UUID>();
     private int hash = 0;
     private double health = 20;
     private boolean scaledHealth = false;
@@ -62,34 +77,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         super(server, entity);
 
         firstPlayed = System.currentTimeMillis();
-    }
-
-    @Override
-    public void setVelocity(Vector vel) {
-      // To be consistent with old behavior, set the velocity before firing the event
-        this.setVelocityDirect(vel);
-
-        PlayerVelocityEvent event = new PlayerVelocityEvent(this, vel.clone());
-        this.getServer().getPluginManager().callEvent(event);
-
-        if (!event.isCancelled()) {
-            // Set the velocity again in case it was changed by event handlers
-            this.setVelocityDirect(event.getVelocity());
-
-            // Send the new velocity to the player's client immediately, so it isn't affected by
-            // any movement packets from this player that may be processed before the end of the tick.
-            // Without this, player velocity changes tend to be very inconsistent.
-            this.getHandle().playerConnection.sendPacket(new PacketPlayOutEntityVelocity(this.getHandle()));
-        }
-
-        // Note that cancelling the event does not restore the old velocity, it only prevents
-        // the packet from sending. Again, this is to be consistent with old behavior.
-    }
-
-    public void setVelocityDirect(Vector vel) {
-        entity.motX = vel.getX();
-        entity.motY = vel.getY();
-        entity.motZ = vel.getZ();
     }
 
     public GameProfile getProfile() {
@@ -115,7 +102,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public boolean isOnline() {
-        return server.getHandle().uuidMap.get(getUniqueId()) != null; // PaperSpigot  - replace whole method
+        for (Object obj : server.getHandle().players) {
+            EntityPlayer player = (EntityPlayer) obj;
+            if (player.getName().equalsIgnoreCase(getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public InetSocketAddress getAddress() {
@@ -210,8 +203,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         getHandle().listName = name;
 
-        if (!SpigotConfig.playerListPackets) return; // CobelPvP
-
         // Change the name on the client side
         // Spigot start - protocol patch
         String temp = getHandle().listName;
@@ -224,7 +215,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             EntityPlayer entityplayer = (EntityPlayer) server.getHandle().players.get(i);
             if (entityplayer.playerConnection == null) continue;
 
-            if (entityplayer.getBukkitEntity().canSeeFromTab(this)) {
+            if (entityplayer.getBukkitEntity().canSee(this)) {
                 if (entityplayer.playerConnection.networkManager.getVersion() < 28)
                 {
                     entityplayer.playerConnection.sendPacket( oldpacket );
@@ -395,7 +386,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         packet.block = CraftMagicNumbers.getBlock(material);
         packet.data = data;
-        packet.fake = true;
         getHandle().playerConnection.sendPacket(packet);
     }
 
@@ -486,15 +476,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             return false;
         }
 
-        // CobelPvP start - don't allow excessive teleports
-        int locationChunkX = location.getBlockX() >> 4;
-        int locationChunkZ = location.getBlockZ() >> 4;
-
-        if (46340 <= Math.abs(locationChunkX) || 46340 <= Math.abs(locationChunkZ)) {
-            throw new IllegalArgumentException("Invalid teleportation destination for " + this.getName() + "! Offending location: " + location.toString());
-        }
-        // CobelPvP end
-
         // From = Players current Location
         Location from = this.getLocation();
         // To = Players new Location if Teleport is Successful
@@ -510,26 +491,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         // If this player is riding another entity, we must dismount before teleporting.
         entity.mount(null);
-
-        // PaperSpigot start
-        Entity vehicle = entity.vehicle;
-        Entity passenger = entity.passenger;
-        if (vehicle != null) {
-            vehicle.passenger = null;
-            vehicle.teleportTo(location, false);
-            vehicle = vehicle.getBukkitEntity().getHandle();
-            entity.vehicle = vehicle;
-            vehicle.passenger = entity;
-        }
-
-        if (passenger != null) {
-            passenger.vehicle = null;
-            passenger.teleportTo(location, false);
-            passenger = passenger.getBukkitEntity().getHandle();
-            entity.passenger = passenger;
-            entity.vehicle = entity;
-        }
-        // PaperSpigot end
 
         // Update the From Location
         from = event.getFrom();
@@ -550,16 +511,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         } else {
             server.getHandle().moveToWorld(entity, toWorld.dimension, true, to, true);
         }
-
-        // PaperSpigot start
-        if (vehicle != null) {
-            vehicle.retrack();
-            //entity.retrack();
-        }
-        if (passenger != null) {
-            passenger.retrack();
-        }
-        // PaperSpigot end
         return true;
     }
 
@@ -940,24 +891,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
     }
 
-    public void hidePlayer(Player player, boolean hideFromList) {
+    public void hidePlayer(Player player) {
         Validate.notNull(player, "hidden player cannot be null");
         if (getHandle().playerConnection == null) return;
         if (equals(player)) return;
-
-        if (hideFromList && !hiddenPlayersFromTab.contains(player.getUniqueId())) {
-            //remove the hidden player from this player user list
-            hiddenPlayersFromTab.add(player.getUniqueId());
-            getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.removePlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch
-        }
-
-        if (!hideFromList && hiddenPlayersFromTab.contains(player.getUniqueId())) {
-            getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ()));
-            hiddenPlayersFromTab.remove(player.getUniqueId());
-            return;
-        }
+        if (hiddenPlayers.contains(player.getUniqueId())) return;
         hiddenPlayers.add(player.getUniqueId());
-
 
         //remove this player from the hidden player's EntityTrackerEntry
         EntityTracker tracker = ((WorldServer) entity.world).tracker;
@@ -966,20 +905,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (entry != null) {
             entry.clear(getHandle());
         }
-    }
 
-    public void hidePlayer(Player player) {
-        this.hidePlayer(player, false);
+        //remove the hidden player from this player user list
+        getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.removePlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch
     }
-
 
     public void showPlayer(Player player) {
         Validate.notNull(player, "shown player cannot be null");
         if (getHandle().playerConnection == null) return;
         if (equals(player)) return;
-        if (hiddenPlayersFromTab.contains(player.getUniqueId())) {
-            hiddenPlayersFromTab.remove(player.getUniqueId());
-        }
         if (!hiddenPlayers.contains(player.getUniqueId())) return;
         hiddenPlayers.remove(player.getUniqueId());
 
@@ -990,20 +924,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             entry.updatePlayer(getHandle());
         }
 
-         getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch // CobelPvP - unneeded
+        getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch
     }
 
     public void removeDisconnectingPlayer(Player player) {
-        hiddenPlayersFromTab.remove(player.getUniqueId());
         hiddenPlayers.remove(player.getUniqueId());
     }
-
 
     public boolean canSee(Player player) {
         return !hiddenPlayers.contains(player.getUniqueId());
     }
-
-    public boolean canSeeFromTab(Player player) { return !hiddenPlayersFromTab.contains(player.getUniqueId()); }
 
     public Map<String, Object> serialize() {
         Map<String, Object> result = new LinkedHashMap<String, Object>();
@@ -1216,13 +1146,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void setFlying(boolean value) {
-        boolean needsUpdate = getHandle().abilities.canFly != value; // PaperSpigot - Only refresh abilities if needed
         if (!getAllowFlight() && value) {
             throw new IllegalArgumentException("Cannot make player fly if getAllowFlight() is false");
         }
 
         getHandle().abilities.isFlying = value;
-        if (needsUpdate) getHandle().updateAbilities(); // PaperSpigot - Only refresh abilities if needed
+        getHandle().updateAbilities();
     }
 
     public boolean getAllowFlight() {
@@ -1343,15 +1272,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void setRealHealth(double health) {
-        double previous = this.health; // CobelPvP
-
         this.health = health;
-
-        // CobelPvP start
-        if (previous != health) {
-            Bukkit.getPluginManager().callEvent(new PlayerHealthChangeEvent(this, previous, health));
-        }
-        // CobelPvP end
     }
 
     public void updateScaledHealth() {
@@ -1483,14 +1404,25 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             return java.util.Collections.unmodifiableSet( ret );
         }
 
+        /**
+         * Sends the component to the player
+         *
+         * @param component the components to send
+         */
         @Override
-        public void sendMessage( BaseComponent component )
+        public void sendMessage(net.md_5.bungee.api.chat.BaseComponent component)
         {
             sendMessage( new BaseComponent[] { component } );
         }
 
+        /**
+         * Sends an array of components as a single message to the
+         * player
+         *
+         * @param components the components to send
+         */
         @Override
-        public void sendMessage( BaseComponent... components )
+        public void sendMessage(net.md_5.bungee.api.chat.BaseComponent ...components)
         {
             if ( getHandle().playerConnection == null ) return;
 
@@ -1498,17 +1430,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             packet.components = components;
             getHandle().playerConnection.sendPacket( packet );
         }
-
-        // PaperSpigot start - Add affects spawning API
-        public void setAffectsSpawning(boolean affects) {
-            getHandle().affectsSpawning = affects;
-        }
-
-        public boolean getAffectsSpawning() {
-            return getHandle().affectsSpawning;
-        }
-        // PaperSpigot end
-
     };
 
     public Player.Spigot spigot()

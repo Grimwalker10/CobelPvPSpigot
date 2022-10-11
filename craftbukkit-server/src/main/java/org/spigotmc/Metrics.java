@@ -282,7 +282,7 @@ public class Metrics {
     /**
      * Enables metrics for the server by setting "opt-out" to false in the config file and starting the metrics task.
      *
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public void enable() throws IOException {
         // This has to be synchronized or it can collide with the check in the task.
@@ -303,7 +303,7 @@ public class Metrics {
     /**
      * Disables metrics for the server by setting "opt-out" to true in the config file and canceling the metrics task.
      *
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public void disable() throws IOException {
         // This has to be synchronized or it can collide with the check in the task.
@@ -344,7 +344,7 @@ public class Metrics {
      */
     private void postPlugin(final boolean isPing) throws IOException {
         // Server software specific section
-        String pluginName = "PaperSpigot"; // PaperSpigot - Glorious usage data
+        String pluginName = "Spigot";
         boolean onlineMode = Bukkit.getServer().getOnlineMode(); // TRUE if online mode is enabled
         String pluginVersion = (Metrics.class.getPackage().getImplementationVersion() != null) ? Metrics.class.getPackage().getImplementationVersion() : "unknown";
         String serverVersion = Bukkit.getVersion();
@@ -549,7 +549,7 @@ public class Metrics {
         /**
          * Gets an <b>unmodifiable</b> set of the plotter objects in the graph
          *
-         * @return an unmodifiable {@link java.util.Set} of the plotter objects
+         * @return an unmodifiable {@link Set} of the plotter objects
          */
         public Set<Plotter> getPlotters() {
             return Collections.unmodifiableSet(plotters);

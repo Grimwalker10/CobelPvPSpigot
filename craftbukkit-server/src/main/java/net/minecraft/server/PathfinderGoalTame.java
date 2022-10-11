@@ -1,7 +1,5 @@
 package net.minecraft.server;
 
-import net.minecraft.optimizations.PositionPathSearchType;
-
 public class PathfinderGoalTame extends PathfinderGoal {
 
     private EntityHorse entity;
@@ -34,7 +32,7 @@ public class PathfinderGoalTame extends PathfinderGoal {
     }
 
     public void c() {
-        this.entity.getNavigation().a(PositionPathSearchType.TAME, this.c, this.d, this.e, this.b); // Poweruser
+        this.entity.getNavigation().a(this.c, this.d, this.e, this.b);
     }
 
     public boolean b() {

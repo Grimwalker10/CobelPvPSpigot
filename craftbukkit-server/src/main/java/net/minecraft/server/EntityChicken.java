@@ -24,16 +24,6 @@ public class EntityChicken extends EntityAnimal {
         this.goalSelector.a(7, new PathfinderGoalRandomLookaround(this));
     }
 
-    @Override
-    public void h() {
-        super.h();
-
-        // CobelPvP - Add mobsEnabled check.
-        if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
-            this.die();
-        }
-    }
-
     public boolean bk() {
         return true;
     }

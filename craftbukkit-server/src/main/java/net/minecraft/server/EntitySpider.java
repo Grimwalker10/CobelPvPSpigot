@@ -17,11 +17,6 @@ public class EntitySpider extends EntityMonster {
     public void h() {
         super.h();
         if (!this.world.isStatic) {
-            // CobelPvP - Add mobsEnabled check.
-            if (!this.world.spigotConfig.mobsEnabled) {
-                this.die();
-            }
-
             this.a(this.positionChanged);
         }
     }

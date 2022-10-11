@@ -1,7 +1,10 @@
 package net.minecraft.server;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,8 +13,6 @@ import org.apache.logging.log4j.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerVelocityEvent;
 // CraftBukkit end
-
-import org.spigotmc.SpigotConfig;
 
 public class EntityTrackerEntry {
 
@@ -38,18 +39,9 @@ public class EntityTrackerEntry {
     private Entity w;
     private boolean x;
     public boolean n;
-    public Set trackedPlayers = new LinkedHashSet(); // CobelPvP - LHS has faster iteration
+    public Set trackedPlayers = new HashSet();
 
-    // CobelPvP start
-    private List<EntityPlayer> toRemove = new ArrayList<>();
-    private EntityTracker entityTracker;
-    private int addRemoveRate;
-    private int addRemoveCooldown;
-    private boolean withinNoTrack = false;
-    // CobelPvP end
-
-    public EntityTrackerEntry(EntityTracker entityTracker, Entity entity, int i, int j, boolean flag) { // CobelPvP
-        this.entityTracker = entityTracker; // CobelPvP
+    public EntityTrackerEntry(Entity entity, int i, int j, boolean flag) {
         this.tracker = entity;
         this.b = i;
         this.c = j;
@@ -60,19 +52,6 @@ public class EntityTrackerEntry {
         this.yRot = MathHelper.d(entity.yaw * 256.0F / 360.0F);
         this.xRot = MathHelper.d(entity.pitch * 256.0F / 360.0F);
         this.i = MathHelper.d(entity.getHeadRotation() * 256.0F / 360.0F);
-
-        // CobelPvP start
-        if (SpigotConfig.disableTracking) {
-            this.addRemoveRate = 100;
-        } else if (this.tracker instanceof EntityArrow || this.tracker instanceof EntityProjectile) {
-            this.addRemoveRate = 5; // projectile things
-        } else if (this.tracker instanceof EntityPlayer) {
-            this.addRemoveRate = 5; // players
-        } else {
-            this.addRemoveRate = 10; // default
-        }
-        this.addRemoveCooldown = this.tracker.getId() % addRemoveRate;
-        // CobelPvP end
     }
 
     public boolean equals(Object object) {
@@ -83,79 +62,6 @@ public class EntityTrackerEntry {
         return this.tracker.getId();
     }
 
-    // CobelPvP start
-    public void update() {
-        this.withinNoTrack = this.withinNoTrack();
-        if (--this.addRemoveCooldown <= 0) {
-            this.removeFarPlayers();
-            this.addNearPlayers();
-            this.addRemoveCooldown = this.addRemoveRate;
-        }
-
-        this.track(null);
-    }
-
-    private void removeFarPlayers() {
-        if (this.withinNoTrack) {
-            toRemove.addAll(this.trackedPlayers);
-            processToRemove();
-            return;
-        }
-
-        for (EntityPlayer entityplayer : (Collection<EntityPlayer>) trackedPlayers) {
-            double d0 = entityplayer.locX - this.tracker.locX;
-            double d1 = entityplayer.locZ - this.tracker.locZ;
-            int range = this.getRange();
-
-            if (!(d0 >= (double) (-range) && d0 <= (double) range && d1 >= (double) (-range) && d1 <= (double) range) || withinNoTrack()) {
-                toRemove.add(entityplayer);
-            }
-        }
-
-        this.processToRemove();
-    }
-
-    public void processToRemove() {
-        for (EntityPlayer entityPlayer : toRemove) {
-            entityPlayer.d(this.tracker);
-            this.trackedPlayers.remove(entityPlayer);
-        }
-
-        toRemove.clear();
-    }
-
-    public void addNearPlayers() {
-        addNearPlayers(false);
-    }
-
-    private void addNearPlayers(boolean updateCooldown) {
-        if (this.withinNoTrack) return;
-        if (updateCooldown) this.addRemoveCooldown = addRemoveRate;
-        this.tracker.world.playerMap.forEachNearby(this.tracker.locX, this.tracker.locY, this.tracker.locZ, this.getRange(), false, addNearPlayersConsumer);
-    }
-
-    private boolean withinNoTrack() {
-        return this.withinNoTrack(this.tracker);
-    }
-
-    private boolean withinNoTrack(Entity entity) {
-        if (!(entity instanceof EntityPlayer)) return false; // ensure all non-players are always tracked
-        double xDistSqrd = entity.locX * entity.locX;
-        double zDistSqrd = entity.locZ * entity.locZ;
-
-        int noTrackDistanceSqrd = entityTracker.getNoTrackDistance() * entityTracker.getNoTrackDistance();
-        return noTrackDistanceSqrd != 0 && xDistSqrd <= noTrackDistanceSqrd && zDistSqrd <= noTrackDistanceSqrd;
-    }
-
-    private final Consumer<EntityPlayer> addNearPlayersConsumer = new Consumer<EntityPlayer>() {
-
-        @Override
-        public void accept(EntityPlayer entityPlayer) {
-            if (!SpigotConfig.disableTracking || tracker.passenger == entityPlayer) updatePlayer(entityPlayer);
-        }
-    };
-    // CobelPvP end
-
     public void track(List list) {
         this.n = false;
         if (!this.isMoving || this.tracker.e(this.q, this.r, this.s) > 16.0D) {
@@ -164,7 +70,7 @@ public class EntityTrackerEntry {
             this.s = this.tracker.locZ;
             this.isMoving = true;
             this.n = true;
-            // this.scanPlayers(list); // CobelPvP
+            this.scanPlayers(list);
         }
 
         if (this.w != this.tracker.vehicle || this.tracker.vehicle != null && this.m % 60 == 0) {
@@ -226,7 +132,7 @@ public class EntityTrackerEntry {
                 // CraftBukkit end
 
                 if (this.m > 0 || this.tracker instanceof EntityArrow) {
-                    if (j1 >= -128 && j1 < 128 && k1 >= -128 && k1 < 128 && l1 >= -128 && l1 < 128 && this.v <= 50 && !this.x) { // Kohi - greatly reduce forced teleport interval
+                    if (j1 >= -128 && j1 < 128 && k1 >= -128 && k1 < 128 && l1 >= -128 && l1 < 128 && this.v <= 400 && !this.x) {
                         if (flag && flag1) {
                             object = new PacketPlayOutRelEntityMoveLook(this.tracker.getId(), (byte) j1, (byte) k1, (byte) l1, (byte) l, (byte) i1, tracker.onGround); // Spigot - protocol patch
                         } else if (flag) {
@@ -236,7 +142,12 @@ public class EntityTrackerEntry {
                         }
                     } else {
                         this.v = 0;
-                        object = new PacketPlayOutEntityTeleport(this.tracker.getId(), i, j, k, (byte) l, (byte) i1, tracker.onGround, tracker instanceof EntityFallingBlock || tracker instanceof EntityTNTPrimed); // Spigot - protocol patch // Spigot Update - 20140916a
+                        // CraftBukkit start - Refresh list of who can see a player before sending teleport packet
+                        if (this.tracker instanceof EntityPlayer) {
+                            this.scanPlayers(new java.util.ArrayList(this.trackedPlayers));
+                        }
+                        // CraftBukkit end
+                        object = new PacketPlayOutEntityTeleport(this.tracker.getId(), i, j, k, (byte) l, (byte) i1, tracker.onGround, tracker instanceof EntityFallingBlock || tracker instanceof EntityTNTPrimed); // Spigot - protocol patch
                     }
                 }
 
@@ -266,6 +177,7 @@ public class EntityTrackerEntry {
                     this.yLoc = j;
                     this.zLoc = k;
                 }
+
                 if (flag1) {
                     this.yRot = l;
                     this.xRot = i1;
@@ -332,19 +244,7 @@ public class EntityTrackerEntry {
         DataWatcher datawatcher = this.tracker.getDataWatcher();
 
         if (datawatcher.a()) {
-            // CobelPvP start
-            List changedMetadata = datawatcher.b();
-            if (this.doHealthObfuscation()) {
-                PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(this.tracker.getId(), new ArrayList(changedMetadata), false).obfuscateHealth();
-                if (!metadataPacket.didFindHealth() || 1 < metadataPacket.getMetadata().size()) this.broadcast(metadataPacket);
-            } else {
-                this.broadcast(new PacketPlayOutEntityMetadata(this.tracker.getId(), changedMetadata, false));
-            }
-
-            if (this.tracker instanceof EntityPlayer) {
-                ((EntityPlayer) this.tracker).playerConnection.sendPacket(new PacketPlayOutEntityMetadata(this.tracker.getId(), changedMetadata, false));
-            }
-            // CobelPvP end
+            this.broadcastIncludingSelf(new PacketPlayOutEntityMetadata(this.tracker.getId(), datawatcher, false));
         }
 
         if (this.tracker instanceof EntityLiving) {
@@ -355,16 +255,9 @@ public class EntityTrackerEntry {
                 // CraftBukkit start - Send scaled max health
                 if (this.tracker instanceof EntityPlayer) {
                     ((EntityPlayer) this.tracker).getBukkitEntity().injectScaledMaxHealth(set, false);
-                    ((EntityPlayer) this.tracker).playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set)); // CobelPvP
                 }
                 // CraftBukkit end
-
-                // CobelPvP start
-                // this.broadcastIncludingSelf(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set)); // CraftBukkit
-                if (this.tracker.passenger instanceof EntityPlayer) {
-                    ((EntityPlayer) this.tracker.passenger).playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set));
-                }
-                // CobelPvP end
+                this.broadcastIncludingSelf(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set));
             }
 
             set.clear();
@@ -406,17 +299,13 @@ public class EntityTrackerEntry {
     }
 
     public void updatePlayer(EntityPlayer entityplayer) {
-        // org.spigotmc.AsyncCatcher.catchOp( "player tracker update"); // Spigot // CobelPvP
+        org.spigotmc.AsyncCatcher.catchOp( "player tracker update"); // Spigot
         if (entityplayer != this.tracker) {
-            // CobelPvP start - this.tracker.locN / 32 -> this.tracker.locN
-            double d0 = entityplayer.locX - this.tracker.locX;
-            double d1 = entityplayer.locZ - this.tracker.locZ;
-            // CobelPvP end
-            int range = this.getRange();
+            double d0 = entityplayer.locX - (double) (this.xLoc / 32);
+            double d1 = entityplayer.locZ - (double) (this.zLoc / 32);
 
-            if (d0 >= (double) (-range) && d0 <= (double) range && d1 >= (double) (-range) && d1 <= (double) range) {
+            if (d0 >= (double) (-this.b) && d0 <= (double) this.b && d1 >= (double) (-this.b) && d1 <= (double) this.b) {
                 if (!this.trackedPlayers.contains(entityplayer) && (this.d(entityplayer) || this.tracker.attachedToPlayer)) {
-                    if (this.tracker instanceof EntityPlayer && withinNoTrack()) return; // CobelPvP
                     // CraftBukkit start - respect vanish API
                     if (this.tracker instanceof EntityPlayer) {
                         Player player = ((EntityPlayer) this.tracker).getBukkitEntity();
@@ -425,7 +314,7 @@ public class EntityTrackerEntry {
                         }
                     }
 
-                    // entityplayer.removeQueue.remove(Integer.valueOf(this.tracker.getId())); // CobelPvP
+                    entityplayer.removeQueue.remove(Integer.valueOf(this.tracker.getId()));
                     // CraftBukkit end
 
                     this.trackedPlayers.add(entityplayer);
@@ -435,33 +324,22 @@ public class EntityTrackerEntry {
                     if ( tracker instanceof EntityPlayer )
                     {
                         entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.addPlayer( (EntityPlayer) tracker ) );
-
-                        if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 ) { // Spigot Update - 20140927a // Spigot Update - 20141001a
-                            entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.updateDisplayName( (EntityPlayer) this.tracker ) );
+                        if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 )
+                        {
+                            entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.updateDisplayName( (EntityPlayer) tracker ) );
                         }
                     }
                     // Spigot end
 
                     entityplayer.playerConnection.sendPacket(packet);
-
                     if (!this.tracker.getDataWatcher().d()) {
-                        // CobelPvP start
-                        PacketPlayOutEntityMetadata metadataPacket = new PacketPlayOutEntityMetadata(this.tracker.getId(), this.tracker.getDataWatcher(), true);
-
-                        if (this.doHealthObfuscation()) {
-                            metadataPacket.obfuscateHealth();
-                        }
-
-                        entityplayer.playerConnection.sendPacket(metadataPacket);
-                        // CobelPvP end
+                        entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityMetadata(this.tracker.getId(), this.tracker.getDataWatcher(), true));
                     }
-                    // CobelPvP end
 
-                    // CobelPvP start
-                    /*
                     if (this.tracker instanceof EntityLiving) {
                         AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).getAttributeMap();
                         Collection collection = attributemapserver.c();
+
                         // CraftBukkit start - If sending own attributes send scaled health instead of current maximum health
                         if (this.tracker.getId() == entityplayer.getId()) {
                             ((EntityPlayer) this.tracker).getBukkitEntity().injectScaledMaxHealth(collection, false);
@@ -471,8 +349,6 @@ public class EntityTrackerEntry {
                             entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.tracker.getId(), collection));
                         }
                     }
-                    */
-                    // CobelPvP end
 
                     this.j = this.tracker.motX;
                     this.k = this.tracker.motY;
@@ -514,11 +390,8 @@ public class EntityTrackerEntry {
                     }
 
                     // CraftBukkit start - Fix for nonsensical head yaw
-                    // CobelPvP start - fix head rotation packet spam (properly)
-                    if (this.tracker instanceof EntityLiving) {
-                        entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(this.tracker, (byte) MathHelper.d(this.tracker.getHeadRotation() * 256.0F / 360.0F)));
-                    }
-                    // CobelPvP end
+                    this.i = MathHelper.d(this.tracker.getHeadRotation() * 256.0F / 360.0F);
+                    this.broadcast(new PacketPlayOutEntityHeadRotation(this.tracker, (byte) i));
                     // CraftBukkit end
 
                     if (this.tracker instanceof EntityLiving) {
@@ -543,13 +416,11 @@ public class EntityTrackerEntry {
         return entityplayer.r().getPlayerChunkMap().a(entityplayer, this.tracker.ah, this.tracker.aj);
     }
 
-    // CobelPvP start
-    //public void scanPlayers(List list) {
-    //    for (int i = 0; i < list.size(); ++i) {
-    //        this.updatePlayer((EntityPlayer) list.get(i));
-    //    }
-    //}
-    // CobelPvP end
+    public void scanPlayers(List list) {
+        for (int i = 0; i < list.size(); ++i) {
+            this.updatePlayer((EntityPlayer) list.get(i));
+        }
+    }
 
     private Packet c() {
         if (this.tracker.dead) {
@@ -657,22 +528,9 @@ public class EntityTrackerEntry {
 
     public void clear(EntityPlayer entityplayer) {
         org.spigotmc.AsyncCatcher.catchOp( "player tracker clear"); // Spigot
-        if (this.trackedPlayers.remove(entityplayer)) { // CobelPvP
+        if (this.trackedPlayers.contains(entityplayer)) {
+            this.trackedPlayers.remove(entityplayer);
             entityplayer.d(this.tracker);
         }
     }
-
-    public boolean doHealthObfuscation() {
-        return this.tracker.isAlive() && (this.tracker instanceof EntityPlayer);
-    }
-
-    // CobelPvP start
-    public int getRange() {
-        if (this.tracker.passenger == null) {
-            return this.b;
-        }
-        return Math.max(this.b, org.spigotmc.TrackingRange.getEntityTrackingRange(this.tracker.passenger, 0));
-    }
-    // CobelPvP end
-
 }

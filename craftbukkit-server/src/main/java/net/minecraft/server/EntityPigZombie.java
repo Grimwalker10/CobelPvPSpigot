@@ -48,8 +48,7 @@ public class EntityPigZombie extends EntityZombie {
     }
 
     public boolean canSpawn() {
-        // CobelPvP - Add mobsEnabled check.
-        return this.world.spigotConfig.mobsEnabled && this.world.difficulty != EnumDifficulty.PEACEFUL && this.world.b(this.boundingBox) && this.world.getCubes(this, this.boundingBox).isEmpty() && !this.world.containsLiquid(this.boundingBox);
+        return this.world.difficulty != EnumDifficulty.PEACEFUL && this.world.b(this.boundingBox) && this.world.getCubes(this, this.boundingBox).isEmpty() && !this.world.containsLiquid(this.boundingBox);
     }
 
     public void b(NBTTagCompound nbttagcompound) {

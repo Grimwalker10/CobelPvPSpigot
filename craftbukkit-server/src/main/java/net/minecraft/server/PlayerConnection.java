@@ -1,8 +1,14 @@
 package net.minecraft.server;
 
-import com.cobelpvp.CobelSpigot;
-import com.cobelpvp.handler.MovementHandler;
-import com.cobelpvp.handler.PacketHandler;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.concurrent.Callable;
+
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.google.common.collect.Lists;
 import net.minecraft.util.io.netty.buffer.Unpooled;
@@ -10,41 +16,47 @@ import net.minecraft.util.io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.util.org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.craftbukkit.SpigotTimings;
+
+// CraftBukkit start
+import java.io.UnsupportedEncodingException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.HashSet;
+
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.LazyPlayerSet;
 import org.bukkit.craftbukkit.util.Waitable;
+
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.inventory.*;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryType.SlotType;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerAnimationEvent;
+import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerToggleFlightEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.util.NumberConversions;
-import org.github.paperspigot.PaperSpigotConfig;
-
-import com.google.common.collect.Sets;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
-// CraftBukkit start
 // CraftBukkit end
 
 public class PlayerConnection implements PacketPlayInListener {
@@ -68,64 +80,6 @@ public class PlayerConnection implements PacketPlayInListener {
     private double q;
     public boolean checkMovement = true; // CraftBukkit - private -> public
     private boolean processedDisconnect; // CraftBukkit - added
-
-    // Poweruser start
-    private int movedWronglyViolations = 0;
-    private int movedTooQuicklyViolations = 0;
-    private int lastViolationTick = MinecraftServer.currentTick;
-    private double offsetDistanceSum = 0.0D;
-    // Poweruser end
-
-    // Anticheat start
-    public int packetsNotReceived = 0;
-    public long lastKeepAlivePacketReceived = -1;
-
-    public LinkedList<Packet> lastPacketsQueue = new LinkedList<>();
-
-    public Set<Integer> keepAlives = new HashSet<>();
-
-    public long lastMotionTick = 0L;
-    public int antiKBViolations = 0;
-
-    public long lastKAPacketTick = MinecraftServer.currentTick;
-    public long lastKAMovementPacket = MinecraftServer.currentTick;
-    public long lastNotificationTick = MinecraftServer.currentTick;
-    public long lastAttackPlayerTime = 0L;
-
-    public boolean isDigging = false;
-    public int digHorizontalMovement = 0;
-
-    public final List<PacketPlayOutEntityVelocity> velocitiesSent = new ArrayList<PacketPlayOutEntityVelocity>();
-    public final List<Long> velocitySentTimes = new ArrayList<Long>();
-    public long positionSentTime = System.currentTimeMillis();
-
-    private long lastKickedForFly;
-
-
-    private double nextExpectedYDelta = 0.0D;
-    public int lastVelocitySentTick = Integer.MIN_VALUE;
-
-    private int gGoodTicks = 0;
-
-    long lastDismounted;
-
-    private int flyModuleGAmount;
-    private int fastFallModuleGAmount;
-    // Anticheat end
-
-    // Alfie start
-    private static Set<Block> glitchBlocks = Sets.newHashSet(Block.getById(13), 
-            Block.getById(94),
-            Block.getById(145),
-            Block.getById(54),
-            Block.getById(146),
-            Block.getById(44),
-            Block.getById(154),
-            Block.getById(88),
-            Block.getById(78),
-            Block.getById(126)
-    );
-    // Alfie end
 
     public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
         this.minecraftServer = minecraftserver;
@@ -170,32 +124,21 @@ public class PlayerConnection implements PacketPlayInListener {
         this.g = false;
         ++this.e;
         this.minecraftServer.methodProfiler.a("keepAlive");
-        if ((long) this.e - this.k > 10L) { // Anticheat: 40L -> 10L
+        if ((long) this.e - this.k > 40L) {
             this.k = (long) this.e;
             this.i = this.d();
             this.h = (int) this.i;
-
-            // Anticheat start
-            packetsNotReceived++;
-            keepAlives.add(h);
-
-            if (keepAlives.size() > 240 && Bukkit.shouldAnticheatAct()) {
-                disconnect("Disconnected due to lag");
-                return;
-            }
-            // Anticheat end
-
             this.sendPacket(new PacketPlayOutKeepAlive(this.h));
         }
 
-        // Anticheat start
-        if (packetsNotReceived >= 240 && Bukkit.shouldAnticheatAct()) {
-            disconnect("Disconnected due to lag");
-            return;
-        }
-        // Anticheat end
-
+        // CraftBukkit start
         for (int spam; (spam = this.chatThrottle) > 0 && !chatSpamField.compareAndSet(this, spam, spam - 1); ) ;
+        /* Use thread-safe field access instead
+        if (this.chatThrottle > 0) {
+            --this.chatThrottle;
+        }
+        */
+        // CraftBukkit end
 
         if (this.x > 0) {
             --this.x;
@@ -259,8 +202,6 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
             }
 
-            this.lastKAMovementPacket = MinecraftServer.currentTick; // Anticheat
-
             // CraftBukkit start - fire PlayerMoveEvent
             Player player = this.getPlayer();
             // Spigot Start
@@ -295,41 +236,12 @@ public class PlayerConnection implements PacketPlayInListener {
             double delta = Math.pow(this.lastPosX - to.getX(), 2) + Math.pow(this.lastPosY - to.getY(), 2) + Math.pow(this.lastPosZ - to.getZ(), 2);
             float deltaAngle = Math.abs(this.lastYaw - to.getYaw()) + Math.abs(this.lastPitch - to.getPitch());
 
-            if (packetplayinflying.hasPos && delta > 0.0D && this.checkMovement && !this.player.dead) {
-                for (MovementHandler handler : CobelSpigot.INSTANCE.getMovementHandlers()) {
-                    try {
-                        handler.handleUpdateLocation(player, to, from, packetplayinflying);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            if (packetplayinflying.hasLook && deltaAngle > 0.0F && this.checkMovement && !this.player.dead) {
-                for (MovementHandler handler : CobelSpigot.INSTANCE.getMovementHandlers()) {
-                    try {
-                        handler.handleUpdateRotation(player, to, from, packetplayinflying);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            // Anticheat start
-            float f4 = 0.0625F;
-            AxisAlignedBB axisalignedbb = this.player.boundingBox.clone().grow(f4, f4, f4).a(0.0D, -0.55D, 0.0D);
-            // Anticheat end
-
             if ((delta > 1f / 256 || deltaAngle > 10f) && (this.checkMovement && !this.player.dead)) {
                 this.lastPosX = to.getX();
                 this.lastPosY = to.getY();
                 this.lastPosZ = to.getZ();
                 this.lastYaw = to.getYaw();
                 this.lastPitch = to.getPitch();
-
-                if (((this.isDigging) && (to.getX() != this.player.locX)) || (to.getZ() != this.player.locZ)) {
-                    this.digHorizontalMovement += 1;
-                }
 
                 // Skip the first time we do this
                 if (true) { // Spigot - don't skip any move events
@@ -414,18 +326,17 @@ public class PlayerConnection implements PacketPlayInListener {
                 float f2 = this.player.yaw;
                 float f3 = this.player.pitch;
 
-                boolean onGround = this.player.onGround; // Anticheat
-
                 if (packetplayinflying.j() && packetplayinflying.d() == -999.0D && packetplayinflying.f() == -999.0D) {
                     packetplayinflying.a(false);
                 }
 
-                // has pos
+                double d4;
+
                 if (packetplayinflying.j()) {
                     d1 = packetplayinflying.c();
                     d2 = packetplayinflying.d();
                     d3 = packetplayinflying.e();
-                    double d4 = packetplayinflying.f() - packetplayinflying.d();
+                    d4 = packetplayinflying.f() - packetplayinflying.d();
                     if (!this.player.isSleeping() && (d4 > 1.65D || d4 < 0.1D)) {
                         this.disconnect("Illegal stance");
                         c.warn(this.player.getName() + " had an illegal stance: " + d4);
@@ -450,136 +361,68 @@ public class PlayerConnection implements PacketPlayInListener {
                     return;
                 }
 
-                // Anticheat start: Rename for readability
-                double xDelta = d1 - this.player.locX;
-                double yDelta = d2 - this.player.locY;
-                double zDelta = d3 - this.player.locZ;
-                // Anticheat end
+                d4 = d1 - this.player.locX;
+                double d5 = d2 - this.player.locY;
+                double d6 = d3 - this.player.locZ;
                 // CraftBukkit start - min to max
-                double d7 = Math.max(Math.abs(xDelta), Math.abs(this.player.motX));
-                double d8 = Math.max(Math.abs(yDelta), Math.abs(this.player.motY));
-                double d9 = Math.max(Math.abs(zDelta), Math.abs(this.player.motZ));
+                double d7 = Math.max(Math.abs(d4), Math.abs(this.player.motX));
+                double d8 = Math.max(Math.abs(d5), Math.abs(this.player.motY));
+                double d9 = Math.max(Math.abs(d6), Math.abs(this.player.motZ));
                 // CraftBukkit end
                 double d10 = d7 * d7 + d8 * d8 + d9 * d9;
 
                 // Spigot: make "moved too quickly" limit configurable
-                // Poweruser start
-                boolean violationDelayPassed = (this.lastViolationTick + 60 < MinecraftServer.currentTick);
-                if(this.movedTooQuicklyViolations > 0 && violationDelayPassed) {
-                    c.warn(this.player.getName() + " moved too quickly! Violations: " + this.movedTooQuicklyViolations);
-                    this.movedTooQuicklyViolations = 0;
-
-                    if (this.movedTooQuicklyViolations > 10) {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "ban " + this.player.getName() + " Suspicious movement");
-                    }
-                }
                 if (d10 > org.spigotmc.SpigotConfig.movedTooQuicklyThreshold && this.checkMovement && (!this.minecraftServer.N() || !this.minecraftServer.M().equals(this.player.getName()))) { // CraftBukkit - Added this.checkMovement condition to solve this check being triggered by teleports
-                    this.movedTooQuicklyViolations++;
-                    this.lastViolationTick = MinecraftServer.currentTick;
-                    // Poweruser end
+                    c.warn(this.player.getName() + " moved too quickly! " + d4 + "," + d5 + "," + d6 + " (" + d7 + ", " + d8 + ", " + d9 + ")");
                     this.a(this.y, this.z, this.q, this.player.yaw, this.player.pitch);
                     return;
                 }
 
-                SpigotTimings.connectionTimer_PacketFlying_move.startTiming(); // Poweruser
-
+                float f4 = 0.0625F;
                 boolean flag = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
 
-                if (this.player.onGround && !packetplayinflying.i() && yDelta > 0.0D) {
+                if (this.player.onGround && !packetplayinflying.i() && d5 > 0.0D) {
                     this.player.bj();
                 }
 
-                this.player.move(xDelta, yDelta, zDelta);
+                this.player.move(d4, d5, d6);
                 this.player.onGround = packetplayinflying.i();
-                this.player.checkMovement(xDelta, yDelta, zDelta);
-                double d11 = yDelta;
+                this.player.checkMovement(d4, d5, d6);
+                double d11 = d5;
 
-                xDelta = d1 - this.player.locX;
-                yDelta = d2 - this.player.locY;
-                if (yDelta > -0.5D || yDelta < 0.5D) {
-                    yDelta = 0.0D;
+                d4 = d1 - this.player.locX;
+                d5 = d2 - this.player.locY;
+                if (d5 > -0.5D || d5 < 0.5D) {
+                    d5 = 0.0D;
                 }
 
-                zDelta = d3 - this.player.locZ;
-                d10 = xDelta * xDelta + yDelta * yDelta + zDelta * zDelta;
+                d6 = d3 - this.player.locZ;
+                d10 = d4 * d4 + d5 * d5 + d6 * d6;
                 boolean flag1 = false;
 
                 // Spigot: make "moved wrongly" limit configurable
-                // Poweruser start
-                double positionOffset = d10;
-                if(this.player.playerInteractManager.isCreative()) {
-                    positionOffset *= 2.0D;
-                }
-
-                if(this.movedWronglyViolations > 0 && violationDelayPassed) {
-                    c.warn(this.player.getName() + " moved wrongly! Violations: " + this.movedWronglyViolations + " Average Offset: " + String.format("%.2f", (this.offsetDistanceSum / (double) this.movedWronglyViolations)));
-                    this.movedWronglyViolations = 0;
-                    this.offsetDistanceSum = 0.0D;
-                }
-
-                if (positionOffset > org.spigotmc.SpigotConfig.movedWronglyThreshold && !this.player.isSleeping()) {
+                if (d10 > org.spigotmc.SpigotConfig.movedWronglyThreshold && !this.player.isSleeping() && !this.player.playerInteractManager.isCreative()) {
                     flag1 = true;
-                    this.lastViolationTick = MinecraftServer.currentTick;
-                    this.movedWronglyViolations++;
-                    this.offsetDistanceSum += MathHelper.sqrt(d10);
+                    c.warn(this.player.getName() + " moved wrongly!");
                 }
-                // Poweruser end
 
-                // Poweruser start
-                double calculatedX = this.player.locX;
-                double calculatedY = this.player.locY;
-                double calculatedZ = this.player.locZ;
                 this.player.setLocation(d1, d2, d3, f2, f3);
                 boolean flag2 = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
-                boolean rayTraceCollision = delta > 0.3 && worldserver.rayTrace(Vec3D.a(this.y, this.z + 1.0, this.q), Vec3D.a(d1, d2 + 1.0, d3), false, true, false) != null;
 
-                this.player.setLocation(calculatedX, calculatedY, calculatedZ, f2, f3);
-
-                SpigotTimings.connectionTimer_PacketFlying_move.stopTiming(); // Poweruser
-                // Poweruser end
-
-                if (this.player.vehicle != null) {
-                    networkManager.lastVehicleTime = networkManager.currentTime;
+                if (flag && (flag1 || !flag2) && !this.player.isSleeping()) {
+                    this.a(this.y, this.z, this.q, f2, f3);
+                    return;
                 }
 
-                boolean phasing = !this.player.isSleeping() && flag && !flag2;
-
-                // Poweruser start
-                if (!phasing || !this.player.allowServerSidePhase) {
-                    if (flag1 || phasing || rayTraceCollision) {
-                        if (!rayTraceCollision && !flag && e % 3 != 0) {
-                            this.player.setPosition(this.y, this.z, this.q);
-                        } else {
-                            this.a(this.y, this.z, this.q, f2, f3);
-                        }
-
-                        return;
-                    }
-                }
-                // Poweruser end
-                // joeleoli end
+                AxisAlignedBB axisalignedbb = this.player.boundingBox.clone().grow((double) f4, (double) f4, (double) f4).a(0.0D, -0.55D, 0.0D);
 
                 if (!this.minecraftServer.getAllowFlight() && !this.player.abilities.canFly && !worldserver.c(axisalignedbb)) { // CraftBukkit - check abilities instead of creative mode
                     if (d11 >= -0.03125D) {
                         ++this.f;
                         if (this.f > 80) {
-                            if (Bukkit.shouldAnticheatAct() && lastKickedForFly + TimeUnit.MINUTES.toMillis(1) < networkManager.currentTime) { // Anticheat - Only kick them if we are currently doing checks, add a delay between kicks
-                                lastKickedForFly = networkManager.currentTime;
-
-                                if (!player.isOp()) { // Anticheat: Only kick if they're not opped
-                                    this.disconnect("Flying is not enabled on this server");
-                                    c.warn(this.player.getName() + " was kicked for flying!");
-                                }
-
-                                // Anticheat start
-                                String message = String.format("%s was caught flying (Module V) at %.1f %.1f %.1f", this.player.getName(), this.player.locX, this.player.locY, this.player.locZ);
-
-                                Bukkit.getPluginManager().callEvent(
-                                        new AnticheatEvent(player, AnticheatEvent.Cheat.FLY_HACKS, "V", AnticheatEvent.DisplayLevel.HIGH, message, new Location(player.getWorld(), this.player.locX, this.player.locY, this.player.locZ))
-                                );
-                                // Anticheat end
-                                return;
-                            }
+                            c.warn(this.player.getName() + " was kicked for floating too long!");
+                            this.disconnect("Flying is not enabled on this server");
+                            return;
                         }
                     }
                 } else {
@@ -587,25 +430,12 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
 
                 this.player.onGround = packetplayinflying.i();
-                SpigotTimings.connectionTimer_PacketFlying_playerChunks.startTiming(); // Poweruser
                 this.minecraftServer.getPlayerList().d(this.player);
-                SpigotTimings.connectionTimer_PacketFlying_playerChunks.stopTiming(); // Poweruser
                 this.player.b(this.player.locY - d0, packetplayinflying.i());
             } else if (this.e % 20 == 0) {
                 this.a(this.y, this.z, this.q, this.player.yaw, this.player.pitch);
             }
         }
-    }
-
-    private AxisAlignedBB getBoundingBoxRounded() {
-        AxisAlignedBB bb = this.player.boundingBox.clone();
-        bb.a = (Math.round(bb.a * 1000000.0D) / 1000000.0D);
-        bb.b = (Math.round(bb.b * 1000000.0D) / 1000000.0D);
-        bb.c = (Math.round(bb.c * 1000000.0D) / 1000000.0D);
-        bb.d = (Math.round(bb.d * 1000000.0D) / 1000000.0D);
-        bb.e = (Math.round(bb.e * 1000000.0D) / 1000000.0D);
-        bb.f = (Math.round(bb.f * 1000000.0D) / 1000000.0D);
-        return bb;
     }
 
     public void a(double d0, double d1, double d2, float f, float f1) {
@@ -661,17 +491,6 @@ public class PlayerConnection implements PacketPlayInListener {
         if (this.player.dead) return; // CraftBukkit
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
 
-        // Anticheat start
-        if (!this.player.abilities.canInstantlyBuild) {
-            if (packetplayinblockdig.g() == 0) {
-                this.isDigging = true;
-                this.digHorizontalMovement = 0;
-            } else if ((packetplayinblockdig.g() == 1) || (packetplayinblockdig.g() == 2)) {
-                this.isDigging = false;
-            }
-        }
-        // Anticheat end
-
         this.player.v();
         if (packetplayinblockdig.g() == 4) {
             // CraftBukkit start - limit how quickly items can be dropped
@@ -683,7 +502,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 // Else we increment the drop count and check the amount.
                 this.dropCount++;
                 if (this.dropCount >= 20) {
-                    PlayerConnection.c.warn(this.player.getName() + " dropped their items too quickly!");
+                    this.c.warn(this.player.getName() + " dropped their items too quickly!");
                     this.disconnect("You dropped your items too quickly (Hacking?)");
                     return;
                 }
@@ -762,8 +581,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
     public void a(PacketPlayInBlockPlace packetplayinblockplace) {
         boolean throttled = false;
-        // PaperSpigot - Allow disabling the player interaction limiter
-        if (org.github.paperspigot.PaperSpigotConfig.interactLimitEnabled && lastPlace != -1 && packetplayinblockplace.timestamp - lastPlace < 30 && packets++ >= 4) {
+        if (lastPlace != -1 && packetplayinblockplace.timestamp - lastPlace < 30 && packets++ >= 4) {
             throttled = true;
         } else if ( packetplayinblockplace.timestamp - lastPlace >= 30 || lastPlace == -1 )
         {
@@ -806,8 +624,7 @@ public class PlayerConnection implements PacketPlayInListener {
         int l = packetplayinblockplace.getFace();
 
         this.player.v();
-        boolean isEnderPearl = false;
-        if (packetplayinblockplace.getFace() == 255 || (isEnderPearl = (!isChest(i, j, k) && itemstack != null && itemstack.getItem() != null && CraftMagicNumbers.getMaterial(itemstack.getItem()) == org.bukkit.Material.ENDER_PEARL))) {
+        if (packetplayinblockplace.getFace() == 255) {
             if (itemstack == null) {
                 return;
             }
@@ -819,10 +636,6 @@ public class PlayerConnection implements PacketPlayInListener {
             org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.RIGHT_CLICK_AIR, itemstack);
             if (event.useItemInHand() != Event.Result.DENY) {
                 this.player.playerInteractManager.useItem(this.player, this.player.world, itemstack);
-
-                if (isEnderPearl) {
-                    flag = true;
-                }
             }
             }
             // Spigot end
@@ -856,31 +669,35 @@ public class PlayerConnection implements PacketPlayInListener {
 
         if (flag) {
             this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, worldserver));
-
-            boolean sendSecondUpdate = true;
             if (l == 0) {
                 --j;
-            } else if (l == 1) {
-                ++j;
-            } else if (l == 2) {
-                --k;
-            } else if (l == 3) {
-                ++k;
-            } else if (l == 4) {
-                --i;
-            } else if (l == 5) {
-                ++i;
-            } else {
-                sendSecondUpdate = false;
             }
 
-            if (sendSecondUpdate) {
-                this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, worldserver));
+            if (l == 1) {
+                ++j;
             }
+
+            if (l == 2) {
+                --k;
+            }
+
+            if (l == 3) {
+                ++k;
+            }
+
+            if (l == 4) {
+                --i;
+            }
+
+            if (l == 5) {
+                ++i;
+            }
+
+            this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, worldserver));
         }
 
         itemstack = this.player.inventory.getItemInHand();
-        if (itemstack != null && itemstack.count <= 0) { // EMC
+        if (itemstack != null && itemstack.count == 0) {
             this.player.inventory.items[this.player.inventory.itemInHandIndex] = null;
             itemstack = null;
         }
@@ -899,11 +716,6 @@ public class PlayerConnection implements PacketPlayInListener {
         }
     }
 
-    private boolean isChest(int x, int y, int z) {
-        org.bukkit.Material bukkitMaterial = CraftMagicNumbers.getMaterial(this.player.world.getType(x, y, z));
-        return bukkitMaterial == org.bukkit.Material.CHEST || bukkitMaterial == org.bukkit.Material.TRAPPED_CHEST || bukkitMaterial == org.bukkit.Material.ENDER_CHEST;
-    }
-
     public void a(IChatBaseComponent ichatbasecomponent) {
         // CraftBukkit start - Rarely it would send a disconnect line twice
         if (this.processedDisconnect) {
@@ -915,6 +727,12 @@ public class PlayerConnection implements PacketPlayInListener {
         c.info(this.player.getName() + " lost connection: " + ichatbasecomponent.c()); // CraftBukkit - Don't toString the component
         this.minecraftServer.az();
         // CraftBukkit start - Replace vanilla quit message handling with our own.
+        /*
+        ChatMessage chatmessage = new ChatMessage("multiplayer.player.left", new Object[] { this.player.getScoreboardDisplayName()});
+
+        chatmessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
+        this.minecraftServer.getPlayerList().sendMessage(chatmessage);
+        */
 
         this.player.n();
         String quitMessage = this.minecraftServer.getPlayerList().disconnect(this.player);
@@ -975,26 +793,14 @@ public class PlayerConnection implements PacketPlayInListener {
         // CraftBukkit start
         if (packet == null) {
             return;
+        } else if (packet instanceof PacketPlayOutSpawnPosition) {
+            PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet;
+            this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.x, packet6.y, packet6.z);
         }
+        // CraftBukkit end
 
         try {
-            // Loop through cancellable handlers first
-            for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
-                try {
-                    if (!handler.handleSentPacketCancellable(this, packet)) {
-                        return;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            // Loop through normal handlers
-            for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
-                handler.handleSentPacket(this, packet);
-            }
-
-            this.networkManager.handle(packet, NetworkManager.emptyListenerArray); // Poweruser
+            this.networkManager.handle(packet, new GenericFutureListener[0]);
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
@@ -1002,47 +808,7 @@ public class PlayerConnection implements PacketPlayInListener {
             crashreportsystemdetails.a("Packet class", (Callable) (new CrashReportConnectionPacketClass(this, packet)));
             throw new ReportedException(crashreport);
         }
-
-        if (packet instanceof PacketPlayOutSpawnPosition) {
-            PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet;
-            this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.x, packet6.y, packet6.z);
-        }
-        // CraftBukkit end
-
-        // Anticheat start
-        if (((packet instanceof PacketPlayOutEntityVelocity)) && (((PacketPlayOutEntityVelocity)packet).a == this.player.getId())) {
-            this.velocitiesSent.add((PacketPlayOutEntityVelocity) packet);
-            this.velocitySentTimes.add(System.currentTimeMillis());
-            this.lastVelocitySentTick = MinecraftServer.currentTick;
-        }
-
-        if ((packet instanceof PacketPlayOutPosition)) {
-            this.positionSentTime = System.currentTimeMillis();
-        }
-        // Anticheat end
     }
-
-    // Anticheat start
-    public void handleKeepAliveSync(PacketPlayInKeepAlive packet)  {
-        this.keepAlives.remove(packet.c());
-
-        long latency = 1000 + this.keepAlives.size() * 1000;
-
-        Iterator it = this.velocitySentTimes.iterator();
-        int i = 0;
-        while (it.hasNext()) {
-            long ts = (Long) it.next();
-
-            if (this.networkManager.currentTime - ts > latency) {
-                it.remove();
-                this.velocitiesSent.remove(i);
-            } else {
-                i++;
-            }
-        }
-
-    }
-    // Anticheat end
 
     public void a(PacketPlayInHeldItemSlot packetplayinhelditemslot) {
         // CraftBukkit start
@@ -1082,21 +848,23 @@ public class PlayerConnection implements PacketPlayInListener {
                 if (!SharedConstants.isAllowedChatCharacter(s.charAt(i))) {
                     // CraftBukkit start - threadsafety
                     if (packetplayinchat.a()) {
-                        // Poweruser start
-                        if(!this.networkManager.lockDownIncomingTraffic()) {
-                            Runnable runnable = new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        PlayerConnection.this.disconnect("Illegal characters in chat");
-                                    } catch (Exception e) {
-                                        c.warn(e.toString());
-                                    }
-                                }
-                            };
-                            this.minecraftServer.processQueue.add(runnable);
+                        Waitable waitable = new Waitable() {
+                            @Override
+                            protected Object evaluate() {
+                                PlayerConnection.this.disconnect("Illegal characters in chat");
+                                return null;
+                            }
+                        };
+
+                        this.minecraftServer.processQueue.add(waitable);
+
+                        try {
+                            waitable.get();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        } catch (ExecutionException e) {
+                            throw new RuntimeException(e);
                         }
-                        // Poweruser end
                     } else {
                         this.disconnect("Illegal characters in chat");
                     }
@@ -1156,21 +924,23 @@ public class PlayerConnection implements PacketPlayInListener {
             // this.chatThrottle += 20;
             if (counted && chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
                 if (packetplayinchat.a()) {
-                    // Poweruser start
-                    if(!this.networkManager.lockDownIncomingTraffic()) {
-                        Runnable runnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    PlayerConnection.this.disconnect("disconnect.spam");
-                                } catch (Exception e) {
-                                    c.warn(e.toString());
-                                }
-                            }
-                        };
-                        this.minecraftServer.processQueue.add(runnable);
+                    Waitable waitable = new Waitable() {
+                        @Override
+                        protected Object evaluate() {
+                            PlayerConnection.this.disconnect("disconnect.spam");
+                            return null;
+                        }
+                    };
+
+                    this.minecraftServer.processQueue.add(waitable);
+
+                    try {
+                        waitable.get();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(e);
                     }
-                    // Poweruser end
                 } else {
                     this.disconnect("disconnect.spam");
                 }
@@ -1198,38 +968,40 @@ public class PlayerConnection implements PacketPlayInListener {
                 // Evil plugins still listening to deprecated event
                 final PlayerChatEvent queueEvent = new PlayerChatEvent(player, event.getMessage(), event.getFormat(), event.getRecipients());
                 queueEvent.setCancelled(event.isCancelled());
-                // Poweruser start
-                Runnable runnable = new Runnable() {
+                Waitable waitable = new Waitable() {
                     @Override
-                    public void run() {
-                        try {
-                            org.bukkit.Bukkit.getPluginManager().callEvent(queueEvent);
+                    protected Object evaluate() {
+                        org.bukkit.Bukkit.getPluginManager().callEvent(queueEvent);
 
-                            if (queueEvent.isCancelled()) {
-                                return;
-                            }
-
-                            String message = String.format(queueEvent.getFormat(), queueEvent.getPlayer().getDisplayName(), queueEvent.getMessage());
-                            PlayerConnection.this.minecraftServer.console.sendMessage(message);
-                            if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
-                                for (Object player : PlayerConnection.this.minecraftServer.getPlayerList().players) {
-                                    ((EntityPlayer) player).sendMessage(CraftChatMessage.fromString(message));
-                                }
-                            } else {
-                                for (Player player : queueEvent.getRecipients()) {
-                                    player.sendMessage(message);
-                                }
-                            }
-                        } catch (Exception e) {
-                            c.warn(e.toString());
+                        if (queueEvent.isCancelled()) {
+                            return null;
                         }
+
+                        String message = String.format(queueEvent.getFormat(), queueEvent.getPlayer().getDisplayName(), queueEvent.getMessage());
+                        PlayerConnection.this.minecraftServer.console.sendMessage(message);
+                        if (((LazyPlayerSet) queueEvent.getRecipients()).isLazy()) {
+                            for (Object player : PlayerConnection.this.minecraftServer.getPlayerList().players) {
+                                ((EntityPlayer) player).sendMessage(CraftChatMessage.fromString(message));
+                            }
+                        } else {
+                            for (Player player : queueEvent.getRecipients()) {
+                                player.sendMessage(message);
+                            }
+                        }
+                        return null;
                     }};
                 if (async) {
-                    minecraftServer.processQueue.add(runnable);
+                    minecraftServer.processQueue.add(waitable);
                 } else {
-                    runnable.run();
+                    waitable.run();
                 }
-                // Poweruser end
+                try {
+                    waitable.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt(); // This is proper habit for java. If we aren't handling it, pass it on!
+                } catch (ExecutionException e) {
+                    throw new RuntimeException("Exception processing chat event", e.getCause());
+                }
             } else {
                 if (event.isCancelled()) {
                     return;
@@ -1255,7 +1027,7 @@ public class PlayerConnection implements PacketPlayInListener {
         org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.startTiming(); // Spigot
 
         // CraftBukkit start - whole method
-        if ( org.spigotmc.SpigotConfig.logCommands ) PlayerConnection.c.info(this.player.getName() + " issued server command: " + s);
+        if ( org.spigotmc.SpigotConfig.logCommands ) this.c.info(this.player.getName() + " issued server command: " + s);
 
         CraftPlayer player = this.getPlayer();
 
@@ -1279,6 +1051,7 @@ public class PlayerConnection implements PacketPlayInListener {
             return;
         }
         org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
+        //this.minecraftServer.getCommandHandler().a(this.player, s);
         // CraftBukkit end
     }
 
@@ -1287,30 +1060,26 @@ public class PlayerConnection implements PacketPlayInListener {
         this.player.v();
         if (packetplayinarmanimation.d() == 1) {
             // CraftBukkit start - Raytrace to look for 'rogue armswings'
+            float f = 1.0F;
+            float f1 = this.player.lastPitch + (this.player.pitch - this.player.lastPitch) * f;
+            float f2 = this.player.lastYaw + (this.player.yaw - this.player.lastYaw) * f;
+            double d0 = this.player.lastX + (this.player.locX - this.player.lastX) * (double) f;
+            double d1 = this.player.lastY + (this.player.locY - this.player.lastY) * (double) f + 1.62D - (double) this.player.height;
+            double d2 = this.player.lastZ + (this.player.locZ - this.player.lastZ) * (double) f;
+            Vec3D vec3d = Vec3D.a(d0, d1, d2);
 
-            // we only ever use this event when players are sneaking so why raytrace for no reason
-            if (this.player.isSneaking()) {
-                float f = 1.0F;
-                float f1 = this.player.lastPitch + (this.player.pitch - this.player.lastPitch) * f;
-                float f2 = this.player.lastYaw + (this.player.yaw - this.player.lastYaw) * f;
-                double d0 = this.player.lastX + (this.player.locX - this.player.lastX) * (double) f;
-                double d1 = this.player.lastY + (this.player.locY - this.player.lastY) * (double) f + 1.62D - (double) this.player.height;
-                double d2 = this.player.lastZ + (this.player.locZ - this.player.lastZ) * (double) f;
-                Vec3D vec3d = Vec3D.a(d0, d1, d2);
+            float f3 = MathHelper.cos(-f2 * 0.017453292F - 3.1415927F);
+            float f4 = MathHelper.sin(-f2 * 0.017453292F - 3.1415927F);
+            float f5 = -MathHelper.cos(-f1 * 0.017453292F);
+            float f6 = MathHelper.sin(-f1 * 0.017453292F);
+            float f7 = f4 * f5;
+            float f8 = f3 * f5;
+            double d3 = player.playerInteractManager.getGameMode() == EnumGamemode.CREATIVE ? 5.0D : 4.5D; // Spigot
+            Vec3D vec3d1 = vec3d.add((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
+            MovingObjectPosition movingobjectposition = this.player.world.rayTrace(vec3d, vec3d1, false);
 
-                float f3 = MathHelper.cos(-f2 * 0.017453292F - 3.1415927F);
-                float f4 = MathHelper.sin(-f2 * 0.017453292F - 3.1415927F);
-                float f5 = -MathHelper.cos(-f1 * 0.017453292F);
-                float f6 = MathHelper.sin(-f1 * 0.017453292F);
-                float f7 = f4 * f5;
-                float f8 = f3 * f5;
-                double d3 = player.playerInteractManager.getGameMode() == EnumGamemode.CREATIVE ? 5.0D : 4.5D; // Spigot
-                Vec3D vec3d1 = vec3d.add((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
-                MovingObjectPosition movingobjectposition = this.player.world.rayTrace(vec3d, vec3d1, false);
-
-                if (movingobjectposition == null || movingobjectposition.type != EnumMovingObjectType.BLOCK) {
-                    CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_AIR, this.player.inventory.getItemInHand());
-                }
+            if (movingobjectposition == null || movingobjectposition.type != EnumMovingObjectType.BLOCK) {
+                CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_AIR, this.player.inventory.getItemInHand());
             }
 
             // Arm swing animation
@@ -1354,13 +1123,6 @@ public class PlayerConnection implements PacketPlayInListener {
             this.player.setSneaking(false);
         } else if (packetplayinentityaction.d() == 4) {
             this.player.setSprinting(true);
-            this.player.setSneaking(false); // MineHQ
-
-            // Anticheat start
-            if (this.player.isBlocking()) {
-                this.player.bA(); // stopUsingItem
-            }
-            // Anticheat end
         } else if (packetplayinentityaction.d() == 5) {
             this.player.setSprinting(false);
         } else if (packetplayinentityaction.d() == 3) {
@@ -1439,12 +1201,6 @@ public class PlayerConnection implements PacketPlayInListener {
                         return;
                     }
 
-                    // Anticheat start
-                    if (this.player.isBlocking()) {
-                        this.player.bA(); // stopUsingItem
-                    }
-                    // Anticheat end
-
                     this.player.attack(entity);
 
                     // CraftBukkit start
@@ -1505,7 +1261,6 @@ public class PlayerConnection implements PacketPlayInListener {
         if (this.player.dead) return; // CraftBukkit
 
         this.player.v();
-        if (!this.player.activeContainer.a(this.player)) return; // PaperSpigot - check if player is able to use this container
         if (this.player.activeContainer.windowId == packetplayinwindowclick.c() && this.player.activeContainer.c(this.player)) {
             // CraftBukkit start - Call InventoryClickEvent
             if (packetplayinwindowclick.d() < -1 && packetplayinwindowclick.d() != -999) {
@@ -1725,21 +1480,19 @@ public class PlayerConnection implements PacketPlayInListener {
                     case ALLOW:
                     case DEFAULT:
                         itemstack = this.player.activeContainer.clickItem(packetplayinwindowclick.d(), packetplayinwindowclick.e(), packetplayinwindowclick.h(), this.player);
-                        // PaperSpigot start - Stackable Buckets
-                        if (itemstack != null &&
-                                ((itemstack.getItem() == Items.LAVA_BUCKET && PaperSpigotConfig.stackableLavaBuckets) ||
-                                (itemstack.getItem() == Items.WATER_BUCKET && PaperSpigotConfig.stackableWaterBuckets) ||
-                                (itemstack.getItem() == Items.MILK_BUCKET && PaperSpigotConfig.stackableMilkBuckets))) {
-                            if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
-                                this.player.updateInventory(this.player.activeContainer);
-                            } else {
-                                this.player.playerConnection.sendPacket(new PacketPlayOutSetSlot(-1, -1, this.player.inventory.getCarried()));
-                                this.player.playerConnection.sendPacket(new PacketPlayOutSetSlot(this.player.activeContainer.windowId, packetplayinwindowclick.d(), this.player.activeContainer.getSlot(packetplayinwindowclick.d()).getItem()));
-                            }
-                        }
-                        // PaperSpigot end
                         break;
                     case DENY:
+                        /* Needs enum constructor in InventoryAction
+                        if (action.modifiesOtherSlots()) {
+
+                        } else {
+                            if (action.modifiesCursor()) {
+                                this.player.playerConnection.sendPacket(new Packet103SetSlot(-1, -1, this.player.inventory.getCarried()));
+                            }
+                            if (action.modifiesClicked()) {
+                                this.player.playerConnection.sendPacket(new Packet103SetSlot(this.player.activeContainer.windowId, packet102windowclick.slot, this.player.activeContainer.getSlot(packet102windowclick.slot).getItem()));
+                            }
+                        }*/
                         switch (action) {
                             // Modified other slots
                             case PICKUP_ALL:
@@ -1791,7 +1544,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 this.n.a(this.player.activeContainer.windowId, Short.valueOf(packetplayinwindowclick.f()));
                 this.player.playerConnection.sendPacket(new PacketPlayOutTransaction(packetplayinwindowclick.c(), packetplayinwindowclick.f(), false));
                 this.player.activeContainer.a(this.player, false);
-                ArrayList arraylist = new ArrayList(this.player.activeContainer.c.size()); // CobelPvP
+                ArrayList arraylist = new ArrayList();
 
                 for (int i = 0; i < this.player.activeContainer.c.size(); ++i) {
                     arraylist.add(((Slot) this.player.activeContainer.c.get(i)).getItem());
@@ -1899,7 +1652,6 @@ public class PlayerConnection implements PacketPlayInListener {
 
     public void a(PacketPlayInTransaction packetplayintransaction) {
         if (this.player.dead) return; // CraftBukkit
-        if (!this.player.activeContainer.a(this.player)) return; // PaperSpigot - check if player is able to use this container
         Short oshort = (Short) this.n.get(this.player.activeContainer.windowId);
 
         if (oshort != null && packetplayintransaction.d() == oshort.shortValue() && this.player.activeContainer.windowId == packetplayintransaction.c() && !this.player.activeContainer.c(this.player)) {
@@ -1964,6 +1716,7 @@ public class PlayerConnection implements PacketPlayInListener {
                     tileentitysign1.lines = org.bukkit.craftbukkit.block.CraftSign.sanitizeLines(event.getLines());
                     tileentitysign1.isEditable = false;
                 }
+                // System.arraycopy(packetplayinupdatesign.f(), 0, tileentitysign1.lines, 0, 4);
                 // CraftBukkit end
 
                 tileentitysign1.update();
@@ -1973,19 +1726,6 @@ public class PlayerConnection implements PacketPlayInListener {
     }
 
     public void a(PacketPlayInKeepAlive packetplayinkeepalive) {
-        // Anticheat start
-        this.lastKeepAlivePacketReceived = networkManager.currentTime; // change this logic
-
-        this.packetsNotReceived -= 1;
-
-        if ((this.player.isAlive()) && (!this.player.sleeping) && (this.lastKAPacketTick + 20L > MinecraftServer.currentTick) && (this.lastKAMovementPacket + 100L < MinecraftServer.currentTick) &&
-                (this.lastNotificationTick + 20L < MinecraftServer.currentTick)) {
-            this.lastNotificationTick = MinecraftServer.currentTick;
-        }
-
-        this.lastKAPacketTick = MinecraftServer.currentTick;
-        // Anticheat end
-
         if (packetplayinkeepalive.c() == this.h) {
             int i = (int) (this.d() - this.i);
 
@@ -2012,12 +1752,6 @@ public class PlayerConnection implements PacketPlayInListener {
     }
 
     public void a(PacketPlayInTabComplete packetplayintabcomplete) {
-        // Spigot start - Update 20141113a
-        if (PlayerConnection.chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
-            this.disconnect("disconnect.spam");
-            return;
-        }
-        // Spigot end
         ArrayList arraylist = Lists.newArrayList();
         Iterator iterator = this.minecraftServer.a(this.player, packetplayintabcomplete.c()).iterator();
 
@@ -2061,14 +1795,7 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (itemstack.getItem() == Items.BOOK_AND_QUILL && itemstack.getItem() == itemstack1.getItem()) {
-                        // CobelPvP start - handle book editting better
-                        ItemStack newBook = itemstack1.cloneItemStack();
-                        if (!newBook.hasTag()) {
-                            newBook.setTag(new NBTTagCompound());
-                        }
-                        newBook.tag.set("pages", itemstack.getTag().getList("pages", 8));
-                        CraftEventFactory.handleEditBookEvent(player, newBook); // CraftBukkit
-                        // CobelPvP end
+                        CraftEventFactory.handleEditBookEvent(player, itemstack); // CraftBukkit
                     }
 
                     return;
@@ -2100,17 +1827,7 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (itemstack.getItem() == Items.WRITTEN_BOOK && itemstack1.getItem() == Items.BOOK_AND_QUILL) {
-                        // CobelPvP start - handle book editting better
-                        ItemStack newBook = itemstack1.cloneItemStack();
-                        if (!newBook.hasTag()) {
-                            newBook.setTag(new NBTTagCompound());
-                        }
-                        newBook.tag.set("author", new NBTTagString(this.player.getName()));
-                        newBook.tag.set("title", new NBTTagString(itemstack.getTag().getString("title")));
-                        newBook.tag.set("pages", itemstack.getTag().getList("pages", 8));
-                        newBook.setItem(Items.WRITTEN_BOOK);
-                        CraftEventFactory.handleEditBookEvent(player, newBook); // CraftBukkit
-                        // CobelPvP end
+                        CraftEventFactory.handleEditBookEvent(player, itemstack); // CraftBukkit
                     }
 
                     return;
