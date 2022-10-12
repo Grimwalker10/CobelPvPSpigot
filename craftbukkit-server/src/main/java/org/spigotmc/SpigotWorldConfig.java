@@ -246,7 +246,7 @@ public class SpigotWorldConfig
     public AntiXray antiXrayInstance;
     private void antiXray()
     {
-        antiXray = getBoolean( "anti-xray.enabled", true );
+        antiXray = getBoolean( "anti-xray.enabled", false );
         log( "Anti X-Ray: " + antiXray );
 
         engineMode = getInt( "anti-xray.engine-mode", 1 );
@@ -334,9 +334,9 @@ public class SpigotWorldConfig
     private void initHunger()
     {
         walkExhaustion = (float) getDouble( "hunger.walk-exhaustion", 0.2 );
-        sprintExhaustion = (float) getDouble( "hunger.sprint-exhaustion", 0.8 );
+        sprintExhaustion = (float) getDouble( "hunger.sprint-exhaustion", 0.6 );
         combatExhaustion = (float) getDouble( "hunger.combat-exhaustion", 0.3 );
-        regenExhaustion = (float) getDouble( "hunger.regen-exhaustion", 3 );
+        regenExhaustion = (float) getDouble( "hunger.regen-exhaustion", 2.4 );
     }
 
     public int currentPrimedTnt = 0;
@@ -384,7 +384,7 @@ public class SpigotWorldConfig
 
     public boolean useAlternateEndSpawn;
     private void useAlternateEndSpawn() {
-        useAlternateEndSpawn = getBoolean( "useAlternateEndSpawn", false);
+        useAlternateEndSpawn = getBoolean( "useAlternateEndSpawn", true);
     }
     // CobelPvP end
 }

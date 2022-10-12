@@ -212,7 +212,7 @@ public class PaperSpigotWorldConfig
     public boolean useAsyncLighting;
     private void useAsyncLighting()
     {
-        useAsyncLighting = getBoolean( "use-async-lighting", false );
+        useAsyncLighting = getBoolean( "use-async-lighting", true );
         log( "World async lighting: " + useAsyncLighting );
     }
 
@@ -257,13 +257,13 @@ public class PaperSpigotWorldConfig
     public boolean disableEndCredits;
     private void disableEndCredits()
     {
-        disableEndCredits = getBoolean( "game-mechanics.disable-end-credits", false );
+        disableEndCredits = getBoolean( "game-mechanics.disable-end-credits", true );
     }
 
     public boolean optimizeExplosions;
     private void optimizeExplosions()
     {
-        optimizeExplosions = getBoolean( "optimize-explosions", false );
+        optimizeExplosions = getBoolean( "optimize-explosions", true );
     }
 
     public boolean fastDrainLava;
