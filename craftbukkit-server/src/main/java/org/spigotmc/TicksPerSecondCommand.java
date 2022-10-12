@@ -47,9 +47,9 @@ public class TicksPerSecondCommand extends Command
             sender.sendMessage(ChatColor.GOLD + "Memory: " + usedMemory + "/" + allocatedMemory + "MB");
             sender.sendMessage(ChatColor.GOLD + "Active entities: " + ChatColor.GREEN + activeEntities + "/" + entities + " (" + activePercent + "%)");
             sender.sendMessage(ChatColor.GOLD + "Online players: " + ChatColor.GREEN + Bukkit.getOnlinePlayers().size() + "/" + Bukkit.getMaxPlayers());
-            sender.sendMessage(ChatColor.GOLD + "Alive Threads: " + ManagementFactory.getThreadMXBean().getThreadCount() + ChatColor.RED + " | " + ChatColor.GOLD + "Daemon Threads: " + ManagementFactory.getThreadMXBean().getDaemonThreadCount());
-            sender.sendMessage(ChatColor.GOLD + "Active Workers: " + Bukkit.getScheduler().getActiveWorkers().size() + ChatColor.RED + " | " + ChatColor.GOLD + "Pending Tasks: " + Bukkit.getScheduler().getPendingTasks().size());
-            sender.sendMessage(ChatColor.GOLD + "Threads Interrupted: " + Thread.getAllStackTraces().keySet().parallelStream().filter(Thread::isInterrupted).count());
+            sender.sendMessage(ChatColor.GOLD + "Alive Threads: " + ChatColor.GREEN + ManagementFactory.getThreadMXBean().getThreadCount() + ChatColor.RED + " - " + ChatColor.GOLD + "Daemon Threads: " + ChatColor.GREEN + ManagementFactory.getThreadMXBean().getDaemonThreadCount());
+            sender.sendMessage(ChatColor.GOLD + "Active Workers: " + ChatColor.GREEN + Bukkit.getScheduler().getActiveWorkers().size() + ChatColor.RED + " - " + ChatColor.GOLD + "Pending Tasks: " + ChatColor.GREEN + Bukkit.getScheduler().getPendingTasks().size());
+            sender.sendMessage(ChatColor.GOLD + "Threads Interrupted: " + ChatColor.GREEN + Thread.getAllStackTraces().keySet().parallelStream().filter(Thread::isInterrupted).count());
         } else {
             double tps = Bukkit.spigot().getTPS()[1];
             StringBuilder tpsBuilder = new StringBuilder();
