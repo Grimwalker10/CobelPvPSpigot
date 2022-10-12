@@ -462,7 +462,7 @@ public class PlayerInventory implements IInventory {
     }
 
     public void a(float f) {
-        f /= org.spigotmc.SpigotConfig.reduceArmorDamage ? 8.0F : 4.0F; // CobelPvP
+        f /= org.spigotmc.SpigotConfig.reduceArmorDamage ? 5.5F : 4.0F; // CobelPvP
         if (f < 1.0F) {
             f = 1.0F;
         }

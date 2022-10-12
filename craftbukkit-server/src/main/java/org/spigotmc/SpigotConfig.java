@@ -531,7 +531,7 @@ public class SpigotConfig
 
     public static boolean reduceArmorDamage;
     private static void reduceArmorDamage() {
-        reduceArmorDamage = getBoolean("settings.reduce-armor-damage", false);
+        reduceArmorDamage = getBoolean("settings.reduce-armor-damage", true);
     }
 
     public static boolean pearlThroughGatesAndTripwire = false;
