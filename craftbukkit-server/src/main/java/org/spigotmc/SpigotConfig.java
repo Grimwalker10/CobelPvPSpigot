@@ -409,12 +409,7 @@ public class SpigotConfig
     private static void logRemainingAsyncThreadsDuringShutdown() {
         logRemainingAsyncThreadsDuringShutdown = getBoolean( "settings.logRemainingAsyncThreadsDuringShutdown" , true);
     }
-
-    private static void powertpsCommand()
-    {
-        commands.put( "tpsgraph", new TPSCommand( "tpsgraph" ) );
-    }
-
+    
     private static void worldstatsCommand() {
         commands.put( "worldstats", new WorldStatsCommand( "worldstats" ) );
     }
