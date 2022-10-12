@@ -44,7 +44,7 @@ public class TicksPerSecondCommand extends Command
 
             sender.sendMessage(ChatColor.GOLD + "TPS from last 1m, 5m, 15m: " + StringUtils.join(tpsAvg, ", "));
             sender.sendMessage(ChatColor.GOLD + "Full tick: " + formatTickTime(MinecraftServer.getServer().lastTickTime) + " ms");
-            sender.sendMessage(ChatColor.GOLD + "Memory: " + usedMemory + "/" + allocatedMemory + "MB");
+            sender.sendMessage(ChatColor.GOLD + "Memory: " + ChatColor.GREEN + usedMemory + ChatColor.GOLD + "/" + ChatColor.GREEN +allocatedMemory + "MB");
             sender.sendMessage(ChatColor.GOLD + "Active entities: " + ChatColor.GREEN + activeEntities + "/" + entities + " (" + activePercent + "%)");
             sender.sendMessage(ChatColor.GOLD + "Online players: " + ChatColor.GREEN + Bukkit.getOnlinePlayers().size() + "/" + Bukkit.getMaxPlayers());
             sender.sendMessage(ChatColor.GOLD + "Alive Threads: " + ChatColor.GREEN + ManagementFactory.getThreadMXBean().getThreadCount() + ChatColor.RED + " - " + ChatColor.GOLD + "Daemon Threads: " + ChatColor.GREEN + ManagementFactory.getThreadMXBean().getDaemonThreadCount());
