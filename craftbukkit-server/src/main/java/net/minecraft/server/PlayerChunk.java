@@ -1,11 +1,13 @@
 package net.minecraft.server;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 // CraftBukkit start
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import java.util.HashMap;
+import java.util.Set;
 // CraftBukkit end
 
 class PlayerChunk {
@@ -75,7 +77,7 @@ class PlayerChunk {
                     ChunkIOExecutor.dropQueuedChunkLoad(this.playerChunkMap.a(), this.location.x, this.location.z, this.loadedRunnable);
                     long i = (long) this.location.x + 2147483647L | (long) this.location.z + 2147483647L << 32;
                     PlayerChunkMap.b(this.playerChunkMap).remove(i);
-                    PlayerChunkMap.c(this.playerChunkMap).remove(this);
+                    // PlayerChunkMap.c(this.playerChunkMap).remove(this); Kohi
                 }
 
                 return;
@@ -96,7 +98,7 @@ class PlayerChunk {
 
                 this.a(chunk);
                 PlayerChunkMap.b(this.playerChunkMap).remove(i);
-                PlayerChunkMap.c(this.playerChunkMap).remove(this);
+                // PlayerChunkMap.c(this.playerChunkMap).remove(this); Kohi
                 if (this.dirtyCount > 0) {
                     PlayerChunkMap.d(this.playerChunkMap).remove(this);
                 }
@@ -149,6 +151,49 @@ class PlayerChunk {
             int i;
             int j;
             int k;
+
+            // CobelPvP start - if we send any block changes to clients on the edge of their render, add a "padding"
+            //      chunk to stop them freezing
+            if (this.dirtyCount < 64) {
+                Set<ChunkCoordIntPair> affectedChunks = null;
+                for (i = 0; i < this.dirtyCount; i++) {
+                    int x = this.dirtyBlocks[i] >> 12 & 15;
+                    int z = this.dirtyBlocks[i] >> 8 & 15;
+                    if (x == 0) {
+                        if (affectedChunks == null) affectedChunks = new HashSet<ChunkCoordIntPair>();
+                        affectedChunks.add(new ChunkCoordIntPair(this.location.x - 1, this.location.z));
+                    } else if (x == 15) {
+                        if (affectedChunks == null) affectedChunks = new HashSet<ChunkCoordIntPair>();
+                        affectedChunks.add(new ChunkCoordIntPair(this.location.x + 1, this.location.z));
+                    }
+                    if (z == 0) {
+                        if (affectedChunks == null) affectedChunks = new HashSet<ChunkCoordIntPair>();
+                        affectedChunks.add(new ChunkCoordIntPair(this.location.x, this.location.z - 1));
+                    } else if (z == 15) {
+                        if (affectedChunks == null) affectedChunks = new HashSet<ChunkCoordIntPair>();
+                        affectedChunks.add(new ChunkCoordIntPair(this.location.x, this.location.z + 1));
+                    }
+                }
+                if (affectedChunks != null) {
+                    for (ChunkCoordIntPair chunk : affectedChunks) {
+                        for (Object o : this.b) {
+                            EntityPlayer player = (EntityPlayer) o;
+                            // not applicable to 1.8 clients
+                            if (player.playerConnection.networkManager.getVersion() > 5) {
+                                continue;
+                            }
+                            if (player.chunkCoordIntPairQueue.contains(chunk) || player.paddingChunks.contains(chunk)) {
+                                continue;
+                            }
+                            if (!this.playerChunkMap.a(player, chunk.x, chunk.z)) {
+                                player.paddingChunks.add(chunk);
+                                player.playerConnection.sendPacket(PacketPlayOutMapChunkBulk.paddingChunk(this.playerChunkMap.a(), chunk.x, chunk.z));
+                            }
+                        }
+                    }
+                }
+            }
+            // CobelPvP end
 
             if (this.dirtyCount == 1) {
                 i = this.location.x * 16 + (this.dirtyBlocks[0] >> 12 & 15);
@@ -225,4 +270,14 @@ class PlayerChunk {
     static List b(PlayerChunk playerchunk) {
         return playerchunk.b;
     }
+
+    // CobelPvP start - chunk snapshot api
+    public void resend() {
+        if (this.dirtyCount == 0) {
+            PlayerChunkMap.d(this.playerChunkMap).add(this);
+        }
+        this.dirtyCount = 64;
+        this.f = 0xFFFF;
+    }
+    // CobelPvP end
 }

@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import net.minecraft.optimizations.pathsearch.PositionPathSearchType;
+
 public class PathfinderGoalPanic extends PathfinderGoal {
 
     private EntityCreature a;
@@ -32,7 +34,7 @@ public class PathfinderGoalPanic extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a(net.frozenorb.pathsearch.PositionPathSearchType.PANIC, this.c, this.d, this.e, this.b); // Poweruser
+        this.a.getNavigation().a(PositionPathSearchType.PANIC, this.c, this.d, this.e, this.b); // CobelPvP
     }
 
     public boolean b() {

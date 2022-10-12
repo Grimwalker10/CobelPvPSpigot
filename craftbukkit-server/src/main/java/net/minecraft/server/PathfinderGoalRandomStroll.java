@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import net.minecraft.optimizations.pathsearch.PositionPathSearchType;
+
 public class PathfinderGoalRandomStroll extends PathfinderGoal {
 
     private EntityCreature a;
@@ -15,22 +17,25 @@ public class PathfinderGoalRandomStroll extends PathfinderGoal {
     }
 
     public boolean a() {
-        if (this.a.aN() >= 100) {
-            return false;
-        } else if (this.a.aI().nextInt(120) != 0) {
-            return false;
-        } else {
-            Vec3D vec3d = RandomPositionGenerator.a(this.a, 10, 7);
-
-            if (vec3d == null) {
-                return false;
-            } else {
-                this.b = vec3d.a;
-                this.c = vec3d.b;
-                this.d = vec3d.c;
-                return true;
-            }
-        }
+        // CobelPvP start - disable RandomStroll AI
+        //if (this.a.aN() >= 100) {
+        //    return false;
+        //} else if (this.a.aI().nextInt(120) != 0) {
+        //    return false;
+        //} else {
+        //    Vec3D vec3d = RandomPositionGenerator.a(this.a, 10, 7);
+        //
+        //    if (vec3d == null) {
+        //        return false;
+        //    } else {
+        //        this.b = vec3d.a;
+        //        this.c = vec3d.b;
+        //        this.d = vec3d.c;
+        //        return true;
+        //    }
+        //}
+        return false;
+        // CobelPvP end
     }
 
     public boolean b() {
@@ -38,6 +43,6 @@ public class PathfinderGoalRandomStroll extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a(net.frozenorb.pathsearch.PositionPathSearchType.RANDOMSTROLL, this.b, this.c, this.d, this.e); // Poweruser
+        this.a.getNavigation().a(PositionPathSearchType.RANDOMSTROLL, this.b, this.c, this.d, this.e); // CobelPvP
     }
 }

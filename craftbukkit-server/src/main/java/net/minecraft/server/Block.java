@@ -1,18 +1,23 @@
 package net.minecraft.server;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import net.frozenorb.blocks.BlockAccessCache; // Poweruser
+import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.entity.CraftItem;
+import org.bukkit.event.block.BlockDropItemsEvent;
+
+import net.minecraft.optimizations.util.blocks.BlockAccessCache; // CobelPvP
 
 public class Block {
 
-    // Poweruser start
+    // CobelPvP start
     public static final RegistryBlocks REGISTRY_BLOCKS = new RegistryBlocks("air");
     public static final RegistryMaterials REGISTRY = REGISTRY_BLOCKS;
     private static final BlockAccessCache blockCache = new BlockAccessCache();
-    // Poweruser end
+    // CobelPvP end
+
     private CreativeModeTab creativeTab;
     protected String d;
     public static final StepSound e = new StepSound("stone", 1.0F, 1.0F);
@@ -50,12 +55,24 @@ public class Block {
     public float frictionFactor;
     private String name;
 
+    // CobelPvP start
+    private int blockId = -1;
+    private static final Block[] blocksArray = new Block[4096];
+    public List<org.bukkit.entity.Item> droppedItemsCatcher;
+    // CobelPvP end
+
     public static int getId(Block block) {
-        return REGISTRY.b(block);
+        return block == null ? 0 : block.blockId; // CobelPvP
     }
 
     public static Block getById(int i) {
-        return blockCache.getById(i); // Poweruser
+        // CobelPvP start
+        if (0 <= i && i < 4096) {
+            return blocksArray[i];
+        }
+        
+        return null;
+        // CobelPvP end
     }
 
     public static Block a(Item item) {
@@ -290,28 +307,21 @@ public class Block {
         REGISTRY.a(173, "coal_block", (new Block(Material.STONE)).c(5.0F).b(10.0F).a(i).c("blockCoal").a(CreativeModeTab.b).d("coal_block"));
         REGISTRY.a(174, "packed_ice", (new BlockPackedIce()).c(0.5F).a(k).c("icePacked").d("ice_packed"));
         REGISTRY.a(175, "double_plant", new BlockTallPlant());
-        Iterator iterator = REGISTRY.iterator();
 
-        while (iterator.hasNext()) {
-            Block block10 = (Block) iterator.next();
-
-            if (block10.material == Material.AIR) {
-                block10.u = false;
-            } else {
-                boolean flag = false;
-                boolean flag1 = block10.b() == 10;
-                boolean flag2 = block10 instanceof BlockStepAbstract;
-                boolean flag3 = block10 == block4;
-                boolean flag4 = block10.s;
-                boolean flag5 = block10.r == 0;
-
-                if (flag1 || flag2 || flag3 || flag4 || flag5) {
-                    flag = true;
+        // CobelPvP start - blocks array
+        for (int prefillIndex = 0; prefillIndex < 4096; prefillIndex++) {
+            Block prefillBlock = (Block) REGISTRY.a(prefillIndex);
+            if (prefillBlock != null) {
+                if (prefillBlock.blockId == -1) prefillBlock.blockId = prefillIndex;
+                blocksArray[prefillIndex] = prefillBlock;
+                if (block.material == Material.AIR) {
+                    block.u = false;
+                } else {
+                    block.u = block == block4 || block.s || block.r == 0 || block.b() == 10 || block instanceof BlockStepAbstract;
                 }
-
-                block10.u = flag;
             }
         }
+        // CobelPvP end
     }
 
     protected Block(Material material) {
@@ -462,7 +472,23 @@ public class Block {
     }
 
     public final void b(World world, int i, int j, int k, int l, int i1) {
-        this.dropNaturally(world, i, j, k, l, 1.0F, i1);
+        // CobelPvP start
+        if (this == Blocks.AIR) return;
+        if (this.droppedItemsCatcher == null) {
+            this.droppedItemsCatcher = new ArrayList<org.bukkit.entity.Item>(1);
+            this.dropNaturally(world, i, j, k, l, 1.0f, i1);
+            BlockDropItemsEvent dropItemsEvent = new BlockDropItemsEvent(world.getWorld().getBlockAt(i, j, k), null, this.droppedItemsCatcher);
+            Bukkit.getPluginManager().callEvent(dropItemsEvent);
+            if (!dropItemsEvent.isCancelled() && dropItemsEvent.getToDrop() != null) {
+                for (final org.bukkit.entity.Item item : dropItemsEvent.getToDrop()) {
+                    world.addEntity(((CraftItem) item).getHandle());
+                }
+            }
+            this.droppedItemsCatcher = null;
+        } else {
+            this.dropNaturally(world, i, j, k, l, 1.0F, i1);
+        }
+        // CobelPvP end
     }
 
     public void dropNaturally(World world, int i, int j, int k, int l, float f, int i1) {
@@ -491,7 +517,13 @@ public class Block {
             EntityItem entityitem = new EntityItem(world, (double) i + d0, (double) j + d1, (double) k + d2, itemstack);
 
             entityitem.pickupDelay = 10;
-            world.addEntity(entityitem);
+            // CobelPvP start
+            if (this.droppedItemsCatcher == null) {
+                world.addEntity(entityitem);
+            } else {
+                this.droppedItemsCatcher.add(new CraftItem(world.getServer(), entityitem));
+            }
+            // CobelPvP end
         }
     }
 

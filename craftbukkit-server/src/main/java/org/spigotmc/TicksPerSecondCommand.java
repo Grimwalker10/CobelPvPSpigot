@@ -7,12 +7,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import java.text.DecimalFormat;
-
 public class TicksPerSecondCommand extends Command
 {
-    long startTime = System.currentTimeMillis();
-    public static final DecimalFormat df = new DecimalFormat("#.#");
 
     public TicksPerSecondCommand(String name)
     {
@@ -25,16 +21,12 @@ public class TicksPerSecondCommand extends Command
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args)
     {
-        if (!sender.isOp()) {
-            sender.sendMessage(ChatColor.RED + "No permission.");
+        if (!testPermission(sender)) {
             return true;
         }
 
         if (sender.hasPermission("bukkit.command.tps.advanced")) {
             double[] tps = Bukkit.spigot().getTPS();
-            Runtime runtime = Runtime.getRuntime();
-            double usedMemory = (double)(runtime.totalMemory() - runtime.freeMemory());
-            double freeMemory = (double)runtime.maxMemory() - usedMemory;
             String[] tpsAvg = new String[tps.length];
 
             for (int i = 0; i < tps.length; i++) {
@@ -47,10 +39,8 @@ public class TicksPerSecondCommand extends Command
 
             sender.sendMessage(ChatColor.GOLD + "TPS from last 1m, 5m, 15m: " + StringUtils.join(tpsAvg, ", "));
             sender.sendMessage(ChatColor.GOLD + "Full tick: " + formatTickTime(MinecraftServer.getServer().lastTickTime) + " ms");
-            sender.sendMessage(ChatColor.GOLD + "Memory: " + formatMem(usedMemory) + "§7/" + formatMem((double)runtime.maxMemory()) + " §8(§c" + formatMem(freeMemory) + " free§8)");
             sender.sendMessage(ChatColor.GOLD + "Active entities: " + ChatColor.GREEN + activeEntities + "/" + entities + " (" + activePercent + "%)");
             sender.sendMessage(ChatColor.GOLD + "Online players: " + ChatColor.GREEN + Bukkit.getOnlinePlayers().size() + "/" + Bukkit.getMaxPlayers());
-            sender.sendMessage(ChatColor.GOLD + "Uptime: §a" + formatFullMilis(System.currentTimeMillis() - this.startTime));
         } else {
             double tps = Bukkit.spigot().getTPS()[1];
             StringBuilder tpsBuilder = new StringBuilder();
@@ -82,10 +72,6 @@ public class TicksPerSecondCommand extends Command
         return (time < 40.0D ? ChatColor.GREEN : time < 60.0D ? ChatColor.YELLOW : ChatColor.RED).toString() + Math.round(time * 10.0D) / 10.0D;
     }
 
-    private static String formatMem(double mem) {
-        return "§a" + Math.round(mem / 1024.0D / 1024.0D) + "MB";
-    }
-
     private static String formatAdvancedTps(double tps) {
         return (tps > 18.0 ? ChatColor.GREEN : tps > 16.0 ? ChatColor.YELLOW : ChatColor.RED).toString() + Math.min(Math.round(tps * 100.0D) / 100.0, 20.0);
     }
@@ -94,26 +80,4 @@ public class TicksPerSecondCommand extends Command
         return (tps > 18.0 ? ChatColor.GREEN : tps > 16.0 ? ChatColor.YELLOW : ChatColor.RED).toString() + Math.min(Math.round(tps * 10.0D) / 10.0D, 20.0D);
     }
 
-    public static String formatFullMilis(Long milis) {
-        double seconds = (double)Math.max(0L, milis) / 1000.0D;
-        double minutes = seconds / 60.0D;
-        double hours = minutes / 60.0D;
-        double days = hours / 24.0D;
-        double weeks = days / 7.0D;
-        double months = days / 31.0D;
-        double years = months / 12.0D;
-        if (years >= 1.0D) {
-            return df.format(years) + " year" + (years != 1.0D ? "s" : "");
-        } else if (months >= 1.0D) {
-            return df.format(months) + " month" + (months != 1.0D ? "s" : "");
-        } else if (weeks >= 1.0D) {
-            return df.format(weeks) + " week" + (weeks != 1.0D ? "s" : "");
-        } else if (days >= 1.0D) {
-            return df.format(days) + " day" + (days != 1.0D ? "s" : "");
-        } else if (hours >= 1.0D) {
-            return df.format(hours) + " hour" + (hours != 1.0D ? "s" : "");
-        } else {
-            return minutes >= 1.0D ? df.format(minutes) + " minute" + (minutes != 1.0D ? "s" : "") : df.format(seconds) + " second" + (seconds != 1.0D ? "s" : "");
-        }
-    }
 }

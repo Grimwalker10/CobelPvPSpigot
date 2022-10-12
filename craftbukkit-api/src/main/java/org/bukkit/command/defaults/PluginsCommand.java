@@ -20,7 +20,7 @@ public class PluginsCommand extends BukkitCommand {
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
         if (!testPermission(sender)) return true;
 
-        sender.sendMessage("Plugins " + getPluginList());
+        sender.sendMessage(ChatColor.GOLD + "Plugins " + ChatColor.RESET + getPluginList());
         return true;
     }
 
@@ -30,7 +30,7 @@ public class PluginsCommand extends BukkitCommand {
 
         for (Plugin plugin : plugins) {
             if (pluginList.length() > 0) {
-                pluginList.append(ChatColor.WHITE);
+                pluginList.append(ChatColor.GOLD);
                 pluginList.append(", ");
             }
 
@@ -38,7 +38,7 @@ public class PluginsCommand extends BukkitCommand {
             pluginList.append(plugin.getDescription().getName());
         }
 
-        return "(" + plugins.length + "): " + pluginList.toString();
+        return ChatColor.GOLD + "(" + ChatColor.GREEN + plugins.length + ChatColor.GOLD + "): " + ChatColor.RESET + pluginList.toString();
     }
 
     // Spigot Start

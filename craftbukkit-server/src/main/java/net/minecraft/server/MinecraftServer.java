@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import javax.imageio.ImageIO;
 
+import net.minecraft.optimizations.util.ExtendedCustomTimingsHandler;
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 import net.minecraft.util.com.mojang.authlib.GameProfileRepository;
@@ -42,16 +42,16 @@ import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
+import org.spigotmc.SpigotConfig;
 
-// Poweruser start
-import net.frozenorb.ThreadingManager;
-import net.frozenorb.autosave.AutoSave;
-// Poweruser end
+// CobelPvP start
+import net.minecraft.optimizations.ThreadingManager;
+import com.cobelpvp.autosave.AutoSave;
+// CobelPvP end
 
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
 
-    private static final Logger i = LogManager.getLogger();
-    private static final File a = new File( "config/misc", "usercache.json"); // MineHQ - Dedicated config directory
+    private static final File a = new File( "config/misc", "usercache.json"); // CobelPvP - Dedicated config directory
     private static MinecraftServer j;
     public Convertable convertable; // CraftBukkit - private final -> public
     private final MojangStatisticsGenerator l = new MojangStatisticsGenerator("server", this, ar());
@@ -107,7 +107,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public org.bukkit.command.ConsoleCommandSender console;
     public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
     public ConsoleReader reader;
-    public static int currentTick = (int) (System.currentTimeMillis() / 50);
+    public static int currentTick = 0;
     public final Thread primaryThread;
     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
     public int autosavePeriod;
@@ -125,20 +125,20 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public int activeEntities;
     // Kohi end
 
-    // Poweruser start
+    // CobelPvP start
     private ThreadingManager threadingManager;
     private AutoSave autoSaveManager;
-    // Poweruser end
+    // CobelPvP end
 
-    public float lastTickTime = 0F; // MineHQ
+    public float lastTickTime = 0F; // CobelPvP
 
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
         net.minecraft.util.io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
         this.X = new UserCache(this, a);
         j = this;
         this.d = proxy;
-        this.threadingManager = new ThreadingManager(); // Poweruser
-        this.autoSaveManager = new AutoSave(); // Poweruser
+        this.threadingManager = new ThreadingManager(); // CobelPvP
+        this.autoSaveManager = new AutoSave(); // CobelPvP
         // this.universe = file1; // CraftBukkit
         // this.p = new ServerConnection(this); // Spigot
         this.o = new CommandDispatcher();
@@ -166,7 +166,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.reader = new ConsoleReader(System.in, System.out);
                 this.reader.setExpandEvents(false);
             } catch (IOException ex) {
-                i.warn((String) null, ex);
+                getLogger().warn((String) null, ex);
             }
         }
         Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
@@ -181,7 +181,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
     protected void a(String s) {
         if (this.getConvertable().isConvertable(s)) {
-            i.info("Converting map!");
+            getLogger().info("Converting map!");
             this.b("menu.convertingLevel");
             this.getConvertable().convert(s, new ConvertProgressUpdater(this));
         }
@@ -323,7 +323,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         // CraftBukkit start - fire WorldLoadEvent and handle whether or not to keep the spawn in memory
         for (int m = 0; m < this.worlds.size(); ++m) {
             WorldServer worldserver = this.worlds.get(m);
-            MinecraftServer.i.info("Preparing start region for level " + m + " (Seed: " + worldserver.getSeed() + ")");
+            getLogger().info("Preparing start region for level " + m + " (Seed: " + worldserver.getSeed() + ")");
             if (!worldserver.getWorld().getKeepSpawnInMemory()) {
                 continue;
             }
@@ -381,6 +381,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     protected void saveChunks(boolean flag) throws ExceptionWorldConflict { // CraftBukkit - added throws
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if (!this.M) {
             // CraftBukkit start - fire WorldSaveEvent
             // WorldServer[] aworldserver = this.worldServer;
@@ -407,7 +408,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
     public void stop() throws ExceptionWorldConflict { // CraftBukkit - added throws
         if (!this.M) {
-            i.info("Stopping server");
+            getLogger().info("Stopping server");
             // CraftBukkit start
             if (this.server != null) {
                 this.server.disablePlugins();
@@ -419,13 +420,13 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             }
 
             if (this.u != null) {
-                i.info("Saving players");
+                getLogger().info("Saving players");
                 this.u.savePlayers();
                 this.u.u();
             }
 
             if (this.worldServer != null) {
-                i.info("Saving worlds");
+                getLogger().info("Saving worlds");
                 this.saveChunks(false);
             
                 /* CraftBukkit start - Handled in saveChunks
@@ -443,12 +444,12 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             // Spigot start
             if( org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly )
             {
-                i.info("Saving usercache.json");
+                getLogger().info("Saving usercache.json");
                 this.X.c();
             }
             //Spigot end
 
-            this.threadingManager.shutdown(); // Poweruser
+            this.threadingManager.shutdown(); // CobelPvP
         }
     }
 
@@ -474,7 +475,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         return ( avg * exp ) + ( tps * ( 1 - exp ) );
     }
     // Spigot End
-
+ 
     public void run() {
         try {
             if (this.init()) {
@@ -519,11 +520,11 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             }
         } catch (Throwable throwable) {
             this.abnormalTermination = true; // SportBukkit
-            i.error("Encountered an unexpected exception", throwable);
+            getLogger().error("Encountered an unexpected exception", throwable);
             // Spigot Start
             if ( throwable.getCause() != null )
             {
-                i.error( "\tCause of unexpected exception was", throwable.getCause() );
+                getLogger().error( "\tCause of unexpected exception was", throwable.getCause() );
             }
             // Spigot End
             CrashReport crashreport = null;
@@ -537,9 +538,9 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             File file1 = new File(new File(this.s(), "crash-reports"), "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-server.txt");
 
             if (crashreport.a(file1)) {
-                i.error("This crash report has been saved to: " + file1.getAbsolutePath());
+                getLogger().error("This crash report has been saved to: " + file1.getAbsolutePath());
             } else {
-                i.error("We were unable to save this crash report to disk.");
+                getLogger().error("We were unable to save this crash report to disk.");
             }
 
             this.a(crashreport);
@@ -549,7 +550,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.stop();
                 this.isStopped = true;
             } catch (Throwable throwable1) {
-                i.error("Exception stopping the server", throwable1);
+                getLogger().error("Exception stopping the server", throwable1);
             } finally {
                 // CraftBukkit start - Restore terminal to original settings
                 try {
@@ -578,7 +579,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
                 serverping.setFavicon("data:image/png;base64," + bytebuf1.toString(Charsets.UTF_8));
             } catch (Exception exception) {
-                i.error("Couldn\'t load server icon", exception);
+                getLogger().error("Couldn\'t load server icon", exception);
             } finally {
                 bytebuf.release();
             }
@@ -597,8 +598,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         SpigotTimings.serverTickTimer.startTiming(); // Spigot
         long i = System.nanoTime();
 
-        ThreadingManager.getTickCounter().increaseTickCounter(); // Poweruser
-        ThreadingManager.startTickTimerTask(); // Poweruser
+        ThreadingManager.getTickCounter().increaseTickCounter(); // CobelPvP
+        ThreadingManager.startTickTimerTask(); // CobelPvP
 
         ++this.ticks;
         if (this.R) {
@@ -623,7 +624,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             this.q.b().a(agameprofile);
         }
 
-        // Poweruser start
+        // CobelPvP start
         if(this.autoSaveManager.isActive()) {
             SpigotTimings.worldSaveTimer.startTiming(); // Spigot
             server.playerCommandState = true;
@@ -637,7 +638,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             }
             this.autoSaveManager.start();
         }
-        // Poweruser end
+        // CobelPvP end
         /*
             SpigotTimings.worldSaveTimer.startTiming(); // Spigot
             this.methodProfiler.a("save");
@@ -675,11 +676,21 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         org.spigotmc.WatchdogThread.tick(); // Spigot
         SpigotTimings.serverTickTimer.stopTiming(); // Spigot
         this.lastTickTime = (System.nanoTime() - i) / 1000000F;
-        ThreadingManager.cancelTimerTask(this.lastTickTime); // Poweruser
-        net.frozenorb.timings.ExtendedCustomTimingsHandler.tick(); // Poweruser
+        ThreadingManager.cancelTimerTask(this.lastTickTime); // CobelPvP
+        ExtendedCustomTimingsHandler.tick(); // CobelPvP
     }
 
     public void v() {
+        // CobelPvP start - tick connections earlier
+        // We tick the playerList here too so updated
+        // pings are sent out as soon as possible.
+        SpigotTimings.connectionTimer.startTiming(); // Spigot
+        this.ai().c();
+        SpigotTimings.connectionTimer.stopTiming(); // Spigot
+        SpigotTimings.playerListTimer.startTiming(); // Spigot
+        this.u.tick();
+        SpigotTimings.playerListTimer.stopTiming(); // Spigot
+        // CobelPvP end
         this.methodProfiler.a("levels");
 
         SpigotTimings.schedulerTimer.startTiming(); // Spigot
@@ -717,6 +728,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
             // if (i == 0 || this.getAllowNether()) {
                 WorldServer worldserver = this.worlds.get(i);
+                if (!worldserver.checkTicking()) continue; // CobelPvP
 
                 this.methodProfiler.a(worldserver.getWorldData().getName());
                 this.methodProfiler.a("pools");
@@ -779,6 +791,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         }
 
         this.methodProfiler.c("connection");
+        // CobelPvP start - move up
+        /*
         SpigotTimings.connectionTimer.startTiming(); // Spigot
         this.ai().c();
         SpigotTimings.connectionTimer.stopTiming(); // Spigot
@@ -786,6 +800,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         SpigotTimings.playerListTimer.startTiming(); // Spigot
         this.u.tick();
         SpigotTimings.playerListTimer.stopTiming(); // Spigot
+        */
+        // CobelPvP end
         this.methodProfiler.c("tickables");
 
         SpigotTimings.tickablesTimer.startTiming(); // Spigot
@@ -904,7 +920,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             // Runtime.getRuntime().addShutdownHook(new ThreadShutdown("Server Shutdown Thread", dedicatedserver));
             // CraftBukkit end
         } catch (Exception exception) {
-            i.fatal("Failed to start the minecraft server", exception);
+            getLogger().fatal("Failed to start the minecraft server", exception);
             System.exit(1); // Sportbukkit
         }
     }
@@ -918,11 +934,11 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public void info(String s) {
-        i.info(s);
+        getLogger().info(s);
     }
 
     public void warning(String s) {
-        i.warn(s);
+        getLogger().warn(s);
     }
 
     public WorldServer getWorldServer(int i) {
@@ -1028,17 +1044,17 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public void h(String s) {
-        i.error(s);
+        getLogger().error(s);
     }
 
     public void i(String s) {
         if (this.isDebugging()) {
-            i.info(s);
+            getLogger().info(s);
         }
     }
 
     public String getServerModName() {
-        return "CobelPvP Custom  1.7.10"; // Spigot - Spigot > // CraftBukkit - cb > vanilla!
+        return "CraftBukkit 1.7.10";
     }
 
     public CrashReport b(CrashReport crashreport) {
@@ -1440,7 +1456,11 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.V = 0L;
     }
 
+    private static Logger i;
     public static Logger getLogger() {
+        if (i == null) {
+            i = LogManager.getLogger();
+        }
         return i;
     }
 

@@ -2,6 +2,9 @@ package net.minecraft.server;
 
 import java.util.List;
 
+import org.bukkit.Bukkit;
+import org.spigotmc.SpigotConfig;
+
 public abstract class EntityProjectile extends Entity implements IProjectile {
 
     private int blockX = -1;

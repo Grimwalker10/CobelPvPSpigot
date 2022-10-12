@@ -5,7 +5,7 @@ import net.minecraft.server.ChunkProviderServer;
 import net.minecraft.server.ChunkRegionLoader;
 import net.minecraft.server.World;
 import org.bukkit.craftbukkit.util.AsynchronousExecutor;
-import org.spigotmc.SpigotConfig; // Poweruser
+import org.spigotmc.SpigotConfig; // CobelPvP
 
 public class ChunkIOExecutor {
     static final int BASE_THREADS = 1;
@@ -26,7 +26,7 @@ public class ChunkIOExecutor {
     }
 
     public static void adjustPoolSize(int players) {
-        int size = Math.max(BASE_THREADS, (int) Math.ceil(players / SpigotConfig.playersPerChunkIOThread)); // Poweruser
+        int size = Math.max(BASE_THREADS, (int) Math.ceil(players / SpigotConfig.playersPerChunkIOThread)); // CobelPvP
         instance.setActiveThreads(size);
     }
 

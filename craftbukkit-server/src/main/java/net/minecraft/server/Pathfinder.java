@@ -200,7 +200,7 @@ public class Pathfinder {
     }
 
     public static int a(Entity entity, int i, int j, int k, PathPoint pathpoint, boolean flag, boolean flag1, boolean flag2) {
-    // Poweruser start
+    // CobelPvP start
         return a(entity.world, entity, i, j, k, pathpoint, flag, flag1, flag2);
     }
 
@@ -209,13 +209,13 @@ public class Pathfinder {
     }
 
     public static int a(IBlockAccess blockaccess, Entity entity, int i, int j, int k, PathPoint pathpoint, boolean flag, boolean flag1, boolean flag2) {
-    // Poweruser end
+    // CobelPvP end
         boolean flag3 = false;
 
         for (int l = i; l < i + pathpoint.a; ++l) {
             for (int i1 = j; i1 < j + pathpoint.b; ++i1) {
                 for (int j1 = k; j1 < k + pathpoint.c; ++j1) {
-                    Block block = blockaccess.getType(l, i1, j1); // Poweruser - entity.world -> blockaccess
+                    Block block = blockaccess.getType(l, i1, j1); // CobelPvP - entity.world -> blockaccess
 
                     if (block.getMaterial() != Material.AIR) {
                         if (block == Blocks.TRAP_DOOR) {
@@ -234,12 +234,12 @@ public class Pathfinder {
 
                         int k1 = block.b();
 
-                        if (k1 == 9) { // Poweruser
+                        if (k1 == 9) { // CobelPvP
                             int l1 = MathHelper.floor(entity.locX);
                             int i2 = MathHelper.floor(entity.locY);
                             int j2 = MathHelper.floor(entity.locZ);
 
-                            if (blockaccess.getType(l1, i2, j2).b() != 9 && blockaccess.getType(l1, i2 - 1, j2).b() != 9) { // Poweruser - entity.world -> blockaccess
+                            if (blockaccess.getType(l1, i2, j2).b() != 9 && blockaccess.getType(l1, i2 - 1, j2).b() != 9) { // CobelPvP - entity.world -> blockaccess
                                 return -3;
                             }
                         } else if (!block.b(entity.world, l, i1, j1) && (!flag1 || block != Blocks.WOODEN_DOOR)) {
@@ -257,7 +257,7 @@ public class Pathfinder {
                                 return 0;
                             }
 
-                            if (!entity.P(blockaccess)) { // Poweruser
+                            if (!entity.P(blockaccess)) { // CobelPvP
                                 return -2;
                             }
                         }

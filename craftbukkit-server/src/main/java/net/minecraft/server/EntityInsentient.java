@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-import java.lang.ref.WeakReference; // Spigot
+import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -11,10 +11,10 @@ import org.bukkit.event.entity.EntityUnleashEvent;
 import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
 // CraftBukkit end
 
-// Poweruser start
+// CobelPvP start
 import org.bukkit.craftbukkit.SpigotTimings;
-import net.frozenorb.pathsearch.AsyncNavigation;
-// Poweruser end
+import net.minecraft.optimizations.pathsearch.AsyncNavigation;
+// CobelPvP end
 
 public abstract class EntityInsentient extends EntityLiving {
 
@@ -27,7 +27,7 @@ public abstract class EntityInsentient extends EntityLiving {
     private Navigation navigation;
     protected final PathfinderGoalSelector goalSelector;
     protected final PathfinderGoalSelector targetSelector;
-    private WeakReference<EntityLiving> goalTarget = new WeakReference<EntityLiving>(null);
+    private WeakReference<EntityLiving> goalTarget = new WeakReference<EntityLiving>(null); // Spigot Update - 20140921a
     private EntitySenses bq;
     private ItemStack[] equipment = new ItemStack[5];
     public float[] dropChances = new float[5]; // CraftBukkit - protected -> public
@@ -48,7 +48,7 @@ public abstract class EntityInsentient extends EntityLiving {
         this.moveController = new ControllerMove(this);
         this.bm = new ControllerJump(this);
         this.bn = new EntityAIBodyControl(this);
-        this.navigation = new AsyncNavigation(this, world); // Poweruser
+        this.navigation = new AsyncNavigation(this, world); // CobelPvP
         this.bq = new EntitySenses(this);
 
         for (int i = 0; i < this.dropChances.length; ++i) {
@@ -82,11 +82,11 @@ public abstract class EntityInsentient extends EntityLiving {
     }
 
     public EntityLiving getGoalTarget() {
-        return this.goalTarget.get(); // Spigot
+        return this.goalTarget.get();
     }
 
     public void setGoalTarget(EntityLiving entityliving) {
-        this.goalTarget = new WeakReference<EntityLiving>(entityliving); // Spigot
+        this.goalTarget = new WeakReference<EntityLiving>(entityliving);
     }
 
     public boolean a(Class oclass) {
@@ -118,7 +118,7 @@ public abstract class EntityInsentient extends EntityLiving {
     }
 
     public void C() {
-        SpigotTimings.timerEntityInsentient_C.startTiming(); // Poweruser
+        SpigotTimings.timerEntityInsentient_C.startTiming(); // CobelPvP
         super.C();
         this.world.methodProfiler.a("mobBaseTick");
         if (this.isAlive() && this.random.nextInt(1000) < this.a_++) {
@@ -127,7 +127,7 @@ public abstract class EntityInsentient extends EntityLiving {
         }
 
         this.world.methodProfiler.b();
-        SpigotTimings.timerEntityInsentient_C.stopTiming(); // Poweruser
+        SpigotTimings.timerEntityInsentient_C.stopTiming(); // CobelPvP
     }
 
     protected int getExpValue(EntityHuman entityhuman) {
@@ -242,11 +242,11 @@ public abstract class EntityInsentient extends EntityLiving {
             nbttagcompound.set("Leash", nbttagcompound1);
         }
 
-        // Poweruser start
+        // CobelPvP start
         else if(this.bx != null) {
             nbttagcompound.set("Leash", this.bx);
         }
-        // Poweruser end
+        // CobelPvP end
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -396,10 +396,14 @@ public abstract class EntityInsentient extends EntityLiving {
     // Kohi end
 
     protected void w() {
+        this.aU++; // CobelPvP
         if (this.persistent) {
             this.aU = 0;
         } else if (this.ticksLived % 50 == 0) { // Kohi - only check every 50 ticks
-            EntityHuman entityhuman = this.world.findNearbyPlayerWhoAffectsSpawning(this, -1.0D); // PaperSpigot
+            // CobelPvP start
+            if (this.world.hardDespawnDistance == -1D) this.world.hardDespawnDistance = Math.sqrt(this.world.paperSpigotConfig.hardDespawnDistance);
+            EntityHuman entityhuman = this.world.findNearbyPlayerWhoAffectsSpawning(this, this.world.hardDespawnDistance); // PaperSpigot
+            // CobelPvP end
 
             if (entityhuman != null) {
                 double d0 = entityhuman.locX - this.locX;
@@ -412,19 +416,27 @@ public abstract class EntityInsentient extends EntityLiving {
                 }
 
                 // Kohi - decrease random check to account for decreased interval
-                // MineHQ - decrease random check even more for performance
-                if (this.aU > 600 && this.random.nextInt(10) == 0 && d3 > this.world.paperSpigotConfig.softDespawnDistance) { // CraftBukkit - remove isTypeNotPersistent() check // PaperSpigot - custom despawn distances
+                // CobelPvP - decrease random check even more for performance
+                // CobelPvP - remove random
+                if (this.aU > 600 && d3 > this.world.paperSpigotConfig.softDespawnDistance) { // CraftBukkit - remove isTypeNotPersistent() check // PaperSpigot - custom despawn distances
                     this.die();
                 } else if (d3 < this.world.paperSpigotConfig.softDespawnDistance) { // PaperSpigot - custom despawn distances
                     this.aU = 0;
                 }
             }
+            // CobelPvP start
+            else {
+                if (this.aU > 600) {
+                    this.die();
+                }
+            }
+            // CobelPvP end
         }
     }
 
     protected void bn() {
-        ++this.aU;
-        this.navigation.cleanUpExpiredSearches(); // Poweruser
+        //++this.aU; // CobelPvP
+        this.navigation.cleanUpExpiredSearches(); // CobelPvP
         this.world.methodProfiler.a("checkDespawn");
         this.w();
         this.world.methodProfiler.b();
@@ -908,14 +920,14 @@ public abstract class EntityInsentient extends EntityLiving {
                     EntityLiving entityliving = (EntityLiving) iterator.next();
 
                     if (entityliving.getUniqueID().equals(uuid)) {
-                        this.setLeashHolder(entityliving, true); // Poweruser
+                        this.setLeashHolder(entityliving, true); // CobelPvP
                         break;
                     }
                 }
-            // Poweruser start
+            // CobelPvP start
             }
             if (this.bw == null && this.bx.hasKeyOfType("X", 99) && this.bx.hasKeyOfType("Y", 99) && this.bx.hasKeyOfType("Z", 99)) {
-            // Poweruser end
+            // CobelPvP end
                 int i = this.bx.getInt("X");
                 int j = this.bx.getInt("Y");
                 int k = this.bx.getInt("Z");
@@ -924,11 +936,11 @@ public abstract class EntityInsentient extends EntityLiving {
                 if (entityleash == null) {
                     entityleash = EntityLeash.a(this.world, i, j, k);
                 }
-            // Poweruser start
+            // CobelPvP start
                 this.setLeashHolder(entityleash, true);
             }
             if (this.bw == null) {
-            // Poweruser end
+            // CobelPvP end
                 this.world.getServer().getPluginManager().callEvent(new EntityUnleashEvent(this.getBukkitEntity(), UnleashReason.UNKNOWN)); // CraftBukkit
                 this.unleash(false, true);
             }

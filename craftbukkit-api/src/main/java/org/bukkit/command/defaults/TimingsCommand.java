@@ -2,6 +2,7 @@ package org.bukkit.command.defaults;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +28,16 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.logging.Level;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.bukkit.command.RemoteConsoleCommandSender;
 import org.bukkit.plugin.SimplePluginManager;
 import org.spigotmc.CustomTimingsHandler;
 // Spigot end
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class TimingsCommand extends BukkitCommand {
     private static final List<String> TIMINGS_SUBCOMMANDS = ImmutableList.of("report", "reset", "on", "off", "paste"); // Spigot
@@ -220,29 +227,25 @@ public class TimingsCommand extends BukkitCommand {
             }
         }
 
+        
         @Override
-        public void run()
-        {
-            try
-            {
-                HttpURLConnection con = (HttpURLConnection) new URL( "http://paste.ubuntu.com/" ).openConnection();
-                con.setDoOutput( true );
-                con.setRequestMethod( "POST" );
-                con.setInstanceFollowRedirects( false );
-
-                OutputStream out = con.getOutputStream();
-                out.write( "poster=Spigot&syntax=text&content=".getBytes( "UTF-8" ) );
-                out.write( URLEncoder.encode( bout.toString( "UTF-8" ), "UTF-8" ).getBytes( "UTF-8" ) );
-                out.close();
+        public void run() {
+            try {
+                final HttpURLConnection con = (HttpURLConnection)new URL("https://timings.spigotmc.org/paste").openConnection();
+                con.setDoOutput(true);
+                con.setRequestMethod("POST");
+                con.setInstanceFollowRedirects(false);
+                try (final OutputStream out = con.getOutputStream()) {
+                    out.write(this.bout.toByteArray());
+                }
+                final JsonObject location = new Gson().fromJson(new InputStreamReader(con.getInputStream()), JsonObject.class);
                 con.getInputStream().close();
-
-                String location = con.getHeaderField( "Location" );
-                String pasteID = location.substring( "http://paste.ubuntu.com/".length(), location.length() - 1 );
-                sender.sendMessage( ChatColor.GREEN + "View timings results can be viewed at http://aikar.co/timings.php?url=" + pasteID );
-            } catch ( IOException ex )
-            {
-                sender.sendMessage( ChatColor.RED + "Error pasting timings, check your console for more information" );
-                Bukkit.getServer().getLogger().log( Level.WARNING, "Could not paste timings", ex );
+                final String pasteID = location.get("key").getAsString();
+                this.sender.sendMessage(ChatColor.GREEN + "Timings results can be viewed at https://www.spigotmc.org/go/timings?url=" + pasteID);
+            }
+            catch (IOException ex) {
+                this.sender.sendMessage(ChatColor.RED + "Error pasting timings, check your console for more information");
+                Bukkit.getServer().getLogger().log(Level.WARNING, "Could not paste timings", ex);
             }
         }
     }

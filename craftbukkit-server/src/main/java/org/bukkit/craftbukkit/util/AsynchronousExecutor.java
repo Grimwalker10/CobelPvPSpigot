@@ -352,6 +352,6 @@ public final class AsynchronousExecutor<P, T, C, E extends Throwable> {
     }
 
     public void setActiveThreads(final int coreSize) {
-        pool.setMaximumPoolSize(coreSize); // Poweruser
+        pool.setMaximumPoolSize(coreSize); // CobelPvP
     }
 }

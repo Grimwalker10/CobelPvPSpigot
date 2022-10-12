@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger; // PaperSpigot
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.bukkit.Bukkit; // CraftBukkit
+import org.spigotmc.SpigotConfig;
 
 public class Chunk {
 
@@ -29,7 +29,7 @@ public class Chunk {
     public final int locX;
     public final int locZ;
     private boolean w;
-    public Map tileEntities;
+    public Map<ChunkPosition, TileEntity> tileEntities; // CobelPvP - added generic
     public List[] entitySlices;
     public boolean done;
     public boolean lit;
@@ -74,6 +74,63 @@ public class Chunk {
         this.neighbors &= ~(0x1 << (x * 5 + 12 + z));
     }
     // CraftBukkit end
+
+    // CobelPvP start
+    private ChunkMap chunkMap17;
+    private ChunkMap chunkMap18;
+    private int emptySectionBits;
+
+    public ChunkMap getChunkMap(boolean groundUpContinuous, int primaryBitMask, int version) {
+        if (!SpigotConfig.cacheChunkMaps || !groundUpContinuous || (primaryBitMask != 0 && primaryBitMask != '\uffff')) {
+            return PacketPlayOutMapChunk.a(this, groundUpContinuous, primaryBitMask, version);
+        }
+
+        if (primaryBitMask == 0) {
+            ChunkMap chunkMap = new ChunkMap();
+            chunkMap.a = new byte[0];
+            return chunkMap;
+        }
+
+        boolean isDirty = false;
+        for (int i = 0; i < sections.length; ++i) {
+            ChunkSection section = sections[i];
+            if (section == null) {
+                if ((emptySectionBits & (1 << i)) == 0) {
+                    isDirty = true;
+                    emptySectionBits |= (1 << i);
+                }
+            } else {
+                if ((emptySectionBits & (1 << i)) == 1) {
+                    isDirty = true;
+                    emptySectionBits &= ~(1 << i);
+                    section.isDirty = false;
+                } else if (section.isDirty) {
+                    isDirty = true;
+                    section.isDirty = false;
+                }
+            }
+        }
+
+        if (isDirty) {
+            chunkMap17 = null;
+            chunkMap18 = null;
+        }
+
+        if (version < 24) {
+            if (chunkMap17 == null) {
+                chunkMap17 = PacketPlayOutMapChunk.a(this, true, '\uffff', version);
+            }
+
+            return chunkMap17;
+        } else {
+            if (chunkMap18 == null) {
+                chunkMap18 = PacketPlayOutMapChunk.a(this, true, '\uffff', version);
+            }
+
+            return chunkMap18;
+        }
+    }
+    // CobelPvP end
 
     public Chunk(World world, int i, int j) {
         this.sections = new ChunkSection[16];
@@ -243,7 +300,7 @@ public class Chunk {
 
     private void c(boolean flag) {
         this.world.methodProfiler.a("recheckGaps");
-        if (this.areNeighborsLoaded(1)) { // Poweruser
+        if (this.areNeighborsLoaded(1)) { // CobelPvP
             for (int i = 0; i < 16; ++i) {
                 for (int j = 0; j < 16; ++j) {
                     if (this.c[i + j * 16]) {
@@ -251,12 +308,12 @@ public class Chunk {
                         int k = this.b(i, j);
                         int l = this.locX * 16 + i;
                         int i1 = this.locZ * 16 + j;
-                        // Poweruser start - pass that chunks have already been checked if they are loaded
+                        // CobelPvP start - pass that chunks have already been checked if they are loaded
                         int j1 = this.world.g(l - 1, i1, true);
                         int k1 = this.world.g(l + 1, i1, true);
                         int l1 = this.world.g(l, i1 - 1, true);
                         int i2 = this.world.g(l, i1 + 1, true);
-                        // Poweruser end
+                        // CobelPvP end
 
                         if (k1 < j1) {
                             j1 = k1;
@@ -270,13 +327,13 @@ public class Chunk {
                             j1 = i2;
                         }
 
-                        // Poweruser start - pass that chunks have already been checked if they are loaded
+                        // CobelPvP start - pass that chunks have already been checked if they are loaded
                         this.g(l, i1, j1, true);
                         this.g(l - 1, i1, k, true);
                         this.g(l + 1, i1, k, true);
                         this.g(l, i1 - 1, k, true);
                         this.g(l, i1 + 1, k, true);
-                        // Poweruser end
+                        // CobelPvP end
                         if (flag) {
                             this.world.methodProfiler.b();
                             return;
@@ -292,13 +349,13 @@ public class Chunk {
     }
 
     private void g(int i, int j, int k) {
-    // Poweruser start
+    // CobelPvP start
         this.g(i, j, k, false);
     }
 
     private void g(int i, int j, int k, boolean chunksHaveAlreadyBeenChecked) {
         int l = this.world.getHighestBlockYAt(i, j, chunksHaveAlreadyBeenChecked);
-    // Poweruser end
+    // CobelPvP end
 
         if (l > k) {
             this.c(i, j, k, l + 1);
@@ -308,13 +365,13 @@ public class Chunk {
     }
 
     private void c(int i, int j, int k, int l) {
-        // Poweruser start
+        // CobelPvP start
         if (l > k) {
             Chunk chunk = this.world.getChunkIfLoaded(i >> 4, j >> 4);
             if(chunk == null || !chunk.areNeighborsLoaded(1)) {
                 return;
             }
-        // Poweruser end
+        // CobelPvP end
             for (int i1 = k; i1 < l; ++i1) {
                 this.world.updateLight(EnumSkyBlock.SKY, i, i1, j); // PaperSpigot - Asynchronous lighting updates
             }
@@ -931,7 +988,7 @@ public class Chunk {
             if (this.o && this.world.getTime() != this.lastSaved || this.n) {
                 return true;
             }
-        // Poweruser start
+        // CobelPvP start
         } else if (this.n && this.world.getAutoSaveWorldData().getLastAutosaveTimeStamp() >= this.lastSaved) {
             return true;
         } else if (this.o && this.world.getTime() >= this.lastSaved + MinecraftServer.getServer().autosavePeriod) {
@@ -939,7 +996,7 @@ public class Chunk {
         } else {
             return false;
         }
-        // Poweruser end
+        // CobelPvP end
         return this.n;
     }
 

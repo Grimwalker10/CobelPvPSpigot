@@ -836,6 +836,14 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
     public void hidePlayer(Player player);
 
     /**
+     * Hides a player from this player
+     *
+     * @param player Player to hide
+     * @param hideFromTab if true, hides the player from the tablist aswell
+     */
+    public void hidePlayer(Player player, boolean hideFromTab);
+
+    /**
      * Allows this player to see a player that was previously hidden
      *
      * @param player Player to show
@@ -850,6 +858,15 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
      *     player
      */
     public boolean canSee(Player player);
+
+    /**
+     * Checks to see if a player has been hidden from the tablist for this player
+     *
+     * @param player Player to check
+     * @return True if the provided player is not being hidden from this
+     *     player's tablist
+     */
+    public boolean canSeeFromTab(Player player);
 
     /**
      * Checks to see if this player is currently standing on a block. This

@@ -3,7 +3,6 @@ package net.minecraft.server;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -12,21 +11,21 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 
 // PaperSpigot start
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.bukkit.craftbukkit.CraftChunk;
+
+import com.cobelpvp.generator.GeneratorConfig;
 // PaperSpigot end
 
 // CraftBukkit start
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.util.LongHashSet;
 import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.generator.ChunkGenerator;
+
+import com.google.common.base.Function;
+
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -37,13 +36,14 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 // CraftBukkit end
 
-// Poweruser start
-import net.frozenorb.LightingUpdater;
-import net.frozenorb.WeakChunkCache;
-import net.frozenorb.ThreadingManager;
-import net.frozenorb.ThreadingManager.TaskQueueWorker;
-import net.frozenorb.autosave.AutoSaveWorldData;
-// Poweruser end
+// CobelPvP start
+import net.minecraft.optimizations.LightingUpdater;
+import net.minecraft.optimizations.PlayerMap;
+import net.minecraft.optimizations.WeakChunkCache;
+import net.minecraft.optimizations.ThreadingManager;
+import net.minecraft.optimizations.ThreadingManager.TaskQueueWorker;
+import com.cobelpvp.autosave.AutoSaveWorldData;
+// CobelPvP end
 
 public abstract class World implements IBlockAccess {
 
@@ -131,11 +131,13 @@ public abstract class World implements IBlockAccess {
     public static boolean haveWeSilencedAPhysicsCrash;
     public static String blockLocation;
     public List<TileEntity> triggerHoppersList = new ArrayList<TileEntity>(); // Spigot, When altHopperTicking, tile entities being added go through here.
-    // Poweruser start
+    // CobelPvP start
     private LightingUpdater lightingUpdater = new LightingUpdater();
     private TaskQueueWorker lightingQueue = ThreadingManager.createTaskQueue();
-    // Poweruser end
+    // CobelPvP end
     public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<Explosion.CacheKey, Float>(); // PaperSpigot - Optimize explosions
+
+    public double hardDespawnDistance = -1D; // CobelPvP
 
     public static long chunkToKey(int x, int z)
     {
@@ -167,7 +169,7 @@ public abstract class World implements IBlockAccess {
         }
         triggerHoppersList.clear();
     }
-
+    
     // Helper method for altHopperTicking. Updates chests at the specified location,
     // accounting for double chests. Updating the chest will update adjacent hoppers.
     public void updateChestAndHoppers(int a, int b, int c) {
@@ -190,6 +192,10 @@ public abstract class World implements IBlockAccess {
         }
     }
     // Spigot end
+
+    // CobelPvP start
+    public final PlayerMap playerMap = new PlayerMap();
+    // CobelPvP end
 
     public BiomeBase getBiome(int i, int j) {
         if (this.isLoaded(i, 0, j)) {
@@ -214,14 +220,14 @@ public abstract class World implements IBlockAccess {
     }
 
 
-    // Poweruser start
+    // CobelPvP start
     public ChunkProviderServer chunkProviderServer; // moved here from WorldServer
     private final AutoSaveWorldData autoSaveWorldData;
 
     public AutoSaveWorldData getAutoSaveWorldData() {
         return this.autoSaveWorldData;
     }
-    // Poweruser end
+    // CobelPvP end
 
     // CraftBukkit start
     private final CraftWorld world;
@@ -245,10 +251,13 @@ public abstract class World implements IBlockAccess {
         return ((ChunkProviderServer) this.chunkProvider).getChunkIfLoaded(x, z);
     }
 
+    public final GeneratorConfig generatorConfig;// CobelPvP
+
     // Changed signature - added gen and env
     public World(IDataManager idatamanager, String s, WorldSettings worldsettings, WorldProvider worldprovider, MethodProfiler methodprofiler, ChunkGenerator gen, org.bukkit.World.Environment env) {
         this.spigotConfig = new org.spigotmc.SpigotWorldConfig( s ); // Spigot
         this.paperSpigotConfig = new org.github.paperspigot.PaperSpigotWorldConfig( s ); // PaperSpigot
+        this.generatorConfig = new GeneratorConfig(s); // CobelPvP
         this.generator = gen;
         this.world = new CraftWorld((WorldServer) this, gen, env);
         this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
@@ -320,12 +329,12 @@ public abstract class World implements IBlockAccess {
 
         this.getServer().addWorld(this.world); // CraftBukkit
 
-        // MineHQ - Set spawn flags based on mobsEnabled.
+        // CobelPvP - Set spawn flags based on mobsEnabled.
         if (!spigotConfig.mobsEnabled) {
             this.world.setSpawnFlags(false, false);
         }
 
-        this.autoSaveWorldData = new AutoSaveWorldData(this); // Poweruser
+        this.autoSaveWorldData = new AutoSaveWorldData(this); // CobelPvP
     }
 
     protected abstract IChunkProvider j();
@@ -810,15 +819,52 @@ public abstract class World implements IBlockAccess {
         }
     }
 
+    // CobelPvP start
+    public boolean isLightLevel(int i, int j, int k, int level) {
+        if (i >= -30000000 && k >= -30000000 && i < 30000000 && k < 30000000) {
+            if (this.getType(i, j, k).n()) {
+                if (this.b(i, j + 1, k, false) >= level) {
+                    return true;
+                }
+                if (this.b(i + 1, j, k, false) >= level) {
+                    return true;
+                }
+                if (this.b(i - 1, j, k, false) >= level) {
+                    return true;
+                }
+                if (this.b(i, j, k + 1, false) >= level) {
+                    return true;
+                }
+                if (this.b(i, j, k - 1, false) >= level) {
+                    return true;
+                }
+                return false;
+            } else {
+                if (j >= 256) {
+                    j = 255;
+                }
+
+                Chunk chunk = this.getChunkAt(i >> 4, k >> 4);
+
+                i &= 15;
+                k &= 15;
+                return chunk.b(i, j, k, this.j) >= level;
+            }
+        } else {
+            return true;
+        }
+    }
+    // CobelPvP end
+
     public int getHighestBlockYAt(int i, int j) {
-    // Poweruser start
+    // CobelPvP start
         return this.getHighestBlockYAt(i, j, false);
     }
 
     public int getHighestBlockYAt(int i, int j, boolean chunksHaveAlreadyBeenChecked) {
-    // Poweruser end
+    // CobelPvP end
         if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
-            if (!chunksHaveAlreadyBeenChecked && !this.isChunkLoaded(i >> 4, j >> 4)) { // Poweruser
+            if (!chunksHaveAlreadyBeenChecked && !this.isChunkLoaded(i >> 4, j >> 4)) { // CobelPvP
                 return 0;
             } else {
                 Chunk chunk = this.getChunkAt(i >> 4, j >> 4);
@@ -831,14 +877,14 @@ public abstract class World implements IBlockAccess {
     }
 
     public int g(int i, int j) {
-    // Poweruser start
+    // CobelPvP start
         return this.g(i, j, false);
     }
 
     public int g(int i, int j, boolean chunksHaveAlreadyBeenChecked) {
-    // Poweruser end
+    // CobelPvP end
         if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
-            if (!chunksHaveAlreadyBeenChecked && !this.isChunkLoaded(i >> 4, j >> 4)) { // Poweruser
+            if (!chunksHaveAlreadyBeenChecked && !this.isChunkLoaded(i >> 4, j >> 4)) { // CobelPvP
                 return 0;
             } else {
                 Chunk chunk = this.getChunkAt(i >> 4, j >> 4);
@@ -915,20 +961,20 @@ public abstract class World implements IBlockAccess {
         return this.rayTrace(vec3d, vec3d1, flag, false, false);
     }
 
-    public MovingObjectPosition rayTrace(Vec3D vec3d, Vec3D vec3d1, boolean flag, boolean flag1, boolean flag2) {
-        if (!Double.isNaN(vec3d.a) && !Double.isNaN(vec3d.b) && !Double.isNaN(vec3d.c)) {
-            if (!Double.isNaN(vec3d1.a) && !Double.isNaN(vec3d1.b) && !Double.isNaN(vec3d1.c)) {
-                int i = MathHelper.floor(vec3d1.a);
-                int j = MathHelper.floor(vec3d1.b);
-                int k = MathHelper.floor(vec3d1.c);
-                int l = MathHelper.floor(vec3d.a);
-                int i1 = MathHelper.floor(vec3d.b);
-                int j1 = MathHelper.floor(vec3d.c);
+    public MovingObjectPosition rayTrace(Vec3D position, Vec3D motion, boolean flag, boolean flag1, boolean flag2) {
+        if (!Double.isNaN(position.a) && !Double.isNaN(position.b) && !Double.isNaN(position.c)) {
+            if (!Double.isNaN(motion.a) && !Double.isNaN(motion.b) && !Double.isNaN(motion.c)) {
+                int i = MathHelper.floor(motion.a);
+                int j = MathHelper.floor(motion.b);
+                int k = MathHelper.floor(motion.c);
+                int l = MathHelper.floor(position.a);
+                int i1 = MathHelper.floor(position.b);
+                int j1 = MathHelper.floor(position.c);
                 Block block = this.getType(l, i1, j1);
                 int k1 = this.getData(l, i1, j1);
 
                 if ((!flag1 || block.a(this, l, i1, j1) != null) && block.a(k1, flag)) {
-                    MovingObjectPosition movingobjectposition = block.a(this, l, i1, j1, vec3d, vec3d1);
+                    MovingObjectPosition movingobjectposition = block.a(this, l, i1, j1, position, motion);
 
                     if (movingobjectposition != null) {
                         return movingobjectposition;
@@ -940,7 +986,7 @@ public abstract class World implements IBlockAccess {
                 k1 = 200;
 
                 while (k1-- >= 0) {
-                    if (Double.isNaN(vec3d.a) || Double.isNaN(vec3d.b) || Double.isNaN(vec3d.c)) {
+                    if (Double.isNaN(position.a) || Double.isNaN(position.b) || Double.isNaN(position.c)) {
                         return null;
                     }
 
@@ -982,20 +1028,20 @@ public abstract class World implements IBlockAccess {
                     double d3 = 999.0D;
                     double d4 = 999.0D;
                     double d5 = 999.0D;
-                    double d6 = vec3d1.a - vec3d.a;
-                    double d7 = vec3d1.b - vec3d.b;
-                    double d8 = vec3d1.c - vec3d.c;
+                    double d6 = motion.a - position.a;
+                    double d7 = motion.b - position.b;
+                    double d8 = motion.c - position.c;
 
                     if (flag3) {
-                        d3 = (d0 - vec3d.a) / d6;
+                        d3 = (d0 - position.a) / d6;
                     }
 
                     if (flag4) {
-                        d4 = (d1 - vec3d.b) / d7;
+                        d4 = (d1 - position.b) / d7;
                     }
 
                     if (flag5) {
-                        d5 = (d2 - vec3d.c) / d8;
+                        d5 = (d2 - position.c) / d8;
                     }
 
                     boolean flag6 = false;
@@ -1008,9 +1054,9 @@ public abstract class World implements IBlockAccess {
                             b0 = 5;
                         }
 
-                        vec3d.a = d0;
-                        vec3d.b += d7 * d3;
-                        vec3d.c += d8 * d3;
+                        position.a = d0;
+                        position.b += d7 * d3;
+                        position.c += d8 * d3;
                     } else if (d4 < d5) {
                         if (j > i1) {
                             b0 = 0;
@@ -1018,9 +1064,9 @@ public abstract class World implements IBlockAccess {
                             b0 = 1;
                         }
 
-                        vec3d.a += d6 * d4;
-                        vec3d.b = d1;
-                        vec3d.c += d8 * d4;
+                        position.a += d6 * d4;
+                        position.b = d1;
+                        position.c += d8 * d4;
                     } else {
                         if (k > j1) {
                             b0 = 2;
@@ -1028,26 +1074,26 @@ public abstract class World implements IBlockAccess {
                             b0 = 3;
                         }
 
-                        vec3d.a += d6 * d5;
-                        vec3d.b += d7 * d5;
-                        vec3d.c = d2;
+                        position.a += d6 * d5;
+                        position.b += d7 * d5;
+                        position.c = d2;
                     }
 
-                    Vec3D vec3d2 = Vec3D.a(vec3d.a, vec3d.b, vec3d.c);
+                    Vec3D vec3d2 = Vec3D.a(position.a, position.b, position.c);
 
-                    l = (int) (vec3d2.a = (double) MathHelper.floor(vec3d.a));
+                    l = (int) (vec3d2.a = (double) MathHelper.floor(position.a));
                     if (b0 == 5) {
                         --l;
                         ++vec3d2.a;
                     }
 
-                    i1 = (int) (vec3d2.b = (double) MathHelper.floor(vec3d.b));
+                    i1 = (int) (vec3d2.b = (double) MathHelper.floor(position.b));
                     if (b0 == 1) {
                         --i1;
                         ++vec3d2.b;
                     }
 
-                    j1 = (int) (vec3d2.c = (double) MathHelper.floor(vec3d.c));
+                    j1 = (int) (vec3d2.c = (double) MathHelper.floor(position.c));
                     if (b0 == 3) {
                         --j1;
                         ++vec3d2.c;
@@ -1058,13 +1104,13 @@ public abstract class World implements IBlockAccess {
 
                     if (!flag1 || block1.a(this, l, i1, j1) != null) {
                         if (block1.a(l1, flag)) {
-                            MovingObjectPosition movingobjectposition2 = block1.a(this, l, i1, j1, vec3d, vec3d1);
+                            MovingObjectPosition movingobjectposition2 = block1.a(this, l, i1, j1, position, motion);
 
                             if (movingobjectposition2 != null) {
                                 return movingobjectposition2;
                             }
                         } else {
-                            movingobjectposition1 = new MovingObjectPosition(l, i1, j1, b0, vec3d, false);
+                            movingobjectposition1 = new MovingObjectPosition(l, i1, j1, b0, position, false);
                         }
                     }
                 }
@@ -1090,7 +1136,36 @@ public abstract class World implements IBlockAccess {
         }
     }
 
-    public void makeSound(double d0, double d1, double d2, String s, float f, float f1) {
+    // CobelPvP start - hack to silence sounds from cancelled block place
+    private boolean interceptSounds = false;
+    private final List<Runnable> interceptedSounds = new ArrayList<Runnable>();
+    public void interceptSounds() {
+        interceptSounds = true;
+    }
+    public void sendInterceptedSounds() {
+        for (Runnable r : interceptedSounds) {
+            r.run();
+        }
+        interceptedSounds.clear();
+        interceptSounds = false;
+    }
+    public void clearInterceptedSounds() {
+        interceptedSounds.clear();
+        interceptSounds = false;
+    }
+    public void makeSound(final double d0, final double d1, final double d2, final String s, final float f, final float f1) {
+        if (interceptSounds && org.bukkit.Bukkit.isPrimaryThread()) {
+            interceptedSounds.add(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < World.this.u.size(); ++i) {
+                        ((IWorldAccess) World.this.u.get(i)).a(s, d0, d1, d2, f, f1);
+                    }
+                }
+            });
+            return;
+        }
+        // CobelPvP end
         for (int i = 0; i < this.u.size(); ++i) {
             ((IWorldAccess) this.u.get(i)).a(s, d0, d1, d2, f, f1);
         }
@@ -1185,6 +1260,7 @@ public abstract class World implements IBlockAccess {
                 EntityHuman entityhuman = (EntityHuman) entity;
 
                 this.players.add(entityhuman);
+                this.playerMap.add((EntityPlayer) entityhuman); // CobelPvP 
                 this.everyoneSleeping();
                 this.b(entity);
             }
@@ -1224,6 +1300,7 @@ public abstract class World implements IBlockAccess {
         entity.die();
         if (entity instanceof EntityHuman) {
             this.players.remove(entity);
+            this.playerMap.remove((EntityPlayer) entity); // CobelPvP
             // Spigot start
             for ( Object o : worldMaps.c )
             {
@@ -1250,6 +1327,7 @@ public abstract class World implements IBlockAccess {
         entity.die();
         if (entity instanceof EntityHuman) {
             this.players.remove(entity);
+            this.playerMap.remove((EntityPlayer) entity); // CobelPvP
             this.everyoneSleeping();
         }
         // Spigot start
@@ -1314,7 +1392,7 @@ public abstract class World implements IBlockAccess {
                         for ( int y = ystart; y < l; y++ )
                         {
                             Block block = chunk.getType(x - cx, y, z - cz );
-                            if ( block != null )
+                            if ( block != null && block != Blocks.AIR) // CobelPvP
                             {
                                 // PaperSpigot start - FallingBlocks and TNT collide with specific non-collidable blocks
                                 if (entity.world.paperSpigotConfig.fallingBlocksCollideWithSigns && (entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock) &&
@@ -1373,7 +1451,7 @@ public abstract class World implements IBlockAccess {
                             block = Blocks.BEDROCK;
                         }
 
-                        block.a(this, k1, i2, l1, axisalignedbb, this.L, (Entity) null);
+                        if (block != Blocks.AIR) block.a(this, k1, i2, l1, axisalignedbb, this.L, (Entity) null);
                     }
                 }
             }
@@ -1929,12 +2007,12 @@ public abstract class World implements IBlockAccess {
     }
 
     public boolean a(AxisAlignedBB axisalignedbb, Material material) {
-    // Poweruser start
+    // CobelPvP start
         return this.a(axisalignedbb, material, this);
     }
 
     public boolean a(AxisAlignedBB axisalignedbb, Material material, IBlockAccess iblockaccess) {
-    // Poweruser end
+    // CobelPvP end
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
         int k = MathHelper.floor(axisalignedbb.b);
@@ -1945,7 +2023,7 @@ public abstract class World implements IBlockAccess {
         for (int k1 = i; k1 < j; ++k1) {
             for (int l1 = k; l1 < l; ++l1) {
                 for (int i2 = i1; i2 < j1; ++i2) {
-                    if (iblockaccess.getType(k1, l1, i2).getMaterial() == material) { // Poweruser
+                    if (iblockaccess.getType(k1, l1, i2).getMaterial() == material) { // CobelPvP
                         return true;
                     }
                 }
@@ -1954,6 +2032,29 @@ public abstract class World implements IBlockAccess {
 
         return false;
     }
+
+    // Alfie start
+    public boolean boundingBoxContainsMaterials(AxisAlignedBB boundingBox, Set<Block> matching) {
+        int i = MathHelper.floor(boundingBox.a);
+        int j = MathHelper.floor(boundingBox.d + 1.0D);
+        int k = MathHelper.floor(boundingBox.b);
+        int l = MathHelper.floor(boundingBox.e + 1.0D);
+        int i1 = MathHelper.floor(boundingBox.c);
+        int j1 = MathHelper.floor(boundingBox.f + 1.0D);
+
+        for (int k1 = i; k1 < j; ++k1) {
+            for (int l1 = k; l1 < l; ++l1) {
+                for (int i2 = i1; i2 < j1; ++i2) {
+                    if (matching.contains(getType(k1, l1, i2))) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+    // Alfie end
 
     public boolean b(AxisAlignedBB axisalignedbb, Material material) {
         int i = MathHelper.floor(axisalignedbb.a);
@@ -2307,7 +2408,7 @@ public abstract class World implements IBlockAccess {
         {
             return;
         }
-        this.timings.doTickTiles_buildList.startTiming(); // Poweruser
+        this.timings.doTickTiles_buildList.startTiming(); // CobelPvP
         // Keep chunks with growth inside of the optimal chunk range
         int chunksPerPlayer = Math.min( 200, Math.max( 1, (int) ( ( ( optimalChunks - players.size() ) / (double) players.size() ) + 0.5 ) ) );
         int randRange = 3 + chunksPerPlayer / 30;
@@ -2317,7 +2418,7 @@ public abstract class World implements IBlockAccess {
         this.growthOdds = this.modifiedOdds = Math.max( 35, Math.min( 100, ( ( chunksPerPlayer + 1 ) * 100F ) / 15F ) );
         // Spigot end
 
-        Chunk chunkObj = null; // Poweruser
+        Chunk chunkObj = null; // CobelPvP
 
         for (i = 0; i < this.players.size(); ++i) {
             entityhuman = (EntityHuman) this.players.get(i);
@@ -2336,7 +2437,7 @@ public abstract class World implements IBlockAccess {
                 int dx = ( random.nextBoolean() ? 1 : -1 ) * random.nextInt( randRange );
                 int dz = ( random.nextBoolean() ? 1 : -1 ) * random.nextInt( randRange );
                 long hash = chunkToKey( dx + j, dz + k );
-                if ( !chunkTickList.contains( hash ) && ((chunkObj = this.getChunkIfLoaded(dx + j, dz + k)) != null) && chunkObj.areNeighborsLoaded(1) ) // Poweruser
+                if ( !chunkTickList.contains( hash ) && ((chunkObj = this.getChunkIfLoaded(dx + j, dz + k)) != null) && chunkObj.areNeighborsLoaded(1) ) // CobelPvP
                 {
                     chunkTickList.put( hash, (short) -1 ); // no players
                 }
@@ -2360,7 +2461,7 @@ public abstract class World implements IBlockAccess {
         }
 
         this.methodProfiler.b();
-        this.timings.doTickTiles_buildList.stopTiming(); // Poweruser
+        this.timings.doTickTiles_buildList.stopTiming(); // CobelPvP
     }
 
     protected abstract int p();
@@ -2645,7 +2746,7 @@ public abstract class World implements IBlockAccess {
     // PaperSpigot start - Asynchronous lighting updates
     public boolean updateLight(final EnumSkyBlock enumskyblock, final int x, final int y, final int z) {
         final Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
-        if (chunk == null || !chunk.areNeighborsLoaded(2)) { // Poweruser - radius 2
+        if (chunk == null || !chunk.areNeighborsLoaded(2)) { // CobelPvP - radius 2
             return false;
         }
 
@@ -2657,14 +2758,14 @@ public abstract class World implements IBlockAccess {
         chunk.lightUpdateTime = chunk.world.getTime();
 
         final List<Chunk> neighbors = new ArrayList<Chunk>();
-        // Poweruser start
+        // CobelPvP start
         int chunkx = chunk.locX;
         int chunkz = chunk.locZ;
         int radius = 2;
         for (int cx = chunkx - radius; cx <= chunkx + radius; ++cx) {
             for (int cz = chunkz - radius; cz <= chunkz + radius; ++cz) {
                 if(cx != chunkx || cz != chunkz) {
-        // Poweruser end
+        // CobelPvP end
                     Chunk neighbor = this.getChunkIfLoaded(cx, cz);
                     if (neighbor != null) {
                         neighbor.pendingLightUpdates.incrementAndGet();
@@ -2679,7 +2780,7 @@ public abstract class World implements IBlockAccess {
             return this.c(enumskyblock, x, y, z, chunk, neighbors);
         }
 
-        // Poweruser start
+        // CobelPvP start
         this.lightingQueue.queueTask(new Runnable() {
             @Override
             public void run() {
@@ -2690,7 +2791,7 @@ public abstract class World implements IBlockAccess {
                 }
             }
         });
-        // Poweruser end
+        // CobelPvP end
         return true;
     }
     // PaperSpigot end
@@ -2848,7 +2949,7 @@ public abstract class World implements IBlockAccess {
         int l1 = i + l;
         int i2 = j + l;
         int j2 = k + l;
-        WeakChunkCache chunkcache = new WeakChunkCache(this, i1, j1, k1, l1, i2, j2, 0); // Poweruser
+        WeakChunkCache chunkcache = new WeakChunkCache(this, i1, j1, k1, l1, i2, j2, 0); // CobelPvP
         PathEntity pathentity = (new Pathfinder(chunkcache, flag, flag1, flag2, flag3)).a(entity, entity1, f);
 
         this.methodProfiler.b();
@@ -2867,7 +2968,7 @@ public abstract class World implements IBlockAccess {
         int k2 = l + k1;
         int l2 = i1 + k1;
         int i3 = j1 + k1;
-        WeakChunkCache chunkcache = new WeakChunkCache(this, l1, i2, j2, k2, l2, i3, 0); // Poweruser
+        WeakChunkCache chunkcache = new WeakChunkCache(this, l1, i2, j2, k2, l2, i3, 0); // CobelPvP
         PathEntity pathentity = (new Pathfinder(chunkcache, flag, flag1, flag2, flag3)).a(entity, i, j, k, f);
 
         this.methodProfiler.b();
@@ -2945,6 +3046,11 @@ public abstract class World implements IBlockAccess {
     }
 
     public EntityHuman findNearbyPlayer(double d0, double d1, double d2, double d3) {
+        // CobelPvP start
+        if (0 <= d3 && d3 <= 64) {
+            return this.playerMap.getNearestPlayer(d0, d1, d2, d3);
+        }
+        // CobelPvP end
         double d4 = -1.0D;
         EntityHuman entityhuman = null;
 
@@ -2970,7 +3076,32 @@ public abstract class World implements IBlockAccess {
         return this.findNearbyVulnerablePlayer(entity.locX, entity.locY, entity.locZ, d0);
     }
 
+    // CobelPvP start
+    private static final Function<EntityHuman, Double> invisibilityFunction = new Function<EntityHuman, Double>() {
+        @Override
+        public Double apply(EntityHuman entityHuman) {
+
+            if (entityHuman.isInvisible()) {
+                float f = entityHuman.bE();
+
+                if (f < 0.1F) {
+                    f = 0.1F;
+                }
+
+                return (double) (0.7F * f);
+            }
+
+            return null;
+        }
+    };
+    // CobelPvP end
+
     public EntityHuman findNearbyVulnerablePlayer(double d0, double d1, double d2, double d3) {
+        // CobelPvP start
+        if (0 <= d3 && d3 <= 64.0D) {
+            return this.playerMap.getNearestAttackablePlayer(d0, d1, d2, d3, d3, invisibilityFunction);
+        }
+        // CobelPvP end
         double d4 = -1.0D;
         EntityHuman entityhuman = null;
 
@@ -3016,6 +3147,11 @@ public abstract class World implements IBlockAccess {
     }
 
     public EntityHuman findNearbyPlayerWhoAffectsSpawning(double x, double y, double z, double radius) {
+        // CobelPvP start
+        if (0 <= radius && radius <= 64.0) {
+            return this.playerMap.getNearbyPlayer(x, y, z, radius, true);
+        }
+        // CobelPvP end
         double nearestRadius = - 1.0D;
         EntityHuman entityHuman = null;
 
@@ -3090,11 +3226,11 @@ public abstract class World implements IBlockAccess {
         this.worldData.setSpawn(i, j, k);
     }
 
-    // Poweruser start
+    // CobelPvP start
     public void setSpawn(int i, int j, int k, float yaw, float pitch) {
         this.worldData.setSpawn(i, j, k, yaw, pitch);
     }
-    // Poweruser end
+    // CobelPvP end
 
     public boolean a(EntityHuman entityhuman, int i, int j, int k) {
         return true;
@@ -3315,4 +3451,32 @@ public abstract class World implements IBlockAccess {
             iworldaccess.b();
         }
     }
+
+    // CobelPvP start - chunk unload queue slowness
+    public long obtainLock, pendingSavesPut, fileIOThreadAddition, writeStartNBT, writeSections, writeBiomes, writeEntities, writeTileEntities, writeTileTicks;
+    public void printTimings() {
+        MinecraftServer.getLogger().warn("Obtain lock: " + obtainLock);
+        MinecraftServer.getLogger().warn("Pending saves put: " + pendingSavesPut);
+        MinecraftServer.getLogger().warn("File IO thread addition: " + fileIOThreadAddition);
+        MinecraftServer.getLogger().warn("Write start NBT: " + writeStartNBT);
+        MinecraftServer.getLogger().warn("Write sections: " + writeSections);
+        MinecraftServer.getLogger().warn("Write biomes: " + writeBiomes);
+        MinecraftServer.getLogger().warn("Write entities: " + writeEntities);
+        MinecraftServer.getLogger().warn("Write tile entities: " + writeTileEntities);
+        MinecraftServer.getLogger().warn("Write tile ticks: " + writeTileTicks);
+        
+    }
+
+    public void clearTimings() {
+        this.obtainLock = 0;
+        this.pendingSavesPut = 0;
+        this.fileIOThreadAddition = 0;
+        this.writeStartNBT = 0;
+        this.writeSections = 0;
+        this.writeBiomes = 0;
+        this.writeEntities = 0;
+        this.writeTileEntities = 0;
+        this.writeTileTicks = 0;
+    }
+    // CobelPvP end
 }

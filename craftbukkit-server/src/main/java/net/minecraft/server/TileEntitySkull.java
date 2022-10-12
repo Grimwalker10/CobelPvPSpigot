@@ -10,15 +10,13 @@ import net.minecraft.util.com.mojang.authlib.properties.Property;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.util.com.mojang.authlib.Agent;
 // Spigot end
 
-import net.frozenorb.ThreadingManager; // Poweruser
+import net.minecraft.optimizations.ThreadingManager; // CobelPvP
 
 public class TileEntitySkull extends TileEntity {
 
@@ -119,7 +117,7 @@ public class TileEntitySkull extends TileEntity {
                 // Spigot start - Handle async
                 final String name = this.j.getName();
                 setSkullType( 0 ); // Work around a client bug
-                ThreadingManager.queueHeadConversion(new Runnable() { // Poweruser
+                ThreadingManager.queueHeadConversion(new Runnable() { // CobelPvP
                     @Override
                     public void run() {
 

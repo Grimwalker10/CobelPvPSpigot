@@ -19,8 +19,8 @@ public class PlayerChunkMap {
     private final WorldServer world;
     private final List managedPlayers = new ArrayList();
     private final LongHashMap d = new LongHashMap();
-    private final Queue e = new java.util.concurrent.ConcurrentLinkedQueue(); // CraftBukkit ArrayList -> ConcurrentLinkedQueue
-    private final Queue f = new java.util.concurrent.ConcurrentLinkedQueue(); // CraftBukkit ArrayList -> ConcurrentLinkedQueue
+    private final List e = new ArrayList(); // Kohi - use arraylist as in vanilla
+    // private final Queue f = new java.util.concurrent.ConcurrentLinkedQueue(); // Kohi - this is pointless
     private int g;
     private long h;
     private final int[][] i = new int[][] { { 1, 0}, { 0, 1}, { -1, 0}, { 0, -1}};
@@ -38,8 +38,8 @@ public class PlayerChunkMap {
     public void flush() {
         long i = this.world.getTime();
         int j;
-        PlayerChunk playerchunk;
 
+        /* Kohi - removed PlayerChunkMap.f
         if (i - this.h > 8000L) {
             this.h = i;
 
@@ -60,8 +60,17 @@ public class PlayerChunkMap {
                 // CraftBukkit end
             }
         }
+        */
 
-        // this.e.clear(); // CraftBukkit - Removals are already covered
+        // Kohi - we changed this back to arraylist
+        for (Object o : this.e) {
+            PlayerChunk playerchunk = (PlayerChunk) o;
+            playerchunk.b();
+        }
+
+        this.e.clear();
+        // CobelPvP start - chunk GC handles this
+        /*
         if (this.managedPlayers.isEmpty()) {
             if (!wasNotEmpty) return; // CraftBukkit - Only do unload when we go from non-empty to empty
             WorldProvider worldprovider = this.world.worldProvider;
@@ -75,6 +84,9 @@ public class PlayerChunkMap {
             wasNotEmpty = true;
         }
         // CraftBukkit end
+        */
+        // CobelPvP end
+         
     }
 
     public boolean a(int i, int j) {
@@ -90,7 +102,7 @@ public class PlayerChunkMap {
         if (playerchunk == null && flag) {
             playerchunk = new PlayerChunk(this, i, j);
             this.d.put(k, playerchunk);
-            this.f.add(playerchunk);
+            // this.f.add(playerchunk); Kohi
         }
 
         return playerchunk;
@@ -106,6 +118,7 @@ public class PlayerChunkMap {
     // CraftBukkit end
 
     public void flagDirty(int i, int j, int k) {
+        org.spigotmc.AsyncCatcher.catchOp("PlayerChunkMap.flagDirty");
         int l = i >> 4;
         int i1 = k >> 4;
         PlayerChunk playerchunk = this.a(l, i1, false);
@@ -116,8 +129,10 @@ public class PlayerChunkMap {
     }
 
     public void addPlayer(EntityPlayer entityplayer) {
-        int i = (int) entityplayer.locX >> 4;
-        int j = (int) entityplayer.locZ >> 4;
+        // CobelPvP start
+        int i = MathHelper.floor(entityplayer.locX) >> 4;
+        int j = MathHelper.floor(entityplayer.locZ) >> 4;
+        // CobelPvP end
 
         entityplayer.d = entityplayer.locX;
         entityplayer.e = entityplayer.locZ;
@@ -144,8 +159,10 @@ public class PlayerChunkMap {
         ArrayList arraylist = new ArrayList(entityplayer.chunkCoordIntPairQueue);
         int i = 0;
         int j = this.g;
-        int k = (int) entityplayer.locX >> 4;
-        int l = (int) entityplayer.locZ >> 4;
+        // CobelPvP start
+        int k = MathHelper.floor(entityplayer.locX) >> 4;
+        int l = MathHelper.floor(entityplayer.locZ) >> 4;
+        // CobelPvP end
         int i1 = 0;
         int j1 = 0;
         ChunkCoordIntPair chunkcoordintpair = PlayerChunk.a(this.a(k, l, true));
@@ -185,8 +202,10 @@ public class PlayerChunkMap {
     }
 
     public void removePlayer(EntityPlayer entityplayer) {
-        int i = (int) entityplayer.d >> 4;
-        int j = (int) entityplayer.e >> 4;
+        // CobelPvP start
+        int i = MathHelper.floor(entityplayer.d) >> 4;
+        int j = MathHelper.floor(entityplayer.e) >> 4;
+        // CobelPvP end
 
         for (int k = i - this.g; k <= i + this.g; ++k) {
             for (int l = j - this.g; l <= j + this.g; ++l) {
@@ -197,6 +216,7 @@ public class PlayerChunkMap {
                 }
             }
         }
+        entityplayer.paddingChunks.clear(); // CobelPvP
 
         this.managedPlayers.remove(entityplayer);
     }
@@ -209,21 +229,37 @@ public class PlayerChunkMap {
     }
 
     public void movePlayer(EntityPlayer entityplayer) {
-        int i = (int) entityplayer.locX >> 4;
-        int j = (int) entityplayer.locZ >> 4;
+        // CobelPvP start
+        int i = MathHelper.floor(entityplayer.locX) >> 4;
+        int j = MathHelper.floor(entityplayer.locZ) >> 4;
+        // CobelPvP end
         double d0 = entityplayer.d - entityplayer.locX;
         double d1 = entityplayer.e - entityplayer.locZ;
         double d2 = d0 * d0 + d1 * d1;
 
         if (d2 >= 64.0D) {
-            int k = (int) entityplayer.d >> 4;
-            int l = (int) entityplayer.e >> 4;
+            // CobelPvP start
+            int k = MathHelper.floor(entityplayer.d) >> 4;
+            int l = MathHelper.floor(entityplayer.e) >> 4;
+            // CobelPvP end
             int i1 = this.g;
             int j1 = i - k;
             int k1 = j - l;
             List<ChunkCoordIntPair> chunksToLoad = new LinkedList<ChunkCoordIntPair>(); // CraftBukkit
 
             if (j1 != 0 || k1 != 0) {
+                // CobelPvP start - unload padding chunks when players move away from them
+                Iterator<ChunkCoordIntPair> iter = entityplayer.paddingChunks.iterator();
+                while (iter.hasNext()) {
+                    ChunkCoordIntPair chunk = iter.next();
+                    int xDist = chunk.x - k;
+                    int zDist = chunk.z - l;
+                    if (xDist > i1 || zDist > i1 || xDist < -i1 || zDist < -i1) {
+                        entityplayer.playerConnection.sendPacket(PacketPlayOutMapChunk.unload(chunk.x, chunk.z));
+                        iter.remove();
+                    }
+                }
+                // CobelPvP end
                 for (int l1 = i - i1; l1 <= i + i1; ++l1) {
                     for (int i2 = j - i1; i2 <= j + i1; ++i2) {
                         if (!this.a(l1, i2, k, l, i1)) {
@@ -272,8 +308,8 @@ public class PlayerChunkMap {
 
             while (iterator.hasNext()) {
                 EntityPlayer entityplayer = (EntityPlayer) iterator.next();
-                int k = (int) entityplayer.locX >> 4;
-                int l = (int) entityplayer.locZ >> 4;
+                int k = MathHelper.floor(entityplayer.locX) >> 4;
+                int l = MathHelper.floor(entityplayer.locZ) >> 4;
                 int i1;
                 int j1;
 
@@ -318,11 +354,13 @@ public class PlayerChunkMap {
         return playerchunkmap.d;
     }
 
+    /* Kohi
     static Queue c(PlayerChunkMap playermanager) { // CraftBukkit List -> Queue
         return playermanager.f;
     }
+    */
 
-    static Queue d(PlayerChunkMap playermanager) { // CraftBukkit List -> Queue
+    static List d(PlayerChunkMap playermanager) { // Kohi - List
         return playermanager.e;
     }
 
@@ -332,8 +370,10 @@ public class PlayerChunkMap {
         private int z;
 
         public ChunkCoordComparator (EntityPlayer entityplayer) {
-            x = (int) entityplayer.locX >> 4;
-            z = (int) entityplayer.locZ >> 4;
+            // CobelPvP start
+            x = MathHelper.floor(entityplayer.locX) >> 4;
+            z = MathHelper.floor(entityplayer.locZ) >> 4;
+            // CobelPvP end
         }
 
         public int compare(ChunkCoordIntPair a, ChunkCoordIntPair b) {
@@ -372,4 +412,14 @@ public class PlayerChunkMap {
     public int getWorldViewDistance() {
         return this.g;
     }
+
+    // CobelPvP start - chunk snapshot api
+    public void resend(int chunkX, int chunkZ) {
+        PlayerChunk playerchunk = this.a(chunkX, chunkZ, false);
+
+        if (playerchunk != null) {
+            playerchunk.resend();
+        }
+    }
+    // CobelPvP end
 }

@@ -302,7 +302,7 @@ public interface Entity extends Metadatable {
 
         /**
          * Returns whether this entity is invulnerable.
-         *
+         *         
         * @return True if the entity is invulnerable.
          */
         public boolean isInvulnerable()

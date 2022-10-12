@@ -27,10 +27,12 @@ public class ItemFishingRod extends Item {
                 return itemstack;
             }
             // CraftBukkit end
-            world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
-            if (!world.isStatic) {
-                world.addEntity(hook); // CraftBukkit - moved creation up
+
+            // CobelPvP start
+            if (!world.isStatic && world.addEntity(hook)) {
+                world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
             }
+            // CobelPvP end
 
             entityhuman.ba();
         }

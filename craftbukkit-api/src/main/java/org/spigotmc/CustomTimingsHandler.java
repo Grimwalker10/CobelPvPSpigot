@@ -15,14 +15,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
-import java.util.ArrayDeque; // Poweruser
+import java.util.ArrayDeque; // CobelPvP
 /**
  * Provides custom timing sections for /timings merged.
  */
 public class CustomTimingsHandler
 {
 
-    protected static Queue<CustomTimingsHandler> HANDLERS = new ConcurrentLinkedQueue<CustomTimingsHandler>(); // Poweruser - protected
+    protected static Queue<CustomTimingsHandler> HANDLERS = new ConcurrentLinkedQueue<CustomTimingsHandler>(); // CobelPvP - protected
     /*========================================================================*/
     private final String name;
     private final CustomTimingsHandler parent;
@@ -32,10 +32,10 @@ public class CustomTimingsHandler
     private long totalTime = 0;
     private long curTickTotal = 0;
     private long violations = 0;
-    // Poweruser start
+    // CobelPvP start
     private ArrayDeque<Long> currentTimings;
     private long currentTimingsSum;
-    // Poweruser end
+    // CobelPvP end
 
     public CustomTimingsHandler(String name)
     {
@@ -46,10 +46,10 @@ public class CustomTimingsHandler
     {
         this.name = name;
         this.parent = parent;
-        // Poweruser start
+        // CobelPvP start
         this.currentTimings = new ArrayDeque<Long>();
         this.currentTimingsSum = 0L;
-        // Poweruser end
+        // CobelPvP end
         HANDLERS.add( this );
     }
 
@@ -110,10 +110,10 @@ public class CustomTimingsHandler
         {
             for ( CustomTimingsHandler timings : HANDLERS )
             {
-                timings.updateAverageCalculation(); // Poweruser
-                if ( timings.curTickTotal > 50000000L ) // Poweruser - add L, mark number as long
+                timings.updateAverageCalculation(); // CobelPvP
+                if ( timings.curTickTotal > 50000000L ) // CobelPvP - add L, mark number as long
                 {
-                    timings.violations += Math.ceil( timings.curTickTotal / 50000000L ); // Poweruser - add L, mark number as long
+                    timings.violations += Math.ceil( timings.curTickTotal / 50000000L ); // CobelPvP - add L, mark number as long
                 }
                 timings.curTickTotal = 0;
                 timings.timingDepth = 0; // incase reset messes this up
@@ -171,13 +171,13 @@ public class CustomTimingsHandler
         totalTime = 0;
         start = 0;
         timingDepth = 0;
-        // Poweruser start
+        // CobelPvP start
         this.currentTimings.clear();
         this.currentTimingsSum = 0L;
-        // Poweruser end
+        // CobelPvP end
     }
 
-    // Poweruser start
+    // CobelPvP start
     private void updateAverageCalculation() {
         this.currentTimingsSum += this.curTickTotal;
         this.currentTimings.add(this.curTickTotal);
@@ -208,5 +208,5 @@ public class CustomTimingsHandler
     public String getName() {
         return this.name;
     }
-    // Poweruser end
+    // CobelPvP end
 }

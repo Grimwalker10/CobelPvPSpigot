@@ -146,6 +146,13 @@ public final class Bukkit {
     }
 
     /**
+     * @see Server#getServerGroup()
+     */
+    public static String getServerGroup() {
+        return server.getServerGroup();
+    }
+
+    /**
      * @see Server#getServerId()
      */
     public static String getServerId() {

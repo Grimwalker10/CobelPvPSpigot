@@ -23,7 +23,7 @@ public class BlockCrops extends BlockPlant implements IBlockFragilePlantElement 
 
     public void a(World world, int i, int j, int k, Random random) {
         super.a(world, i, j, k, random);
-        if (world.getLightLevel(i, j + 1, k) >= 9) {
+        if (world.isLightLevel(i, j + 1, k, 9)) { // CobelPvP
             int l = world.getData(i, j, k);
 
             if (l < 7) {

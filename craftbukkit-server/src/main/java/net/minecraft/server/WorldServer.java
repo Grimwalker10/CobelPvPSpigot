@@ -12,7 +12,7 @@ import java.util.TreeSet;
 import net.minecraft.util.com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.bukkit.Bukkit;
 // CraftBukkit start
 import org.bukkit.WeatherType;
 import org.bukkit.block.BlockState;
@@ -24,14 +24,14 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 // CraftBukkit end
+import org.spigotmc.SpigotConfig;
 
 public class WorldServer extends World {
 
-    private static final Logger a = LogManager.getLogger();
     private final MinecraftServer server;
     public EntityTracker tracker; // CraftBukkit - private final -> public
     private final PlayerChunkMap manager;
-    private HashTreeSet<NextTickListEntry> N; // PaperSpigot
+    public HashTreeSet<NextTickListEntry> N; // PaperSpigot
     public ChunkProviderServer chunkProviderServer;
     public boolean savingDisabled;
     private boolean O;
@@ -41,8 +41,10 @@ public class WorldServer extends World {
     private BlockActionDataList[] S = new BlockActionDataList[] { new BlockActionDataList((BananaAPI) null), new BlockActionDataList((BananaAPI) null)};
     private int T;
     private static final StructurePieceTreasure[] U = new StructurePieceTreasure[] { new StructurePieceTreasure(Items.STICK, 0, 1, 3, 10), new StructurePieceTreasure(Item.getItemOf(Blocks.WOOD), 0, 1, 3, 10), new StructurePieceTreasure(Item.getItemOf(Blocks.LOG), 0, 1, 3, 10), new StructurePieceTreasure(Items.STONE_AXE, 0, 1, 1, 3), new StructurePieceTreasure(Items.WOOD_AXE, 0, 1, 1, 5), new StructurePieceTreasure(Items.STONE_PICKAXE, 0, 1, 1, 3), new StructurePieceTreasure(Items.WOOD_PICKAXE, 0, 1, 1, 5), new StructurePieceTreasure(Items.APPLE, 0, 2, 3, 5), new StructurePieceTreasure(Items.BREAD, 0, 2, 3, 3), new StructurePieceTreasure(Item.getItemOf(Blocks.LOG2), 0, 1, 3, 10)};
-    private List V = new ArrayList();
+    public List V = new ArrayList();
     private IntHashMap entitiesById;
+
+    private boolean ticking = false;
 
     // CraftBukkit start
     public final int dimension;
@@ -75,6 +77,20 @@ public class WorldServer extends World {
 
         persistentscoreboard.a(this.scoreboard);
         ((ScoreboardServer) this.scoreboard).a(persistentscoreboard);
+    }
+
+    public boolean checkTicking() {
+        if (this.ticking && this.players.isEmpty()) {
+            this.ticking = false;
+            Bukkit.getLogger().info("Not ticking world " + this.getWorld().getName() + ". Unloading spawn...");
+            this.keepSpawnInMemory = false;
+        } else if (!this.players.isEmpty() && !this.ticking) {
+            this.ticking = true;
+            Bukkit.getLogger().info("Ticking world " + this.getWorld().getName() + ". Loading spawn...");
+            this.keepSpawnInMemory = true;
+        }
+
+        return this.ticking;
     }
 
     // CraftBukkit start
@@ -161,13 +177,13 @@ public class WorldServer extends World {
     // CraftBukkit end
 
     public void doTick() {
-        super.doTick();
+        if (!SpigotConfig.disableWeatherTicking) super.doTick(); // CobelPvP
         if (this.getWorldData().isHardcore() && this.difficulty != EnumDifficulty.HARD) {
             this.difficulty = EnumDifficulty.HARD;
         }
 
         this.worldProvider.e.b();
-        if (this.everyoneDeeplySleeping()) {
+        if (!SpigotConfig.disableSleepCheck && this.everyoneDeeplySleeping()) { // CobelPvP
             if (this.getGameRules().getBoolean("doDaylightCycle")) {
                 long i = this.worldData.getDayTime() + 24000L;
 
@@ -208,7 +224,7 @@ public class WorldServer extends World {
         timings.doTickPending.stopTiming(); // Spigot
         this.methodProfiler.c("tickBlocks");
         timings.doTickTiles.startTiming(); // Spigot
-        this.g();
+        if (!SpigotConfig.disableBlockTicking) this.g(); // CobelPvP
         timings.doTickTiles.stopTiming(); // Spigot
         this.methodProfiler.c("chunkMap");
         timings.doChunkMap.startTiming(); // Spigot
@@ -216,8 +232,12 @@ public class WorldServer extends World {
         timings.doChunkMap.stopTiming(); // Spigot
         this.methodProfiler.c("village");
         timings.doVillages.startTiming(); // Spigot
-        this.villages.tick();
-        this.siegeManager.a();
+        // CobelPvP start
+        if (!SpigotConfig.disableVillageTicking) {
+            this.villages.tick();
+            this.siegeManager.a();
+        }
+        // CobelPvP end
         timings.doVillages.stopTiming(); // Spigot
         this.methodProfiler.c("portalForcer");
         timings.doPortalForcer.startTiming(); // Spigot
@@ -321,7 +341,7 @@ public class WorldServer extends World {
         // CraftBukkit start
         // Iterator iterator = this.chunkTickList.iterator();
 
-        this.timings.doTickTiles_tickingChunks.startTiming(); // Poweruser
+        this.timings.doTickTiles_tickingChunks.startTiming(); // CobelPvP
         // Spigot start
         for (net.minecraft.util.gnu.trove.iterator.TLongShortIterator iter = chunkTickList.iterator(); iter.hasNext();) {
             iter.advance();
@@ -334,22 +354,23 @@ public class WorldServer extends World {
             int l = chunkZ * 16;
 
             this.methodProfiler.a("getChunk");
-            this.timings.doTickTiles_tickingChunks_getChunk.startTiming(); // Poweruser
-            // Poweruser start
+            this.timings.doTickTiles_tickingChunks_getChunk.startTiming(); // CobelPvP
+            // CobelPvP start
             Chunk chunk = this.getChunkIfLoaded(chunkX, chunkZ);
             if(chunk == null || !chunk.areNeighborsLoaded(1) || this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ )) {
                 iter.remove();
                 continue;
             }
-            // Poweruser end
+            // CobelPvP end
             // CraftBukkit end
 
             this.a(k, l, chunk);
-            this.timings.doTickTiles_tickingChunks_getChunk.stopTiming(); // Poweruser
+            this.timings.doTickTiles_tickingChunks_getChunk.stopTiming(); // CobelPvP
             this.methodProfiler.c("tickChunk");
-            this.timings.doTickTiles_tickingChunks_tickChunk.startTiming(); // Poweruser
+            this.timings.doTickTiles_tickingChunks_tickChunk.startTiming(); // CobelPvP
             chunk.b(false);
-            this.timings.doTickTiles_tickingChunks_tickChunk.stopTiming(); // Poweruser
+            this.timings.doTickTiles_tickingChunks_tickChunk.stopTiming(); // CobelPvP
+            if (!chunk.areNeighborsLoaded(1)) continue; // CobelPvP
             this.methodProfiler.c("thunder");
             int i1;
             int j1;
@@ -369,7 +390,7 @@ public class WorldServer extends World {
 
             this.methodProfiler.c("iceandsnow");
             if (this.random.nextInt(16) == 0) {
-                this.timings.doTickTiles_tickingChunks_iceAndSnow.startTiming(); // Poweruser
+                this.timings.doTickTiles_tickingChunks_iceAndSnow.startTiming(); // CobelPvP
                 this.k = this.k * 3 + 1013904223;
                 i1 = this.k >> 2;
                 j1 = i1 & 15;
@@ -408,11 +429,11 @@ public class WorldServer extends World {
                         this.getType(j1 + k, l1 - 1, k1 + l).l(this, j1 + k, l1 - 1, k1 + l);
                     }
                 }
-                this.timings.doTickTiles_tickingChunks_iceAndSnow.stopTiming(); // Poweruser
+                this.timings.doTickTiles_tickingChunks_iceAndSnow.stopTiming(); // CobelPvP
             }
 
             this.methodProfiler.c("tickBlocks");
-            this.timings.doTickTiles_tickingChunks_tickBlocks.startTiming(); // Poweruser
+            this.timings.doTickTiles_tickingChunks_tickBlocks.startTiming(); // CobelPvP
             ChunkSection[] achunksection = chunk.getSections();
 
             j1 = achunksection.length;
@@ -439,7 +460,7 @@ public class WorldServer extends World {
                     }
                 }
             }
-            this.timings.doTickTiles_tickingChunks_tickBlocks.stopTiming(); // Poweruser
+            this.timings.doTickTiles_tickingChunks_tickBlocks.stopTiming(); // CobelPvP
 
             this.methodProfiler.b();
         }
@@ -449,7 +470,7 @@ public class WorldServer extends World {
             chunkTickList.clear();
         }
         // Spigot End
-        this.timings.doTickTiles_tickingChunks.stopTiming(); // Poweruser
+        this.timings.doTickTiles_tickingChunks.stopTiming(); // CobelPvP
     }
 
     public boolean a(int i, int j, int k, Block block) {
@@ -620,7 +641,14 @@ public class WorldServer extends World {
         }
     }
 
+    private static int tookTooLongs = 0;
+
     public List a(Chunk chunk, boolean flag) {
+
+        if (Bukkit.getPluginManager().getPlugin("UHC") != null) {
+            return null;
+        }
+
         ArrayList arraylist = null;
         ChunkCoordIntPair chunkcoordintpair = chunk.l();
         int i = (chunkcoordintpair.x << 4) - 2;
@@ -631,16 +659,22 @@ public class WorldServer extends World {
         for (int i1 = 0; i1 < 2; ++i1) {
             Iterator iterator;
 
+            int size;
+            String ita;
             if (i1 == 0) {
                 iterator = this.N.iterator();
+                size = this.N.size();
+                ita = "N";
             } else {
                 iterator = this.V.iterator();
-                if (!this.V.isEmpty()) {
-                    a.debug("toBeTicked = " + this.V.size());
-                }
+                size = this.V.size();
+                ita = "V";
             }
 
-            while (iterator.hasNext()) {
+            long started = System.currentTimeMillis();
+
+
+            while (iterator.hasNext() && (System.currentTimeMillis() - started < 500) && tookTooLongs < 30) {
                 NextTickListEntry nextticklistentry = (NextTickListEntry) iterator.next();
 
                 if (nextticklistentry.a >= i && nextticklistentry.a < j && nextticklistentry.c >= k && nextticklistentry.c < l) {
@@ -654,6 +688,13 @@ public class WorldServer extends World {
 
                     arraylist.add(nextticklistentry);
                 }
+            }
+
+            if (1000 <= System.currentTimeMillis() - started) {
+                Bukkit.getLogger().info("Saving took too long :(");
+                Bukkit.getLogger().info("Iterator size: " + size + ". Iterator: " + ita);
+                Bukkit.getLogger().info("Removing from iterator? " + flag);
+                tookTooLongs++;
             }
         }
 
@@ -771,7 +812,7 @@ public class WorldServer extends World {
                 i = chunkposition.x;
                 k = chunkposition.z;
             } else {
-                a.warn("Unable to find spawn biome");
+                LogManager.getLogger().warn("Unable to find spawn biome");
             }
 
             int l = 0;
@@ -811,8 +852,9 @@ public class WorldServer extends World {
         return this.worldProvider.h();
     }
 
-    // Poweruser start
+    // CobelPvP start
     public void saveOnlyLevel(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict {
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.a("Saving level");
@@ -823,6 +865,7 @@ public class WorldServer extends World {
     }
 
     public boolean saveOnlyChunks(boolean flag, IProgressUpdate iprogressupdate) {
+        if (SpigotConfig.disableSaving) return true; // CobelPvP
         if (this.chunkProvider.canSave()) {
             if (iprogressupdate != null) {
                 iprogressupdate.c("Saving chunks");
@@ -848,25 +891,27 @@ public class WorldServer extends World {
             }
         }
     }
-    // Poweruser end
+    // CobelPvP end
 
     public void save(boolean flag, IProgressUpdate iprogressupdate) throws ExceptionWorldConflict { // CraftBukkit - added throws
         if (this.chunkProvider.canSave()) {
-            // Poweruser start
+            // CobelPvP start
             this.saveOnlyLevel(flag, iprogressupdate);
             this.saveOnlyChunks(flag, iprogressupdate);
             this.unloadOnlyUnusedChunks(flag, iprogressupdate);
-            // Poweruser end
+            // CobelPvP end
         }
     }
 
     public void flushSave() {
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         if (this.chunkProvider.canSave()) {
             this.chunkProvider.c();
         }
     }
 
     protected void a() throws ExceptionWorldConflict { // CraftBukkit - added throws
+        if (SpigotConfig.disableSaving) return; // CobelPvP
         this.G();
         this.dataManager.saveWorldData(this.worldData, this.server.getPlayerList().t());
         // CraftBukkit start - save worldMaps once, rather than once per shared world

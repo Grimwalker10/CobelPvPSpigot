@@ -20,28 +20,28 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     // Spigot start
     private long nextTick = -1; // Next tick this hopper will be ticked.
     private long lastTick = -1; // Last tick this hopper was polled.
-
+    
     // If this hopper is not cooling down, assaign a visible tick for next time.
     public void makeTick() {
         if (!this.j()) {
             this.c(0);
         }
     }
-
+    
     // Contents changed, so make this hopper active.
     public void scheduleHopperTick() {
         if (this.world != null && this.world.spigotConfig.altHopperTicking) {
             this.makeTick();
         }
     }
-
+    
 	// Called after this hopper is assaigned a world or when altHopperTicking is turned
 	// on from reload.
     public void convertToScheduling() {
     	// j is the cooldown in ticks
         this.c(this.j);
     }
-
+    
     // Called when alt hopper ticking is turned off from the reload command
     public void convertToPolling() {
         long cooldownDiff;
@@ -315,14 +315,14 @@ public class TileEntityHopper extends TileEntity implements IHopper {
                     if (this.getItem(j) != null) {
                         ItemStack itemstack = this.getItem(j).cloneItemStack();
 
-                        // Poweruser start
+                        // CobelPvP start
                         ItemStack copyOfItemBeingPushed = itemstack.cloneItemStack();
                         copyOfItemBeingPushed.count = 1;
                         int possibleInventorySlot = doesInventoryHaveEnoughSpaceForItem(iinventory, copyOfItemBeingPushed, i);
                         if(possibleInventorySlot < 0) {
                             continue;
                         }
-                        // Poweruser end
+                        // CobelPvP end
 
                         // CraftBukkit start - Call event when pushing items into other inventories
                         CraftItemStack oitemstack = CraftItemStack.asCraftMirror(this.splitStack(j, world.spigotConfig.hopperAmount)); // Spigot
@@ -343,7 +343,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
                             return false;
                         }
                         int origCount = event.getItem().getAmount(); // Spigot
-                        ItemStack itemstack1 = addItem(iinventory, possibleInventorySlot, CraftItemStack.asNMSCopy(event.getItem()), i); // Poweruser
+                        ItemStack itemstack1 = addItem(iinventory, possibleInventorySlot, CraftItemStack.asNMSCopy(event.getItem()), i); // CobelPvP
                         if (itemstack1 == null || itemstack1.count == 0) {
                             if (event.getItem().equals(oitemstack)) {
                                 iinventory.update();
@@ -458,7 +458,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
         if (itemstack != null && canTakeItemFromInventory(iinventory, itemstack, i, j)) {
             ItemStack itemstack1 = itemstack.cloneItemStack();
 
-            // Poweruser start
+            // CobelPvP start
             ItemStack copyOfItemBeingSuck = iinventory.getItem(i).cloneItemStack();
             copyOfItemBeingSuck.count = 1;
             int facing = -1;
@@ -466,7 +466,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
             if(possibleInventorySlot < 0) {
                 return false;
             }
-            // Poweruser end
+            // CobelPvP end
 
             // CraftBukkit start - Call event on collection of items from inventories into the hopper
             CraftItemStack oitemstack = CraftItemStack.asCraftMirror(iinventory.splitStack(i, ihopper.getWorld().spigotConfig.hopperAmount)); // Spigot
@@ -494,7 +494,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
                 return false;
             }
             int origCount = event.getItem().getAmount(); // Spigot
-            ItemStack itemstack2 = addItem(ihopper, possibleInventorySlot, CraftItemStack.asNMSCopy(event.getItem()), facing); // Poweruser
+            ItemStack itemstack2 = addItem(ihopper, possibleInventorySlot, CraftItemStack.asNMSCopy(event.getItem()), facing); // CobelPvP
 
             if (itemstack2 == null || itemstack2.count == 0) {
                 if (event.getItem().equals(oitemstack)) {
@@ -520,14 +520,14 @@ public class TileEntityHopper extends TileEntity implements IHopper {
         if (entityitem == null) {
             return false;
         } else {
-            // Poweruser start
+            // CobelPvP start
             ItemStack copyOfItemBeingAdded = entityitem.getItemStack().cloneItemStack();
             int facing = -1;
             int possibleInventorySlot = doesInventoryHaveEnoughSpaceForItem(iinventory, copyOfItemBeingAdded, facing);
             if(possibleInventorySlot < 0) {
                 return false;
             }
-            // Poweruser end
+            // CobelPvP end
 
             // CraftBukkit start
             InventoryPickupItemEvent event = new InventoryPickupItemEvent(iinventory.getOwner().getInventory(), (org.bukkit.entity.Item) entityitem.getBukkitEntity());
@@ -538,7 +538,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
             // CraftBukkit end
 
             ItemStack itemstack = entityitem.getItemStack().cloneItemStack();
-            ItemStack itemstack1 = addItem(iinventory, possibleInventorySlot, itemstack, facing); // Poweruser
+            ItemStack itemstack1 = addItem(iinventory, possibleInventorySlot, itemstack, facing); // CobelPvP
 
             if (itemstack1 != null && itemstack1.count != 0) {
                 entityitem.setItemStack(itemstack1);
@@ -552,21 +552,21 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     }
 
     public static ItemStack addItem(IInventory iinventory, ItemStack itemstack, int i) {
-    // Poweruser start
+    // CobelPvP start
         return addItem(iinventory, -1, itemstack, i);
     }
 
     public static ItemStack addItem(IInventory iinventory, int possibleInventorySlot, ItemStack itemstack, int i) {
-    // Poweruser end
+    // CobelPvP end
         if (iinventory instanceof IWorldInventory && i > -1) {
             IWorldInventory iworldinventory = (IWorldInventory) iinventory;
             int[] aint = iworldinventory.getSlotsForFace(i);
 
-            // Poweruser start
+            // CobelPvP start
             if(possibleInventorySlot >= 0 && possibleInventorySlot < aint.length) {
                 itemstack = tryMoveInItem(iinventory, itemstack, possibleInventorySlot, i);
             }
-            // Poweruser end
+            // CobelPvP end
 
             for (int j = 0; j < aint.length && itemstack != null && itemstack.count > 0; ++j) {
                 itemstack = tryMoveInItem(iinventory, itemstack, aint[j], i);
@@ -574,11 +574,11 @@ public class TileEntityHopper extends TileEntity implements IHopper {
         } else {
             int k = iinventory.getSize();
 
-            // Poweruser start
+            // CobelPvP start
             if(possibleInventorySlot >= 0 && possibleInventorySlot < k) {
                 itemstack = tryMoveInItem(iinventory, itemstack, possibleInventorySlot, i);
             }
-            // Poweruser end
+            // CobelPvP end
 
             for (int l = 0; l < k && itemstack != null && itemstack.count > 0; ++l) {
                 itemstack = tryMoveInItem(iinventory, itemstack, l, i);
@@ -643,20 +643,20 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     }
 
     public static EntityItem getEntityItemAt(World world, double d0, double d1, double d2) {
-        if(!isPositionOfHopperInUse(world, d0, d1, d2)) { return null; } // Poweruser
+        if(!isPositionOfHopperInUse(world, d0, d1, d2)) { return null; } // CobelPvP
         List list = world.a(EntityItem.class, AxisAlignedBB.a(d0, d1, d2, d0 + 1.0D, d1 + 1.0D, d2 + 1.0D), IEntitySelector.a);
 
         return list.size() > 0 ? (EntityItem) list.get(0) : null;
     }
 
     public static IInventory getInventoryAt(World world, double d0, double d1, double d2) {
-        if(!isPositionOfHopperInUse(world, d0, d1, d2)) { return null; } // Poweruser
+        if(!isPositionOfHopperInUse(world, d0, d1, d2)) { return null; } // CobelPvP
 
         IInventory iinventory = null;
         int i = MathHelper.floor(d0);
         int j = MathHelper.floor(d1);
         int k = MathHelper.floor(d2);
-        //if ( !world.isLoaded( i, j, k ) ) return null; // Spigot // Poweruser - already covered at this point
+        //if ( !world.isLoaded( i, j, k ) ) return null; // Spigot // CobelPvP - already covered at this point
         TileEntity tileentity = world.getTileEntity(i, j, k);
 
         if (tileentity != null && tileentity instanceof IInventory) {
@@ -682,7 +682,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     }
 
     private static boolean canMergeItems(ItemStack itemstack, ItemStack itemstack1) {
-        return itemstack.getItem() != itemstack1.getItem() ? false : (itemstack.getData() != itemstack1.getData() ? false : (itemstack.count >= itemstack.getMaxStackSize() ? false : ItemStack.equals(itemstack, itemstack1))); // Poweruser - stacks can not merge when count is greater or equal the max stack size
+        return itemstack.getItem() != itemstack1.getItem() ? false : (itemstack.getData() != itemstack1.getData() ? false : (itemstack.count >= itemstack.getMaxStackSize() ? false : ItemStack.equals(itemstack, itemstack1))); // CobelPvP - stacks can not merge when count is greater or equal the max stack size
     }
 
     public double x() {
@@ -729,7 +729,7 @@ public class TileEntityHopper extends TileEntity implements IHopper {
         // Spigot end
     }
 
-    // Poweruser start
+    // CobelPvP start
     private static int doesInventoryHaveEnoughSpaceForItem(IInventory iinventory, ItemStack itemstack, int facing) {
         if (iinventory instanceof IWorldInventory && facing > -1) {
             IWorldInventory iworldinventory = (IWorldInventory) iinventory;
@@ -770,5 +770,5 @@ public class TileEntityHopper extends TileEntity implements IHopper {
                 world.chunkProviderServer.unloadQueue != null &&
                 world.chunkProviderServer.unloadQueue.contains(x >> 4, z >> 4);
     }
-    // Poweruser end
+    // CobelPvP end
 }

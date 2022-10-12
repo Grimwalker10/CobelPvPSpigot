@@ -1,10 +1,10 @@
 package net.minecraft.server;
 
+import net.minecraft.optimizations.ReusableByteArray;
+
 import java.io.IOException;
 import java.util.List;
-import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 
 public class PacketPlayOutMapChunkBulk extends Packet {
 
@@ -13,10 +13,12 @@ public class PacketPlayOutMapChunkBulk extends Packet {
     private int[] c;
     private int[] d;
     private byte[] buffer;
+    private static final ReusableByteArray bufferCache = new ReusableByteArray(820480); // CobelPvP
     private byte[][] inflatedBuffers;
     private int size;
     private boolean h;
-    private byte[] buildBuffer = new byte[0]; // CraftBukkit - remove static
+    private byte[] buildBuffer; // CobelPvP
+    private static final ReusableByteArray buildBufferCache = new ReusableByteArray(820480); // CobelPvP
     // CraftBukkit start
     static final ThreadLocal<Deflater> localDeflater = new ThreadLocal<Deflater>() {
         @Override
@@ -43,7 +45,7 @@ public class PacketPlayOutMapChunkBulk extends Packet {
 
         for (int k = 0; k < i; ++k) {
             Chunk chunk = (Chunk) list.get(k);
-            ChunkMap chunkmap = PacketPlayOutMapChunk.a(chunk, true, '\uffff', version);
+            ChunkMap chunkmap = chunk.getChunkMap(true, '\uffff', version); // CobelPvP
 
             // Spigot start
             world = chunk.world;
@@ -80,6 +82,19 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         */
     }
 
+    // CobelPvP start - constructor for "padding" chunk of all air
+    public static PacketPlayOutMapChunkBulk paddingChunk(World world, int x, int z) {
+        PacketPlayOutMapChunkBulk packet = new PacketPlayOutMapChunkBulk();
+        packet.a = new int[]{x};
+        packet.b = new int[]{z};
+        packet.c = new int[]{0};
+        packet.d = new int[]{0};
+        packet.inflatedBuffers = new byte[][]{new byte[256]}; // still have to send biome array to actually create a chunk!
+        packet.h = !world.worldProvider.g;
+        return packet;
+    }
+    // CobelPvP end
+
     // Add compression method
     public void compress() {
         if (this.buffer != null) {
@@ -89,12 +104,12 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         int finalBufferSize = 0;
         // Obfuscate all sections
         for (int i = 0; i < a.length; i++) {
-            world.spigotConfig.antiXrayInstance.obfuscate(a[i], b[i], c[i], inflatedBuffers[i], world, false);
+            if (world != null) world.spigotConfig.antiXrayInstance.obfuscate(a[i], b[i], c[i], inflatedBuffers[i], world, false); // CobelPvP - padding chunk
             finalBufferSize += inflatedBuffers[i].length;
         }
 
         // Now it's time to efficiently copy the chunk to the build buffer
-        buildBuffer = new byte[finalBufferSize];
+        buildBuffer = buildBufferCache.get(finalBufferSize); // CobelPvP
         int bufferLocation = 0;
         for (int i = 0; i < a.length; i++) {
             System.arraycopy(inflatedBuffers[i], 0, buildBuffer, bufferLocation, inflatedBuffers[i].length);
@@ -104,10 +119,10 @@ public class PacketPlayOutMapChunkBulk extends Packet {
 
         Deflater deflater = localDeflater.get();
         deflater.reset();
-        deflater.setInput(this.buildBuffer);
+        deflater.setInput(this.buildBuffer, 0, finalBufferSize); // CobelPvP
         deflater.finish();
 
-        this.buffer = new byte[this.buildBuffer.length + 100];
+        this.buffer = bufferCache.get(finalBufferSize + 100); // CobelPvP
         this.size = deflater.deflate(this.buffer);
     }
     // CraftBukkit end
@@ -117,6 +132,8 @@ public class PacketPlayOutMapChunkBulk extends Packet {
     }
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException { // CraftBukkit - throws IOException
+        // CobelPvP start - this is client code
+        /*
         short short1 = packetdataserializer.readShort();
 
         this.size = packetdataserializer.readInt();
@@ -171,6 +188,8 @@ public class PacketPlayOutMapChunkBulk extends Packet {
             System.arraycopy(abyte, i, this.inflatedBuffers[j], 0, i1);
             i += i1;
         }
+        */
+        // CobelPvP end
     }
 
     public void b(PacketDataSerializer packetdataserializer) throws IOException { // CraftBukkit - throws IOException

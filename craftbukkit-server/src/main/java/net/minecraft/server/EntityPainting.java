@@ -13,8 +13,8 @@ public class EntityPainting extends EntityHanging {
 
     public EntityPainting(World world, int i, int j, int k, int l) {
         super(world, i, j, k, l);
-        ArrayList arraylist = new ArrayList();
         EnumArt[] aenumart = EnumArt.values();
+        ArrayList arraylist = new ArrayList(aenumart.length);
         int i1 = aenumart.length;
 
         for (int j1 = 0; j1 < i1; ++j1) {

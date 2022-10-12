@@ -8,6 +8,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.spigotmc.SpigotConfig;
 // CraftBukkit end
 
 public class TileEntityFurnace extends TileEntity implements IWorldInventory {
@@ -171,7 +172,7 @@ public class TileEntityFurnace extends TileEntity implements IWorldInventory {
 
         // CraftBukkit - moved from below
         if (this.isBurning() && this.canBurn()) {
-            this.cookTime += elapsedTicks;
+            this.cookTime += elapsedTicks * SpigotConfig.smeltingMultiplier; // CobelPvP
             if (this.cookTime >= 200) {
                 this.cookTime %= 200;
                 this.burn();
@@ -187,7 +188,7 @@ public class TileEntityFurnace extends TileEntity implements IWorldInventory {
         }
 
         if (!this.world.isStatic) {
-            if (this.burnTime != 0 || (this.items[1] != null && this.items[1].getItem() != Items.BUCKET) && this.items[0] != null) { // Poweruser - check for an empty bucket
+            if (this.burnTime != 0 || (this.items[1] != null && this.items[1].getItem() != Items.BUCKET) && this.items[0] != null) { // CobelPvP - check for an empty bucket
                 // CraftBukkit start - Handle multiple elapsed ticks
                 if (this.burnTime <= 0 && this.canBurn()) { // CraftBukkit - == to <=
                     CraftItemStack fuel = CraftItemStack.asCraftMirror(this.items[1]);

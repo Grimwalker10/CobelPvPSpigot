@@ -7,14 +7,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.frozenorb.ThreadingManager; // Poweruser
+import net.minecraft.optimizations.ThreadingManager; // CobelPvP
 
 public class PersistentCollection {
 
@@ -101,14 +100,14 @@ public class PersistentCollection {
                     NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 
                     nbttagcompound1.set("data", nbttagcompound);
-                    /* Poweruser start
+                    /* CobelPvP start
                     FileOutputStream fileoutputstream = new FileOutputStream(file1);
 
                     NBTCompressedStreamTools.a(nbttagcompound1, (OutputStream) fileoutputstream);
                     fileoutputstream.close();
                     */
                     ThreadingManager.saveNBTFileStatic((NBTTagCompound) nbttagcompound1.clone(), file1);
-                    // Poweruser end
+                    // CobelPvP end
                 }
             } catch (Exception exception) {
                 exception.printStackTrace();

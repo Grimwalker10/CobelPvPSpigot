@@ -22,7 +22,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class PaperSpigotConfig
 {
 
-    private static final File CONFIG_FILE = new File( "config/server", "paper.yml" ); // MineHQ - Dedicated config directory
+    private static final File CONFIG_FILE = new File( "config/server", "paper.yml" ); // CobelPvP - Dedicated config directory
     private static final String HEADER = "This is the main configuration file for PaperSpigot.\n"
             + "As you can see, there's tons to configure. Some options may impact gameplay, so use\n"
             + "with caution, and make sure you know what each option does before configuring.\n"
@@ -146,7 +146,7 @@ public class PaperSpigotConfig
     public static double babyZombieMovementSpeed;
     private static void babyZombieMovementSpeed()
     {
-        babyZombieMovementSpeed = getDouble( "settings.baby-zombie-movement-speed", 0.4D); // Player moves at 0.1F, for reference
+        babyZombieMovementSpeed = getDouble( "settings.baby-zombie-movement-speed", 0.5D); // Player moves at 0.1F, for reference
     }
 
     public static boolean asyncCatcherFeature;
@@ -171,14 +171,14 @@ public class PaperSpigotConfig
     public static double weaknessEffectModifier;
     private static void effectModifiers()
     {
-        strengthEffectModifier = getDouble( "effect-modifiers.strength", 0.5D );
+        strengthEffectModifier = getDouble( "effect-modifiers.strength", 1.3D );
         weaknessEffectModifier = getDouble( "effect-modifiers.weakness", -0.5D );
     }
 
     public static int maxPacketsPerPlayer;
     private static void maxPacketsPerPlayer()
     {
-        maxPacketsPerPlayer = getInt( "max-packets-per-player", 1000 );
+        maxPacketsPerPlayer = getInt( "max-packets-per-player", 80 );
     }
 
     public static boolean stackableLavaBuckets;

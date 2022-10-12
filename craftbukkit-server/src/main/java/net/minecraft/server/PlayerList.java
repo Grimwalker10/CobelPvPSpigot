@@ -3,13 +3,7 @@ package net.minecraft.server;
 import java.io.File;
 import java.net.SocketAddress;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.Map.Entry;
 
 import net.minecraft.util.com.google.common.base.Charsets;
@@ -36,17 +30,18 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
+import org.spigotmc.SpigotConfig;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 // CraftBukkit end
 
 public abstract class PlayerList {
 
-    // MineHQ start - Dedicated config directory
+    // CobelPvP start - Dedicated config directory
     public static final File a = new File("config/misc", "banned-players.json");
     public static final File b = new File("config/misc", "banned-ips.json");
     public static final File c = new File("config/misc", "ops.json");
     public static final File d = new File("config/misc", "whitelist.json");
-    // MineHQ end
+    // CobelPvP end
     private static final Logger g = LogManager.getLogger();
     private static final SimpleDateFormat h = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
     private final MinecraftServer server;
@@ -242,6 +237,8 @@ public abstract class PlayerList {
                 hashset.add(scoreboardobjective);
             }
         }
+
+        scoreboardserver.addViewer(entityplayer); // CobelPvP
     }
 
     public void setPlayerFileData(WorldServer[] aworldserver) {
@@ -257,7 +254,7 @@ public abstract class PlayerList {
         }
 
         worldserver1.getPlayerChunkMap().addPlayer(entityplayer);
-        worldserver1.chunkProviderServer.getChunkAt((int) entityplayer.locX >> 4, (int) entityplayer.locZ >> 4);
+        worldserver1.chunkProviderServer.getChunkAt(MathHelper.floor(entityplayer.locX) >> 4, MathHelper.floor(entityplayer.locZ) >> 4);
     }
 
     public int d() {
@@ -281,7 +278,8 @@ public abstract class PlayerList {
     }
 
     protected void b(EntityPlayer entityplayer) {
-        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
+        if (SpigotConfig.disableSaving) return; // CobelPvP
+        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // CobelPvP
         this.playerFileData.save(entityplayer);
         ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) this.n.get(entityplayer.getUniqueID());
 
@@ -321,17 +319,18 @@ public abstract class PlayerList {
         }
         // CraftBukkit end
 
+        if (SpigotConfig.onlyCustomTab) return; // CobelPvP
+
         // CraftBukkit start - sendAll above replaced with this loop
         PacketPlayOutPlayerInfo packet = PacketPlayOutPlayerInfo.addPlayer( entityplayer ); // Spigot - protocol patch
-        PacketPlayOutPlayerInfo displayPacket = PacketPlayOutPlayerInfo.updateDisplayName( entityplayer ); // Spigot - protocol patch
+        PacketPlayOutPlayerInfo displayPacket = PacketPlayOutPlayerInfo.updateDisplayName( entityplayer ); // Spigot Update - 20140927a
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
-            if (entityplayer1.getBukkitEntity().canSee(entityplayer.getBukkitEntity())) {
+            if (entityplayer1.getBukkitEntity().canSeeFromTab(entityplayer.getBukkitEntity())) {
                 entityplayer1.playerConnection.sendPacket(packet);
-                // Spigot start - protocol patch
-                if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer1.playerConnection.networkManager.getVersion() > 28 )
-                {
+                // Spigot start - Update 20140927a // Update - 20141001a
+                if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer1.playerConnection.networkManager.getVersion() > 28 ) {
                     entityplayer1.playerConnection.sendPacket( displayPacket );
                 }
                 // Spigot end
@@ -343,14 +342,13 @@ public abstract class PlayerList {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
             // CraftBukkit start
-            if (!entityplayer.getBukkitEntity().canSee(entityplayer1.getBukkitEntity())) {
+            if (!entityplayer.getBukkitEntity().canSeeFromTab(entityplayer1.getBukkitEntity())) {
                 continue;
             }
             // .name -> .listName
             entityplayer.playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( entityplayer1 )); // Spigot - protocol patch
-            // Spigot start - protocol patch
-            if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 )
-            {
+            // Spigot start - Update 20140927a // Update - 20141001a
+            if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 ) {
                 entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.updateDisplayName( entityplayer1 ) );
             }
             // Spigot end
@@ -360,6 +358,7 @@ public abstract class PlayerList {
 
     public void d(EntityPlayer entityplayer) {
         entityplayer.r().getPlayerChunkMap().movePlayer(entityplayer);
+        entityplayer.world.playerMap.move(entityplayer); // CobelPvP
     }
 
     public String disconnect(EntityPlayer entityplayer) { // CraftBukkit - return string
@@ -384,8 +383,8 @@ public abstract class PlayerList {
         worldserver.kill(entityplayer);
         worldserver.getPlayerChunkMap().removePlayer(entityplayer);
         this.players.remove(entityplayer);
-        this.uuidMap.remove(entityplayer.getUniqueID()); // PaperSpigot
         this.playerMap.remove(entityplayer.getName()); // PaperSpigot
+        this.uuidMap.remove(entityplayer.getUniqueID()); // PaperSpigot
         this.n.remove(entityplayer.getUniqueID());
         ChunkIOExecutor.adjustPoolSize(this.getPlayerCount()); // CraftBukkit
 
@@ -395,7 +394,8 @@ public abstract class PlayerList {
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
 
-            if (entityplayer1.getBukkitEntity().canSee(entityplayer.getBukkitEntity())) {
+            if (entityplayer1.getBukkitEntity().canSeeFromTab(entityplayer.getBukkitEntity())) {
+                if (!SpigotConfig.playerListPackets) continue; // CobelPvP
                 entityplayer1.playerConnection.sendPacket(packet);
             } else {
                 entityplayer1.getBukkitEntity().removeDisconnectingPlayer(entityplayer.getBukkitEntity());
@@ -462,7 +462,6 @@ public abstract class PlayerList {
 
     public EntityPlayer processLogin(GameProfile gameprofile, EntityPlayer player) { // CraftBukkit - added EntityPlayer
         UUID uuid = EntityHuman.a(gameprofile);
-        ArrayList arraylist = Lists.newArrayList();
 
         EntityPlayer entityplayer;
 
@@ -558,7 +557,7 @@ public abstract class PlayerList {
                 cworld = (CraftWorld) this.server.server.getWorlds().get(0);
                 chunkcoordinates = cworld.getHandle().getSpawn();
 
-                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5, cworld.getHandle().getWorldData().getSpawnYaw(), cworld.getHandle().getWorldData().getSpawnPitch()); // Poweruser
+                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5, cworld.getHandle().getWorldData().getSpawnYaw(), cworld.getHandle().getWorldData().getSpawnPitch()); // CobelPvP
             }
 
             Player respawnPlayer = this.cserver.getPlayer(entityplayer1);
@@ -579,7 +578,7 @@ public abstract class PlayerList {
         entityplayer1.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         // CraftBukkit end
 
-        worldserver.chunkProviderServer.getChunkAt((int) entityplayer1.locX >> 4, (int) entityplayer1.locZ >> 4);
+        worldserver.chunkProviderServer.getChunkAt(MathHelper.floor(entityplayer1.locX) >> 4, MathHelper.floor(entityplayer1.locZ) >> 4);
 
         while (avoidSuffocation && !worldserver.getCubes(entityplayer1, entityplayer1.boundingBox).isEmpty()) { // CraftBukkit
             entityplayer1.setPosition(entityplayer1.locX, entityplayer1.locY + 1.0D, entityplayer1.locZ);
@@ -748,22 +747,22 @@ public abstract class PlayerList {
                 worldserver1 = this.server.worlds.get(0);
                 chunkcoordinates = worldserver1.getSpawn();
             } else {
-                // Poweruser start
+                // CobelPvP start
                 if(worldserver1.spigotConfig.useAlternateEndSpawn) {
                     chunkcoordinates = worldserver1.getSpawn();
                 } else {
                     chunkcoordinates = worldserver1.getDimensionSpawn();
                 }
-                // Poweruser end
+                // CobelPvP end
             }
 
             d0 = (double) chunkcoordinates.x;
             y = (double) chunkcoordinates.y;
             d1 = (double) chunkcoordinates.z;
-            // Poweruser start
+            // CobelPvP start
             yaw = worldserver1.getWorldData().getSpawnYaw();
             pitch = worldserver1.getWorldData().getSpawnPitch();
-            // Poweruser end
+            // CobelPvP end
             /*
             entity.setPositionRotation(d0, entity.locY, d1, 90.0F, 0.0F);
             if (entity.isAlive()) {
@@ -893,16 +892,18 @@ public abstract class PlayerList {
         // Spigot start
         try
         {
-            if ( !players.isEmpty() )
+            if ( !players.isEmpty() && SpigotConfig.updatePingOnTablist)
             {
                 currentPing = ( currentPing + 1 ) % this.players.size();
                 EntityPlayer player = (EntityPlayer) this.players.get( currentPing );
-                if ( player.lastPing == -1 || Math.abs( player.ping - player.lastPing ) > 20 )
+                int oldPingToBars = pingToBars(player.lastPing);
+                int newPingToBars = pingToBars(player.ping);
+                if ( player.lastPing == -1 || oldPingToBars != newPingToBars )
                 {
                     Packet packet = PacketPlayOutPlayerInfo.updatePing( player ); // Spigot - protocol patch
                     for ( EntityPlayer splayer : (List<EntityPlayer>) this.players )
                     {
-                        if ( splayer.getBukkitEntity().canSee( player.getBukkitEntity() ) )
+                        if ( splayer.getBukkitEntity().canSeeFromTab( player.getBukkitEntity() ) )
                         {
                             splayer.playerConnection.sendPacket( packet );
                         }
@@ -915,6 +916,18 @@ public abstract class PlayerList {
         }
         // Spigot end
     }
+
+    // CobelPvP start
+    private int pingToBars(int ping) {
+        if (ping < 0) return 5;
+        else if (ping < 150) return 0;
+        else if (ping < 300) return 1;
+        else if (ping < 600) return 2;
+        else if (ping < 1_000) return 3;
+        else if (ping < Short.MAX_VALUE) return 4;
+        else return 5;
+    }
+    // CobelPvP end
 
     public void sendAll(Packet packet) {
         for (int i = 0; i < this.players.size(); ++i) {
@@ -1141,7 +1154,7 @@ public abstract class PlayerList {
             EntityPlayer entityplayer = (EntityPlayer) this.players.get(j);
 
             // CraftBukkit start - Test if player receiving packet can see the source of the packet
-            if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSee(((EntityPlayer) entityhuman).getBukkitEntity())) {
+            if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSeeFromTab(((EntityPlayer) entityhuman).getBukkitEntity())) {
                 continue;
             }
             // CraftBukkit end
@@ -1159,7 +1172,8 @@ public abstract class PlayerList {
     }
 
     public void savePlayers() {
-        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // Poweruser
+        if (SpigotConfig.disableSaving) return; // CobelPvP
+        if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // CobelPvP
         for (int i = 0; i < this.players.size(); ++i) {
             this.b((EntityPlayer) this.players.get(i));
         }
@@ -1304,14 +1318,6 @@ public abstract class PlayerList {
         if (serverstatisticmanager == null) {
             File file1 = new File(this.server.getWorldServer(0).getDataManager().getDirectory(), "stats");
             File file2 = new File(file1, uuid.toString() + ".json");
-
-            if (!file2.exists()) {
-                File file3 = new File(file1, entityhuman.getName() + ".json");
-
-                if (file3.exists() && file3.isFile()) {
-                    file3.renameTo(file2);
-                }
-            }
 
             serverstatisticmanager = new ServerStatisticManager(this.server, file2);
             serverstatisticmanager.a();

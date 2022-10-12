@@ -10,6 +10,14 @@ import java.util.Map;
 
 public class Scoreboard {
 
+    // CobelPvP start
+    public java.util.Set<EntityPlayer> viewers() {
+        return viewers;
+    }
+
+    protected java.util.Set<EntityPlayer> viewers = Collections.EMPTY_SET;
+    // CobelPvP end
+
     private final Map objectivesByName = new HashMap();
     private final Map objectivesByCriteria = new HashMap();
     private final Map playerScores = new HashMap();
@@ -22,6 +30,17 @@ public class Scoreboard {
     public ScoreboardObjective getObjective(String s) {
         return (ScoreboardObjective) this.objectivesByName.get(s);
     }
+
+    // CobelPvP start
+    public void addViewer(EntityPlayer player) {
+        if (viewers == Collections.EMPTY_SET) viewers = new java.util.HashSet<EntityPlayer>();
+        viewers.add(player);
+    }
+
+    public void removeViewer(EntityPlayer player) {
+        if (viewers != Collections.EMPTY_SET && viewers.remove(player) && viewers.isEmpty()) viewers = Collections.EMPTY_SET;
+    }
+    // CobelPvP end
 
     public ScoreboardObjective registerObjective(String s, IScoreboardCriteria iscoreboardcriteria) {
         ScoreboardObjective scoreboardobjective = this.getObjective(s);

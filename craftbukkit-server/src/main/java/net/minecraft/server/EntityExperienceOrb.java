@@ -59,7 +59,7 @@ public class EntityExperienceOrb extends Entity {
         this.j(this.locX, (this.boundingBox.b + this.boundingBox.e) / 2.0D, this.locZ);
         double d0 = 8.0D;
 
-        // Poweruser start
+        // CobelPvP start
         EntityHuman foundTarget = null;
         if (this.targetTime < this.a - 20 + this.getId() % 100) {
             if (this.targetPlayer == null || this.targetPlayer.f(this) > d0 * d0) {
@@ -80,7 +80,7 @@ public class EntityExperienceOrb extends Entity {
                     // CraftBukkit end
                 }
             }
-        // Poweruser end
+        // CobelPvP end
             this.targetTime = this.a;
         }
 

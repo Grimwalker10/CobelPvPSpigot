@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.util.com.google.common.collect.Sets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
@@ -18,15 +19,21 @@ import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.WeatherType;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.util.CraftPotionUtils;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 // CraftBukkit end
+import org.bukkit.potion.PotionEffect;
 import org.spigotmc.ProtocolData; // Spigot - protocol patch
+import org.spigotmc.SpigotConfig;
 
 public class EntityPlayer extends EntityHuman implements ICrafting {
 
@@ -38,7 +45,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public double d;
     public double e;
     public final List chunkCoordIntPairQueue = new LinkedList();
-    public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public
+    public final Set<ChunkCoordIntPair> paddingChunks = new HashSet<ChunkCoordIntPair>(); // CobelPvP
+    // public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public // CobelPvP
     private final ServerStatisticManager bO;
     private float bP = Float.MIN_VALUE;
     private float bQ = -1.0E8F;
@@ -67,6 +75,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     // CraftBukkit end
     // Spigot start
     public boolean collidesWithEntities = true;
+    public boolean allowServerSidePhase = false;
 
     @Override
     public boolean R()
@@ -80,6 +89,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         return this.collidesWithEntities && super.S(); // (second !this.isDead near bottom of EntityLiving)
     }
     // Spigot end
+
+    // CobelPvP start
+    public int playerMapX;
+    public int playerMapZ;
+    // CobelPvP end
 
     public EntityPlayer(MinecraftServer minecraftserver, WorldServer worldserver, GameProfile gameprofile, PlayerInteractManager playerinteractmanager) {
         super(worldserver, gameprofile);
@@ -115,7 +129,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.maxHealthCache = this.getMaxHealth();
         // CraftBukkit end
 
-        this.knockbackReduction = 0.1D; // Kohi
+        knockbackReduction = 0.2D; // Kohi
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -179,7 +193,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void h() {
-        this.world.timings.entityPlayerTickNormal.startTiming(); // Poweruser
+        this.world.timings.entityPlayerTickNormal.startTiming(); // CobelPvP
 
         // CraftBukkit start
         if (this.joining) {
@@ -199,6 +213,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.activeContainer = this.defaultContainer;
         }
 
+        // CobelPvP start - nope
+        /*
         while (!this.removeQueue.isEmpty()) {
             int i = Math.min(this.removeQueue.size(), 127);
             int[] aint = new int[i];
@@ -212,6 +228,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
             this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
         }
+        */
+        // CobelPvP end
 
         if (!this.chunkCoordIntPairQueue.isEmpty()) {
             ArrayList arraylist = new ArrayList();
@@ -238,6 +256,18 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             }
 
             if (!arraylist.isEmpty()) {
+                // CobelPvP start - if any real chunks overlap padding chunks, first send an unload then remove it from this player's padding list
+                for (Object o : arraylist) {
+                    if (this.paddingChunks.isEmpty()) {
+                        break;
+                    }
+                    Chunk c = (Chunk) o;
+                    if (this.paddingChunks.contains(c.l())) {
+                        this.paddingChunks.remove(c.l());
+                        this.playerConnection.sendPacket(PacketPlayOutMapChunk.unload(c.locX, c.locZ));
+                    }
+                }
+                // CobelPvP end
                 this.playerConnection.sendPacket(new PacketPlayOutMapChunkBulk(arraylist, this.playerConnection.networkManager.getVersion())); // Spigot - protocol patch
                 Iterator iterator2 = arraylist1.iterator();
 
@@ -247,23 +277,27 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                     this.b(tileentity);
                 }
 
+                // CobelPvP start - nope
+                /*
                 iterator2 = arraylist.iterator();
 
                 while (iterator2.hasNext()) {
                     chunk = (Chunk) iterator2.next();
                     this.r().getTracker().a(this, chunk);
                 }
+                */
+                // CobelPvP end
             }
         }
-        this.world.timings.entityPlayerTickNormal.stopTiming(); // Poweruser
+        this.world.timings.entityPlayerTickNormal.stopTiming(); // CobelPvP
     }
 
     public void i() {
-        this.world.timings.entityPlayerTickOnMove.startTiming(); // Poweruser
+        this.world.timings.entityPlayerTickOnMove.startTiming(); // CobelPvP
         try {
             super.h();
 
-            if(this.world.spigotConfig.updateMapItemsInPlayerInventory) { // Poweruser
+            if(this.world.spigotConfig.updateMapItemsInPlayerInventory) { // CobelPvP
                 for (int i = 0; i < this.inventory.getSize(); ++i) {
                     ItemStack itemstack = this.inventory.getItem(i);
 
@@ -302,7 +336,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                 this.playerConnection.sendPacket(new PacketPlayOutExperience(this.exp, this.expTotal, this.expLevel));
             }
 
-            if (this.ticksLived % 20 * 5 == 0 && !this.getStatisticManager().hasAchievement(AchievementList.L)) {
+            if (false && this.ticksLived % 20 * 5 == 0 && !this.getStatisticManager().hasAchievement(AchievementList.L)) { // we don't care about this
                 this.j();
             }
 
@@ -323,7 +357,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.a(crashreportsystemdetails);
             throw new ReportedException(crashreport);
         }
-        this.world.timings.entityPlayerTickOnMove.stopTiming(); // Poweruser
+        this.world.timings.entityPlayerTickOnMove.stopTiming(); // CobelPvP
     }
 
     protected void j() {
@@ -407,11 +441,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
         if (!event.getKeepInventory()) {
             for (int i = 0; i < this.inventory.items.length; ++i) {
-                this.inventory.items[i] = null;
+                this.inventory.setItem(i, null);
             }
 
             for (int i = 0; i < this.inventory.armor.length; ++i) {
-                this.inventory.armor[i] = null;
+                this.inventory.player.setEquipment(i, null);
             }
         }
 
@@ -443,6 +477,63 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
         this.a(StatisticList.v, 1);
         this.aW().g();
+
+        // Griffin start - Instant respawn
+        if (getBukkitEntity().isOnline() && SpigotConfig.instantRespawn) {
+            // exp start - we have to handle it here because that's handled somewhere else (while the entity is still dead, which doesn't happen with this)
+            // code borrowed from EntityLiving
+            int i;
+            i = this.expToDrop;
+            while (i > 0) {
+                int j = EntityExperienceOrb.getOrbValue(i);
+
+                i -= j;
+                this.world.addEntity(new EntityExperienceOrb(this.world, this.locX, this.locY, this.locZ, j));
+            }
+            this.expToDrop = 0;
+            // exp end
+
+            ChunkCoordinates chunkcoordinates = getBed();
+            ChunkCoordinates chunkcoordinates1;
+
+            Location location = null;
+
+            boolean isBedSpawn = false;
+            CraftWorld cworld = (CraftWorld) this.server.server.getWorld(spawnWorld);
+            if (cworld != null && chunkcoordinates != null) {
+                chunkcoordinates1 = EntityHuman.getBed(cworld.getHandle(), chunkcoordinates, isRespawnForced());
+                if (chunkcoordinates1 != null) {
+                    isBedSpawn = true;
+                    location = new Location(cworld, chunkcoordinates1.x + 0.5, chunkcoordinates1.y, chunkcoordinates1.z + 0.5);
+                } else {
+                    setRespawnPosition(null, true);
+                    playerConnection.sendPacket(new PacketPlayOutGameStateChange(0, 0));
+                }
+            }
+
+            if (location == null) {
+                cworld = (CraftWorld) this.server.server.getWorlds().get(0);
+                chunkcoordinates = cworld.getHandle().getSpawn();
+
+                location = new Location(cworld, chunkcoordinates.x + 0.5, chunkcoordinates.y, chunkcoordinates.z + 0.5, cworld.getHandle().getWorldData().getSpawnYaw(), cworld.getHandle().getWorldData().getSpawnPitch()); // CobelPvP
+            }
+
+            Player respawnPlayer = getBukkitEntity();
+            PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent(respawnPlayer, location, isBedSpawn);
+            Bukkit.getPluginManager().callEvent(respawnEvent);
+
+            if (playerConnection.isDisconnected()) {
+                return;
+            }
+
+            location = respawnEvent.getRespawnLocation();
+            reset();
+
+            getBukkitEntity().teleport(location);
+
+            dead = false;
+        }
+        // Griffin end - Instant respawn
     }
 
     public boolean damageEntity(DamageSource damagesource, float f) {
@@ -478,7 +569,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
     public boolean a(EntityHuman entityhuman) {
         // CraftBukkit - this.server.getPvP() -> this.world.pvpMode
-        return !this.world.pvpMode ? false : super.a(entityhuman);
+        return this.world.pvpMode && super.a(entityhuman);
     }
 
     public void b(int i) {
@@ -582,6 +673,15 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         if (currentVehicle != this.vehicle) {
             this.playerConnection.sendPacket(new PacketPlayOutAttachEntity(0, this, this.vehicle));
             this.playerConnection.a(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
+            // CobelPvP start
+            if (this.vehicle instanceof EntityLiving) {
+                AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.vehicle).getAttributeMap();
+                Collection collection = attributemapserver.c();
+                if (!collection.isEmpty()) {
+                    this.playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.vehicle.getId(), collection));
+                }
+            }
+            // CobelPvP end
         }
         // CraftBukkit end
     }
@@ -892,6 +992,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void a(Statistic statistic, int i) {
+        if (true) return; // we don't care about statistics
         if (statistic != null) {
             this.bO.b(this, statistic, i);
             Iterator iterator = this.getScoreboard().getObjectivesForCriteria(statistic.k()).iterator();
@@ -944,22 +1045,30 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.lastSentExp = -1;
         this.bQ = -1.0F;
         this.bR = -1;
-        this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue);
+        // this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue); // CobelPvP
     }
 
     protected void a(MobEffect mobeffect) {
         super.a(mobeffect);
-        this.playerConnection.sendPacket(new PacketPlayOutEntityEffect(this.getId(), mobeffect));
+        if (this.playerConnection != null) {
+            this.playerConnection.sendPacket(new PacketPlayOutEntityEffect(this.getId(), mobeffect));
+        }
     }
 
     protected void a(MobEffect mobeffect, boolean flag) {
         super.a(mobeffect, flag);
-        this.playerConnection.sendPacket(new PacketPlayOutEntityEffect(this.getId(), mobeffect));
+
+        if (this.playerConnection != null) {
+            this.playerConnection.sendPacket(new PacketPlayOutEntityEffect(this.getId(), mobeffect));
+        }
     }
 
     protected void b(MobEffect mobeffect) {
         super.b(mobeffect);
-        this.playerConnection.sendPacket(new PacketPlayOutRemoveEntityEffect(this.getId(), mobeffect));
+        
+        if (this.playerConnection != null) {
+            this.playerConnection.sendPacket(new PacketPlayOutRemoveEntityEffect(this.getId(), mobeffect));
+        }
     }
 
     public void enderTeleportTo(double d0, double d1, double d2) {
@@ -1078,11 +1187,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void d(Entity entity) {
-        if (entity instanceof EntityHuman) {
-            this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[] { entity.getId()}));
-        } else {
-            this.removeQueue.add(Integer.valueOf(entity.getId()));
-        }
+        this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[] { entity.getId() })); // CobelPvP
     }
 
     public long x() {

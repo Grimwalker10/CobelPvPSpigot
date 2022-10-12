@@ -1,6 +1,5 @@
 package net.minecraft.server;
 
-import java.security.PrivateKey;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.UUID;
@@ -17,12 +16,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 // Pweruser start
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import net.frozenorb.NamePriorityThreadFactory;
-import net.frozenorb.ThreadingManager;
-// Poweruser end
+import net.minecraft.optimizations.ThreadingManager;
+// CobelPvP end
 
 public class LoginListener implements PacketLoginInListener {
 
@@ -47,7 +42,7 @@ public class LoginListener implements PacketLoginInListener {
         random.nextBytes(this.e);
     }
 
-    // Poweruser start
+    // CobelPvP start
     private IllegalStateException authenticationException;
 
     protected void caughtAuthenticationException(Exception e) {
@@ -68,7 +63,7 @@ public class LoginListener implements PacketLoginInListener {
             this.authenticationException = null;
             throw exception;
         }
-    // Poweruser end
+    // CobelPvP end
 
         if (this.g == EnumProtocolState.READY_TO_ACCEPT) {
             this.c();
@@ -84,7 +79,7 @@ public class LoginListener implements PacketLoginInListener {
             c.info("Disconnecting " + this.i.getName() + ": " + s);
             ChatComponentText chatcomponenttext = new ChatComponentText(s);
 
-            this.networkManager.handle(new PacketLoginOutDisconnect(chatcomponenttext), NetworkManager.emptyListenerArray); // Poweruser
+            this.networkManager.handle(new PacketLoginOutDisconnect(chatcomponenttext), NetworkManager.emptyListenerArray); // CobelPvP
             this.networkManager.close(chatcomponenttext);
         } catch (Exception exception) {
             c.error("Error whilst disconnecting player", exception);
@@ -145,7 +140,7 @@ public class LoginListener implements PacketLoginInListener {
                 } );
             }
             // Spigot end
-            this.networkManager.handle(new PacketLoginOutSuccess(this.i), NetworkManager.emptyListenerArray); // Poweruser
+            this.networkManager.handle(new PacketLoginOutSuccess(this.i), NetworkManager.emptyListenerArray); // CobelPvP
             this.server.getPlayerList().a(this.networkManager, this.server.getPlayerList().processLogin(this.i, s)); // CraftBukkit - add player reference
         }
     }
@@ -155,7 +150,7 @@ public class LoginListener implements PacketLoginInListener {
     }
 
     public String getName() {
-        return this.i != null ? this.i.toString() + " (" + this.networkManager.getSocketAddress().toString() + ")" : String.valueOf(this.networkManager.getSocketAddress());
+        return this.i != null ? "[" + this.i.getName() + ", " + this.i.getId() + "]" + " (" + this.networkManager.getSocketAddress().toString() + ")" : String.valueOf(this.networkManager.getSocketAddress());
     }
 
     public void a(EnumProtocol enumprotocol, EnumProtocol enumprotocol1) {
@@ -168,9 +163,9 @@ public class LoginListener implements PacketLoginInListener {
         this.i = packetlogininstart.c();
         if (this.server.getOnlineMode() && !this.networkManager.c()) {
             this.g = EnumProtocolState.KEY;
-            this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.K().getPublic(), this.e), NetworkManager.emptyListenerArray); // Poweruser
+            this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.K().getPublic(), this.e), NetworkManager.emptyListenerArray); // CobelPvP
         } else {
-            ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // Poweruser
+            ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // CobelPvP
         }
     }
 
@@ -186,10 +181,10 @@ public class LoginListener implements PacketLoginInListener {
             this.loginKey = packetlogininencryptionbegin.a(privatekey);
             this.g = EnumProtocolState.AUTHENTICATING;
             this.networkManager.a(this.loginKey);
-            ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // Poweruser
+            ThreadingManager.execute(new ThreadPlayerLookupUUID(this)); // CobelPvP
         }
         */
-        ThreadingManager.execute(new ThreadPlayerLookupUUID(this, packetlogininencryptionbegin)); // Poweruser
+        ThreadingManager.execute(new ThreadPlayerLookupUUID(this, packetlogininencryptionbegin)); // CobelPvP
     }
 
     protected GameProfile a(GameProfile gameprofile) {

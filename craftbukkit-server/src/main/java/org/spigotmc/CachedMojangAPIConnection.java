@@ -30,7 +30,7 @@ public class CachedMojangAPIConnection extends HttpURLConnection
 
     private static final Cache<String, String> cache = CacheBuilder.newBuilder()
             .maximumSize( 10000 )
-            .expireAfterAccess( 1, TimeUnit.HOURS )
+            .expireAfterAccess( 30, TimeUnit.MINUTES )
             .build();
 
     public CachedMojangAPIConnection(CachedStreamHandlerFactory.CachedStreamHandler cachedStreamHandler, URL url, Proxy proxy)

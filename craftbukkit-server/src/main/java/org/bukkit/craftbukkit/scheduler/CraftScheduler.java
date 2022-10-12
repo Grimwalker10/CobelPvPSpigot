@@ -8,13 +8,12 @@ import java.util.PriorityQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
-import net.frozenorb.ThreadingManager; // Poweruser
+import net.minecraft.optimizations.ThreadingManager; // CobelPvP
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.plugin.IllegalPluginAccessException;
@@ -74,10 +73,12 @@ public class CraftScheduler implements BukkitScheduler {
      */
     private final ConcurrentHashMap<Integer, CraftTask> runners = new ConcurrentHashMap<Integer, CraftTask>();
     private volatile int currentTick = -1;
-    private final Executor executor = ThreadingManager.getCommonThreadPool(); // Poweruser
+    private final Executor executor = ThreadingManager.getCommonThreadPool(); // CobelPvP
+    // CobelPvP start - nope
     private CraftAsyncDebugger debugHead = new CraftAsyncDebugger(-1, null, null) {@Override StringBuilder debugTo(StringBuilder string) {return string;}};
     private CraftAsyncDebugger debugTail = debugHead;
     private static final int RECENT_TICKS;
+    // CobelPvP end
 
     static {
         RECENT_TICKS = 30;
@@ -362,7 +363,7 @@ public class CraftScheduler implements BukkitScheduler {
                 }
                 parsePending();
             } else {
-                debugTail = debugTail.setNext(new CraftAsyncDebugger(currentTick + RECENT_TICKS, task.getOwner(), task.getTaskClass()));
+                // debugTail = debugTail.setNext(new CraftAsyncDebugger(currentTick + RECENT_TICKS, task.getOwner(), task.getTaskClass())); // CobelPvP - nope
                 executor.execute(task);
                 // We don't need to parse pending
                 // (async tasks must live with race-conditions if they attempt to cancel between these few lines of code)
@@ -377,7 +378,7 @@ public class CraftScheduler implements BukkitScheduler {
         }
         pending.addAll(temp);
         temp.clear();
-        debugHead = debugHead.getNextHead(currentTick);
+        // debugHead = debugHead.getNextHead(currentTick); // CobelPvP - nope
     }
 
     private void addTask(final CraftTask task) {
@@ -434,10 +435,15 @@ public class CraftScheduler implements BukkitScheduler {
 
     @Override
     public String toString() {
+        // CobelPvP start
+        return "";
+        /*
         int debugTick = currentTick;
         StringBuilder string = new StringBuilder("Recent tasks from ").append(debugTick - RECENT_TICKS).append('-').append(debugTick).append('{');
         debugHead.debugTo(string);
         return string.append('}').toString();
+        */
+        // CobelPvP end
     }
 
     @Deprecated

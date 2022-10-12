@@ -6,7 +6,8 @@ import java.util.List;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.BrewEvent;
-import io.kohi.kspigot.potion.PotionsConfig;
+import net.minecraft.optimizations.util.PotionsConfig;
+import org.spigotmc.SpigotConfig;
 // CraftBukkit end
 
 public class TileEntityBrewingStand extends TileEntity implements IWorldInventory {
@@ -69,7 +70,7 @@ public class TileEntityBrewingStand extends TileEntity implements IWorldInventor
         this.lastTick = MinecraftServer.currentTick;
 
         if (this.brewTime > 0) {
-            this.brewTime -= elapsedTicks;
+            this.brewTime -= elapsedTicks * SpigotConfig.brewingMultiplier; // CobelPvP
             if (this.brewTime <= 0) { // == -> <=
                 // CraftBukkit end
                 this.l();

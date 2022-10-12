@@ -61,7 +61,7 @@ public abstract class Container {
     }
 
     public List a() {
-        ArrayList arraylist = new ArrayList();
+        ArrayList arraylist = new ArrayList(this.c.size()); // CobelPvP
 
         for (int i = 0; i < this.c.size(); ++i) {
             arraylist.add(((Slot) this.c.get(i)).getItem());
@@ -75,7 +75,7 @@ public abstract class Container {
             ItemStack itemstack = ((Slot) this.c.get(i)).getItem();
             ItemStack itemstack1 = (ItemStack) this.b.get(i);
 
-            if (!ItemStack.fastMatches(itemstack1, itemstack) || (tickCount % 5 == 0 && !ItemStack.matches(itemstack1, itemstack))) { // Spigot
+            if (!ItemStack.fastMatches(itemstack1, itemstack) || (tickCount % 20 == 0 && !ItemStack.matches(itemstack1, itemstack))) { // Spigot
                 itemstack1 = itemstack == null ? null : itemstack.cloneItemStack();
                 this.b.set(i, itemstack1);
 

@@ -35,11 +35,14 @@ public class FileIOThread implements Runnable {
                 ++this.d;
             }
 
+            // CobelPvP - don't sleep
+            /*
             try {
                 Thread.sleep(this.e ? 0L : 10L);
             } catch (InterruptedException interruptedexception) {
                 interruptedexception.printStackTrace();
             }
+            */
         }
 
         if (this.b.isEmpty()) {
@@ -68,7 +71,7 @@ public class FileIOThread implements Runnable {
         this.e = false;
     }
 
-    // Poweruser start
+    // CobelPvP start
     public boolean isDone() {
         return this.c == this.d;
     }
@@ -76,5 +79,5 @@ public class FileIOThread implements Runnable {
     public void setNoDelay(boolean active) {
         this.e = active;
     }
-    // Poweruser end
+    // CobelPvP end
 }

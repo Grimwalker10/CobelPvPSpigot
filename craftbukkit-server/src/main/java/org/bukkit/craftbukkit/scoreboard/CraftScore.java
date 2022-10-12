@@ -56,7 +56,7 @@ final class CraftScore implements Score {
     }
 
     // Spigot start
-    @Override
+    @Override    
     public boolean isScoreSet() throws IllegalStateException {
         Scoreboard board = objective.checkState().board;
 

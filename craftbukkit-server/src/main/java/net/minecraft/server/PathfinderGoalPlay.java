@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import net.minecraft.optimizations.pathsearch.PositionPathSearchType;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -81,7 +83,7 @@ public class PathfinderGoalPlay extends PathfinderGoal {
                 return;
             }
 
-            this.a.getNavigation().a(net.frozenorb.pathsearch.PositionPathSearchType.PLAY, vec3d.a, vec3d.b, vec3d.c, this.c); // Poweruser
+            this.a.getNavigation().a(PositionPathSearchType.PLAY, vec3d.a, vec3d.b, vec3d.c, this.c); // CobelPvP
         }
     }
 }

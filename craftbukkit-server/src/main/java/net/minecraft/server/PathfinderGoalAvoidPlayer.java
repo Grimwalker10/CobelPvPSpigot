@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import net.minecraft.optimizations.pathsearch.PositionPathSearchType;
+
 import java.util.List;
 
 public class PathfinderGoalAvoidPlayer extends PathfinderGoal {
@@ -51,7 +53,7 @@ public class PathfinderGoalAvoidPlayer extends PathfinderGoal {
         } else if (this.e.e(vec3d.a, vec3d.b, vec3d.c) < this.e.f((Entity) this.b)) {
             return false;
         } else {
-            this.g = this.h.a(net.frozenorb.pathsearch.PositionPathSearchType.AVOIDPLAYER, vec3d.a, vec3d.b, vec3d.c); // Poweruser
+            this.g = this.h.a(PositionPathSearchType.AVOIDPLAYER, vec3d.a, vec3d.b, vec3d.c); // CobelPvP
             return this.g == null ? false : this.g.b(vec3d);
         }
     }

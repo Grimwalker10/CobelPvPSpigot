@@ -76,7 +76,7 @@ public final class SpawnerCreature {
                         // CraftBukkit start - use LongHash and LongObjectHashMap
                         long chunkCoords = LongHash.toLong(l + k, i1 + j);
 
-                        if (!flag3) {
+                        if (!flag3 && worldserver.isChunkLoaded((i1 + l) >> 4, (k + j) >> 4)) { // CobelPvP
                             this.a.put(chunkCoords, false);
                         } else if (!this.a.containsKey(chunkCoords)) {
                             this.a.put(chunkCoords, true);

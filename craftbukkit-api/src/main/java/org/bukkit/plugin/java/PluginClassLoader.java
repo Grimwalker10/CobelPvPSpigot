@@ -48,7 +48,7 @@ final class PluginClassLoader extends URLClassLoader {
         }
     }
     // Spigot End
-
+    
     PluginClassLoader(final JavaPluginLoader loader, final ClassLoader parent, final PluginDescriptionFile description, final File dataFolder, final File file) throws InvalidPluginException, MalformedURLException {
         super(new URL[] {file.toURI().toURL()}, parent);
         Validate.notNull(loader, "Loader cannot be null");

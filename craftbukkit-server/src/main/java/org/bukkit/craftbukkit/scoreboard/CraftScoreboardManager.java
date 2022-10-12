@@ -67,6 +67,8 @@ public final class CraftScoreboardManager implements ScoreboardManager {
             return;
         }
 
+        if (oldboard != null) oldboard.removeViewer(entityplayer); // CobelPvP
+
         if (scoreboard == mainScoreboard) {
             playerBoards.remove(player);
         } else {
@@ -96,7 +98,13 @@ public final class CraftScoreboardManager implements ScoreboardManager {
 
     // CraftBukkit method
     public void removePlayer(Player player) {
-        playerBoards.remove(player);
+        // CobelPvP start
+        CraftPlayer craftPlayer = (CraftPlayer) player;
+        CraftScoreboard scoreboard = playerBoards.remove(craftPlayer);
+        if (scoreboard != null) {
+            scoreboard.getHandle().removeViewer(craftPlayer.getHandle());
+        }
+        // CobelPvP end
     }
 
     // CraftBukkit method

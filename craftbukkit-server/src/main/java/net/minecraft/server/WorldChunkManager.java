@@ -23,16 +23,16 @@ public class WorldChunkManager {
         this.f.add(BiomeBase.JUNGLE_HILLS);
     }
 
-    public WorldChunkManager(long i, WorldType worldtype) {
+    public WorldChunkManager(long i, WorldType worldtype, World world) { // CobelPvP - add world
         this();
-        GenLayer[] agenlayer = GenLayer.a(i, worldtype);
+        GenLayer[] agenlayer = GenLayer.a(i, worldtype, world); // CobelPvP - add world
 
         this.c = agenlayer[0];
         this.d = agenlayer[1];
     }
 
     public WorldChunkManager(World world) {
-        this(world.getSeed(), world.getWorldData().getType());
+        this(world.getSeed(), world.getWorldData().getType(), world); // CobelPvP - add world
     }
 
     public List a() {

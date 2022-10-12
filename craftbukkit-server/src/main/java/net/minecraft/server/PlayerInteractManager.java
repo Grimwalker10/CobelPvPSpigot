@@ -2,6 +2,13 @@ package net.minecraft.server;
 
 // CraftBukkit start
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDropItemsEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
@@ -309,7 +316,19 @@ public class PlayerInteractManager {
                 }
 
                 if (flag && flag1) {
+                    // CobelPvP start
+                    List<org.bukkit.entity.Item> items = new ArrayList<org.bukkit.entity.Item>(1);
+                    block.droppedItemsCatcher = items;
                     block.a(this.world, this.player, i, j, k, l);
+                    block.droppedItemsCatcher = null;
+                    BlockDropItemsEvent dropItemsEvent = new BlockDropItemsEvent(this.world.getWorld().getBlockAt(i, j, k), this.player.getBukkitEntity(), items);
+                    Bukkit.getPluginManager().callEvent(dropItemsEvent);
+                    if (!dropItemsEvent.isCancelled() && dropItemsEvent.getToDrop() != null) {
+                        for (final org.bukkit.entity.Item item : dropItemsEvent.getToDrop()) {
+                            this.world.addEntity(((CraftItem) item).getHandle());
+                        }
+                    }
+                    // CobelPvP end
                 }
             }
 
@@ -395,7 +414,18 @@ public class PlayerInteractManager {
                 int j1 = itemstack.getData();
                 int k1 = itemstack.count;
 
-                result = itemstack.placeItem(entityhuman, world, i, j, k, l, f, f1, f2);
+                // CobelPvP start - hack to silence sounds from cancelled block place
+                try {
+                    world.interceptSounds();
+                    result = itemstack.placeItem(entityhuman, world, i, j, k, l, f, f1, f2);
+                } finally {
+                    if (result) {
+                        world.sendInterceptedSounds();
+                    } else {
+                        world.clearInterceptedSounds();
+                    }
+                }
+                // CobelPvP end
 
                 // The item count should not decrement in Creative mode.
                 if (this.isCreative()) {
@@ -405,7 +435,7 @@ public class PlayerInteractManager {
             }
 
             // If we have 'true' and no explicit deny *or* an explicit allow -- run the item part of the hook
-            if (itemstack != null && ((!result && event.useItemInHand() != Event.Result.DENY && !(block == Blocks.FENCE || block == Blocks.NETHER_FENCE)) || event.useItemInHand() == Event.Result.ALLOW)) { // Poweruser - special case fences
+            if (itemstack != null && ((!result && event.useItemInHand() != Event.Result.DENY && !(block == Blocks.FENCE || block == Blocks.NETHER_FENCE)) || event.useItemInHand() == Event.Result.ALLOW)) { // CobelPvP - special case fences
                 this.useItem(entityhuman, world, itemstack);
             }
         }

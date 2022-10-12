@@ -7,6 +7,7 @@ import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit; // PaperSpigot
@@ -23,10 +24,12 @@ import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.event.server.ServerCommandEvent;
 // CraftBukkit end
 
+import net.minecraft.util.com.google.common.collect.Queues;
+
 public class DedicatedServer extends MinecraftServer implements IMinecraftServer {
 
     private static final Logger i = LogManager.getLogger();
-    private final List j = Collections.synchronizedList(new ArrayList());
+    private final Queue<ServerCommand> commandsQueue = Queues.newConcurrentLinkedQueue();
     private RemoteStatusListener k;
     private RemoteControlListener l;
     public PropertyManager propertyManager; // CraftBukkit - private -> public
@@ -70,14 +73,14 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
         System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
         // CraftBukkit end
 
-        i.info("Starting minecraft server version 1.7.10");
+        aF().info("Starting minecraft server version 1.7.10");
         if (Runtime.getRuntime().maxMemory() / 1024L / 1024L < 512L) {
-            i.warn("To start the server with more ram, launch it as \"java -Xmx1024M -Xms1024M -jar minecraft_server.jar\"");
+            aF().warn("To start the server with more ram, launch it as \"java -Xmx1024M -Xms1024M -jar minecraft_server.jar\"");
         }
 
-        i.info("Loading properties");
+        aF().info("Loading properties");
         this.propertyManager = new PropertyManager(this.options); // CraftBukkit - CLI argument support
-        // MineHQ - screw the EULA
+        // CobelPvP - screw the EULA
         if (true) {
             if (this.N()) {
                 this.c("127.0.0.1");
@@ -104,7 +107,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             int gamemode = this.propertyManager.getInt("gamemode", EnumGamemode.SURVIVAL.getId()); // CraftBukkit - Unique name to avoid stomping on logger
 
             this.p = WorldSettings.a(gamemode); // CraftBukkit - Use new name
-            i.info("Default game type: " + this.p);
+            aF().info("Default game type: " + this.p);
             InetAddress inetaddress = null;
 
             if (this.getServerIp().length() > 0) {
@@ -124,17 +127,17 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             org.github.paperspigot.PaperSpigotConfig.registerCommands();
             // PaperSpigot stop
 
-            i.info("Generating keypair");
+            aF().info("Generating keypair");
             this.a(MinecraftEncryption.b());
-            i.info("Starting Minecraft server on " + (this.getServerIp().length() == 0 ? "*" : this.getServerIp()) + ":" + this.L());
+            aF().info("Starting Minecraft server on " + (this.getServerIp().length() == 0 ? "*" : this.getServerIp()) + ":" + this.L());
 
         if (!org.spigotmc.SpigotConfig.lateBind) {
             try {
                 this.ai().a(inetaddress, this.L());
             } catch (Throwable ioexception) { // CraftBukkit - IOException -> Throwable
-                i.warn("**** FAILED TO BIND TO PORT!");
-                i.warn("The exception was: {}", new Object[] { ioexception.toString()});
-                i.warn("Perhaps a server is already running on that port?");
+                aF().warn("**** FAILED TO BIND TO PORT!");
+                aF().warn("The exception was: {}", new Object[] { ioexception.toString()});
+                aF().warn("Perhaps a server is already running on that port?");
                 return false;
             }
         }
@@ -146,10 +149,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             // Spigot End
 
             if (!this.getOnlineMode()) {
-                i.warn("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
-                i.warn("The server will make no attempt to authenticate usernames. Beware.");
-                i.warn("While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.");
-                i.warn("To change this, set \"online-mode\" to \"true\" in the server.properties file.");
+                aF().warn("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
+                aF().warn("The server will make no attempt to authenticate usernames. Beware.");
+                aF().warn("While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.");
+                aF().warn("To change this, set \"online-mode\" to \"true\" in the server.properties file.");
             }
 
             if (this.aE()) {
@@ -198,20 +201,20 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                 this.c((this.getMaxBuildHeight() + 8) / 16 * 16);
                 this.c(MathHelper.a(this.getMaxBuildHeight(), 64, 256));
                 this.propertyManager.setProperty("max-build-height", Integer.valueOf(this.getMaxBuildHeight()));
-                i.info("Preparing level \"" + this.O() + "\"");
+                aF().info("Preparing level \"" + this.O() + "\"");
                 this.a(this.O(), this.O(), k, worldtype, s2);
                 long i1 = System.nanoTime() - j;
                 String s3 = String.format("%.3fs", new Object[] { Double.valueOf((double) i1 / 1.0E9D)});
 
-                i.info("Done (" + s3 + ")! For help, type \"help\" or \"?\"");
+                aF().info("Done (" + s3 + ")! For help, type \"help\" or \"?\"");
                 if (this.propertyManager.getBoolean("enable-query", false)) {
-                    i.info("Starting GS4 status listener");
+                    aF().info("Starting GS4 status listener");
                     this.k = new RemoteStatusListener(this);
                     this.k.a();
                 }
 
                 if (this.propertyManager.getBoolean("enable-rcon", false)) {
-                    i.info("Starting remote control listener");
+                    aF().info("Starting remote control listener");
                     this.l = new RemoteControlListener(this);
                     this.l.a();
                     this.remoteConsole = new org.bukkit.craftbukkit.command.CraftRemoteConsoleCommandSender(); // CraftBukkit
@@ -219,7 +222,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 
                 // CraftBukkit start
                 if (this.server.getBukkitSpawnRadius() > -1) {
-                    i.info("'settings.spawn-radius' in bukkit.yml has been moved to 'spawn-protection' in server.properties. I will move your config for you.");
+                    aF().info("'settings.spawn-radius' in bukkit.yml has been moved to 'spawn-protection' in server.properties. I will move your config for you.");
                     this.propertyManager.properties.remove("spawn-protection");
                     this.propertyManager.getInt("spawn-protection", this.server.getBukkitSpawnRadius());
                     this.server.removeBukkitSpawnRadius();
@@ -231,9 +234,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             try {
                 this.ai().a(inetaddress, this.L());
             } catch (Throwable ioexception) { // CraftBukkit - IOException -> Throwable
-                i.warn("**** FAILED TO BIND TO PORT!");
-                i.warn("The exception was: {}", new Object[] { ioexception.toString()});
-                i.warn("Perhaps a server is already running on that port?");
+                aF().warn("**** FAILED TO BIND TO PORT!");
+                aF().warn("The exception was: {}", new Object[] { ioexception.toString()});
+                aF().warn("Perhaps a server is already running on that port?");
                 return false;
             }
         }
@@ -302,23 +305,26 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     }
 
     public void issueCommand(String s, ICommandListener icommandlistener) {
-        this.j.add(new ServerCommand(s, icommandlistener));
+        this.commandsQueue.add(new ServerCommand(s, icommandlistener));
     }
 
     public void aB() {
         SpigotTimings.serverCommandTimer.startTiming(); // Spigot
-        while (!this.j.isEmpty()) {
-            ServerCommand servercommand = (ServerCommand) this.j.remove(0);
 
+        // CobelPvP start - better server command queue
+        ServerCommand queuedCommand;
+        while ((queuedCommand = this.commandsQueue.poll()) != null) {
             // CraftBukkit start - ServerCommand for preprocessing
-            ServerCommandEvent event = new ServerCommandEvent(this.console, servercommand.command);
+            ServerCommandEvent event = new ServerCommandEvent(this.console, queuedCommand.command);
             this.server.getPluginManager().callEvent(event);
-            servercommand = new ServerCommand(event.getCommand(), servercommand.source);
+            queuedCommand = new ServerCommand(event.getCommand(), queuedCommand.source);
 
             // this.getCommandHandler().a(servercommand.source, servercommand.command); // Called in dispatchServerCommand
-            this.server.dispatchServerCommand(this.console, servercommand);
+            this.server.dispatchServerCommand(this.console, queuedCommand);
             // CraftBukkit end
         }
+        // CobelPvP end
+        
         SpigotTimings.serverCommandTimer.stopTiming(); // Spigot
     }
 

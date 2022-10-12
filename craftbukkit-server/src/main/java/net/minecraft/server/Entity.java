@@ -1,39 +1,39 @@
 package net.minecraft.server;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Server;
+import org.bukkit.TravelAgent;
+import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.SpigotTimings;
+import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.entity.Hanging;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Painting;
+import org.bukkit.entity.Vehicle;
+import org.bukkit.event.entity.EntityCombustByEntityEvent;
+import org.bukkit.event.entity.EntityCombustEvent;
+import org.bukkit.event.entity.EntityPortalEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.painting.PaintingBreakByEntityEvent;
+import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.plugin.PluginManager;
+import org.spigotmc.CustomTimingsHandler;
+
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
 // CraftBukkit start
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Server;
-import org.bukkit.TravelAgent;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Hanging;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Painting;
-import org.bukkit.entity.Vehicle;
-import org.spigotmc.CustomTimingsHandler; // Spigot
-import org.bukkit.event.entity.EntityCombustByEntityEvent;
-import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.painting.PaintingBreakByEntityEvent;
-import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.event.vehicle.VehicleExitEvent;
-import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.entity.CraftEntity;
-import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.bukkit.event.entity.EntityCombustEvent;
-import org.bukkit.event.entity.EntityPortalEvent;
-import org.bukkit.plugin.PluginManager;
 // CraftBukkit end
-
-// Poweruser start
-import org.bukkit.craftbukkit.SpigotTimings;
-// Poweruser end
+// CobelPvP start
+// CobelPvP end
 
 public abstract class Entity {
 
@@ -136,10 +136,10 @@ public abstract class Entity {
     public void inactiveTick() { }
     // Spigot end
 
-    // Poweruser start
+    // CobelPvP start
     private boolean isInLava;
     private int lastLavaCheck;
-    // Poweruser end
+    // CobelPvP end
 
     public int getId() {
         return this.id;
@@ -275,7 +275,7 @@ public abstract class Entity {
     }
 
     public void C() {
-        SpigotTimings.timerEntity_C.startTiming(); // Poweruser
+        SpigotTimings.timerEntity_C.startTiming(); // CobelPvP
         this.world.methodProfiler.a("entityBaseTick");
         if (this.vehicle != null && this.vehicle.dead) {
             this.vehicle = null;
@@ -307,9 +307,9 @@ public abstract class Entity {
                             b0 = -1;
                         }
 
-                        SpigotTimings.timerEntity_C_portal.startTiming(); // Poweruser
+                        SpigotTimings.timerEntity_C_portal.startTiming(); // CobelPvP
                         this.b(b0);
-                        SpigotTimings.timerEntity_C_portal.stopTiming(); // Poweruser
+                        SpigotTimings.timerEntity_C_portal.stopTiming(); // CobelPvP
                     }
 
                     this.an = false;
@@ -376,7 +376,7 @@ public abstract class Entity {
 
         this.justCreated = false;
         this.world.methodProfiler.b();
-        SpigotTimings.timerEntity_C.stopTiming(); // Poweruser
+        SpigotTimings.timerEntity_C.stopTiming(); // CobelPvP
     }
 
     public int D() {
@@ -440,8 +440,17 @@ public abstract class Entity {
      * PaperSpigot - Load surrounding chunks the entity is moving through
      */
     public void loadChunks() {
-        for (int cx = (int) locX >> 4; cx <= (int) (locX + motX) >> 4; ++cx) {
-            for (int cz = (int) locZ >> 4; cz <= (int) (locZ + motZ) >> 4; ++cz) {
+        int xstart = MathHelper.floor(this.locX);
+        int zstart = MathHelper.floor(this.locZ);
+        int xend = MathHelper.floor(this.locX + this.motX);
+        int zend = MathHelper.floor(this.locZ + this.motZ);
+
+        int xmin = Math.min(xstart, xend) - 3;
+        int xmax = Math.max(xstart, xend) + 3;
+        int zmin = Math.min(zstart, zend) - 3;
+        int zmax = Math.max(zstart, zend) + 3;
+        for (int cx = xmin >> 4; cx <= xmax >> 4; ++cx) {
+            for (int cz = zmin >> 4; cz <= zmax >> 4; ++cz) {
                 world.chunkProvider.getChunkAt(cx, cz);
             }
         }
@@ -478,6 +487,7 @@ public abstract class Entity {
             double d4 = this.locY;
             double d5 = this.locZ;
 
+            // if in web, make the entity's motion slower
             if (this.I) {
                 this.I = false;
                 d0 *= 0.25D;
@@ -933,7 +943,7 @@ public abstract class Entity {
     }
 
     public boolean P() {
-    // Poweruser start
+    // CobelPvP start
         return this.P(this.world);
     }
 
@@ -945,7 +955,7 @@ public abstract class Entity {
         }
         return this.isInLava;
     }
-    // Poweruser end
+    // CobelPvP end
 
     public void a(float f, float f1, float f2) {
         float f3 = f * f + f1 * f1;
@@ -1370,7 +1380,16 @@ public abstract class Entity {
         return !this.dead;
     }
 
+    private int lastInBlockTick = -1;
+    private boolean lastInBlockResult = false;
+
     public boolean inBlock() {
+        int currentTick = MinecraftServer.currentTick;
+        
+        if (lastInBlockTick == currentTick) {
+            return lastInBlockResult;
+        }
+
         for (int i = 0; i < 8; ++i) {
             float f = ((float) ((i >> 0) % 2) - 0.5F) * this.width * 0.8F;
             float f1 = ((float) ((i >> 1) % 2) - 0.5F) * 0.1F;
@@ -1380,10 +1399,14 @@ public abstract class Entity {
             int l = MathHelper.floor(this.locZ + (double) f2);
 
             if (this.world.getType(j, k, l).r()) {
+                lastInBlockTick = currentTick;
+                lastInBlockResult = true;
                 return true;
             }
         }
 
+        lastInBlockTick = currentTick;
+        lastInBlockResult = false;
         return false;
     }
 

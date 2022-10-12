@@ -18,7 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.world.StructureGrowEvent;
 // CraftBukkit end
 
-import net.frozenorb.ThreadingManager; // Poweruser
+import net.minecraft.optimizations.ThreadingManager; // CobelPvP
 
 public final class ItemStack {
 
@@ -248,7 +248,7 @@ public final class ItemStack {
             }
 
             final String finalOwner = owner;
-            ThreadingManager.queueHeadConversion(new Runnable() // Poweruser
+            ThreadingManager.queueHeadConversion(new Runnable() // CobelPvP
             {
                 @Override
                 public void run()
@@ -273,7 +273,7 @@ public final class ItemStack {
         }
     }
     // Spigot end
-
+    
     public int getMaxStackSize() {
         return this.getItem().getMaxStackSize();
     }

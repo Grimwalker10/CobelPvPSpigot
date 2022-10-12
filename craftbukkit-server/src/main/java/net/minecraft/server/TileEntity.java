@@ -38,7 +38,7 @@ public class TileEntity {
             }
         }
     }
-
+    
     // Called from update when the contents have changed, so hoppers need updates.
     // Check all 6 faces.
     public void scheduleTicks() {

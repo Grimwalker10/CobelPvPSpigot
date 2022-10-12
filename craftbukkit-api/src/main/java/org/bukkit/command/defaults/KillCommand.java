@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -23,7 +25,18 @@ public class KillCommand extends VanillaCommand {
         if (!testPermission(sender)) return true;
 
         if (sender instanceof Player) {
-            Player player = (Player) sender;
+            Player player = null;
+            if(args.length > 0)
+            {
+                Player target = Bukkit.getPlayerExact(args[0]);
+                if(target != null) player = target;
+                else
+                {
+                    sender.sendMessage(args[0] + " not found.");
+                    return false;
+                }
+            }
+            if(player == null) player = (Player) sender;
 
             EntityDamageEvent ede = new EntityDamageEvent(player, EntityDamageEvent.DamageCause.SUICIDE, 1000);
             Bukkit.getPluginManager().callEvent(ede);
@@ -31,9 +44,10 @@ public class KillCommand extends VanillaCommand {
 
             ede.getEntity().setLastDamageCause(ede);
             player.setHealth(0);
-            sender.sendMessage("Ouch. That look like it hurt.");
+            sender.sendMessage(ChatColor.YELLOW + "You've killed " + ChatColor.GREEN + (player.getUniqueId().equals(((Player) sender).getUniqueId()) ? "yourself" : player.getName()) + ChatColor.YELLOW + ".");
+            Command.broadcastCommandMessage(sender, "Killed " + player.getName() + ".");
         } else {
-            sender.sendMessage("You can only perform this command as a player");
+            sender.sendMessage(ChatColor.RED + "You can only perform this command as a player");
         }
 
         return true;

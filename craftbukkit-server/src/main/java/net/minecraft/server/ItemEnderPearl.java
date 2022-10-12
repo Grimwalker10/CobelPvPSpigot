@@ -11,11 +11,13 @@ public class ItemEnderPearl extends Item {
         if (entityhuman.abilities.canInstantlyBuild) {
             return itemstack;
         } else {
-            --itemstack.count;
-            world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
-            if (!world.isStatic) {
-                world.addEntity(new EntityEnderPearl(world, entityhuman));
+
+            // CobelPvP start
+            if (!world.isStatic && world.addEntity(new EntityEnderPearl(world, entityhuman))) {
+                --itemstack.count;
+                world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
             }
+            // CobelPvP end
 
             return itemstack;
         }

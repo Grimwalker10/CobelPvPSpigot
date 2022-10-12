@@ -126,6 +126,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     }
 
     public void a(World world, Chunk chunk) {
+        this.worldInQuestion = world;
         // CraftBukkit start - "handle" exception
         try {
             world.G();
@@ -144,18 +145,24 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         } catch (Exception exception) {
             exception.printStackTrace();
         }
+        this.worldInQuestion = null;
     }
 
+    private World worldInQuestion;
     protected void a(ChunkCoordIntPair chunkcoordintpair, NBTTagCompound nbttagcompound) {
         Object object = this.d;
-
+        this.start = System.nanoTime();
         synchronized (this.d) {
+            worldInQuestion.obtainLock += differenceAndReset();
             // Spigot start
             if (this.pendingSaves.put(chunkcoordintpair, new PendingChunkToSave(chunkcoordintpair, nbttagcompound)) != null) {
+                worldInQuestion.pendingSavesPut += differenceAndReset();
                 return;
             }
+            worldInQuestion.pendingSavesPut += differenceAndReset();
             // Spigot end
             FileIOThread.a.a(this);
+            worldInQuestion.fileIOThreadAddition += differenceAndReset();
         }
     }
 
@@ -202,7 +209,15 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
     }
 
+    private long start;
+    private long differenceAndReset() {
+        long difference = System.nanoTime() - start;
+        start = System.nanoTime();
+        return difference;
+    }
+
     private void a(Chunk chunk, World world, NBTTagCompound nbttagcompound) {
+        start = System.nanoTime();
         nbttagcompound.setByte("V", (byte) 1);
         nbttagcompound.setInt("xPos", chunk.locX);
         nbttagcompound.setInt("zPos", chunk.locZ);
@@ -211,6 +226,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         nbttagcompound.setBoolean("TerrainPopulated", chunk.done);
         nbttagcompound.setBoolean("LightPopulated", chunk.lit);
         nbttagcompound.setLong("InhabitedTime", chunk.s);
+        world.writeStartNBT += differenceAndReset();
         ChunkSection[] achunksection = chunk.getSections();
         NBTTagList nbttaglist = new NBTTagList();
         boolean flag = !world.worldProvider.g;
@@ -226,10 +242,13 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                 nbttagcompound1 = new NBTTagCompound();
                 nbttagcompound1.setByte("Y", (byte) (chunksection.getYPosition() >> 4 & 255));
                 nbttagcompound1.setByteArray("Blocks", chunksection.getIdArray());
+                // CobelPvP start - 1.7 has no extended block IDs
+                /*
                 if (chunksection.getExtendedIdArray() != null) {
                     nbttagcompound1.setByteArray("Add", chunksection.getExtendedIdArray().a);
                 }
-
+                */
+                // CobelPvP end
                 nbttagcompound1.setByteArray("Data", chunksection.getDataArray().a);
                 nbttagcompound1.setByteArray("BlockLight", chunksection.getEmittedLightArray().a);
                 if (flag) {
@@ -243,7 +262,9 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
 
         nbttagcompound.set("Sections", nbttaglist);
+        world.writeSections += differenceAndReset();
         nbttagcompound.setByteArray("Biomes", chunk.m());
+        world.writeBiomes += differenceAndReset();
         chunk.o = false;
         NBTTagList nbttaglist1 = new NBTTagList();
 
@@ -264,6 +285,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
 
         nbttagcompound.set("Entities", nbttaglist1);
+        world.writeEntities += differenceAndReset();
         NBTTagList nbttaglist2 = new NBTTagList();
 
         iterator = chunk.tileEntities.values().iterator();
@@ -277,6 +299,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
 
         nbttagcompound.set("TileEntities", nbttaglist2);
+        world.writeTileEntities += differenceAndReset();
         List list = world.a(chunk, false);
 
         if (list != null) {
@@ -299,6 +322,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
             nbttagcompound.set("TileTicks", nbttaglist3);
         }
+        world.writeTileTicks += differenceAndReset();
     }
 
     private Chunk a(World world, NBTTagCompound nbttagcompound) {
@@ -321,9 +345,13 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             ChunkSection chunksection = new ChunkSection(b1 << 4, flag);
 
             chunksection.setIdArray(nbttagcompound1.getByteArray("Blocks"));
+            // CobelPvP start - 1.7 has no extended block IDs
+            /*
             if (nbttagcompound1.hasKeyOfType("Add", 7)) {
                 chunksection.setExtendedIdArray(new NibbleArray(nbttagcompound1.getByteArray("Add"), 4));
             }
+            */
+            // CobelPvP end
 
             chunksection.setDataArray(new NibbleArray(nbttagcompound1.getByteArray("Data"), 4));
             chunksection.setEmittedLightArray(new NibbleArray(nbttagcompound1.getByteArray("BlockLight"), 4));

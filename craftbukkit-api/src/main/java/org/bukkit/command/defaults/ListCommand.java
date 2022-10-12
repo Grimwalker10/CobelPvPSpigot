@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -27,18 +28,14 @@ public class ListCommand extends VanillaCommand {
         final Collection<? extends Player> players = Bukkit.getOnlinePlayers();
 
         for (Player player : players) {
-            // If a player is hidden from the sender don't show them in the list
-            if (sender instanceof Player && !((Player) sender).canSee(player))
-                continue;
-
             if (online.length() > 0) {
-                online.append(", ");
+                online.append(ChatColor.YELLOW + ", ");
             }
-
-            online.append(player.getDisplayName());
+            online.append((player.isOp() ? ChatColor.RED : ChatColor.GREEN) + player.getName());
         }
 
-        sender.sendMessage("There are " + players.size() + "/" + Bukkit.getMaxPlayers() + " players online:\n" + online.toString());
+        sender.sendMessage(ChatColor.YELLOW + "Online (" + ChatColor.GREEN + players.size() + ChatColor.YELLOW + "/" + ChatColor.GREEN + Bukkit.getMaxPlayers() + ChatColor.YELLOW + "):");
+        sender.sendMessage(online.toString());
 
         return true;
     }

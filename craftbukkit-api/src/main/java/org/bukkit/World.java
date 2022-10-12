@@ -476,7 +476,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      */
     public boolean setSpawnLocation(int x, int y, int z);
 
-    // Poweruser start
+    // CobelPvP start
     /**
      * Sets the spawn location of the world
      *
@@ -488,7 +488,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * @return True if it was successfully set.
      */
     public boolean setSpawnLocation(int x, int y, int z, float yaw, float pitch);
-    // Poweruser end
+    // CobelPvP end
 
     /**
      * Gets the relative in-game time of this world.
@@ -1223,19 +1223,19 @@ public interface World extends PluginMessageRecipient, Metadatable {
         {
             throw new UnsupportedOperationException( "Not supported yet." );
         }
-
+        
         /**
          * Strikes lightning at the given {@link Location} and possibly without sound
          *
          * @param loc The location to strike lightning
          * @param isSilent Whether this strike makes no sound
          * @return The lightning entity.
-         */
+         */        
         public LightningStrike strikeLightning(Location loc, boolean isSilent)
         {
             throw new UnsupportedOperationException( "Not supported yet." );
         }
-
+        
         /**
          * Strikes lightning at the given {@link Location} without doing damage and possibly without sound
          *

@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
+import org.spigotmc.SpigotConfig;
 
 public class BlockLever extends Block {
 
@@ -165,6 +166,11 @@ public class BlockLever extends Block {
     }
 
     public void updateShape(IBlockAccess iblockaccess, int i, int j, int k) {
+        if (SpigotConfig.pearlThroughGatesAndTripwire) {
+            this.a(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+            return;
+        }
+        
         int l = iblockaccess.getData(i, j, k) & 7;
         float f = 0.1875F;
 

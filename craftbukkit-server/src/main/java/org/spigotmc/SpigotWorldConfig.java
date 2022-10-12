@@ -238,7 +238,7 @@ public class SpigotWorldConfig
         arrowDespawnRate = getInt( "arrow-despawn-rate", 1200  );
         log( "Arrow Despawn Rate: " + arrowDespawnRate );
     }
-
+    
     public boolean antiXray;
     public int engineMode;
     public List<Integer> hiddenBlocks;
@@ -370,7 +370,7 @@ public class SpigotWorldConfig
         log("Mobs enabled: " + mobsEnabled);
     }
 
-    // Poweruser start
+    // CobelPvP start
     public boolean enderPearlsCanPassNonSolidBlocks;
     private void enderPearlsCanPassNonSolidBlocks() {
         enderPearlsCanPassNonSolidBlocks = getBoolean("enderPearlsCanPassNonSolidBlocks", false);
@@ -384,7 +384,7 @@ public class SpigotWorldConfig
 
     public boolean useAlternateEndSpawn;
     private void useAlternateEndSpawn() {
-        useAlternateEndSpawn = getBoolean( "useAlternateEndSpawn", true);
+        useAlternateEndSpawn = getBoolean( "useAlternateEndSpawn", false);
     }
-    // Poweruser end
+    // CobelPvP end
 }

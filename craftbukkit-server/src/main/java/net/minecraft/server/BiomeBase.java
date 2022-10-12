@@ -115,10 +115,10 @@ public abstract class BiomeBase {
         this.id = i;
         biomes[i] = this;
         this.ar = this.a();
-        this.at.add(new BiomeMeta(EntitySheep.class, 12, 4, 4));
+        this.at.add(new BiomeMeta(EntitySheep.class, 6, 4, 4)); // CobelPvP - less sheep
         this.at.add(new BiomeMeta(EntityPig.class, 10, 4, 4));
         this.at.add(new BiomeMeta(EntityChicken.class, 10, 4, 4));
-        this.at.add(new BiomeMeta(EntityCow.class, 8, 4, 4));
+        this.at.add(new BiomeMeta(EntityCow.class, 14, 4, 4)); // CobelPvP - more cows
         this.as.add(new BiomeMeta(EntitySpider.class, 100, 4, 4));
         this.as.add(new BiomeMeta(EntityZombie.class, 100, 4, 4));
         this.as.add(new BiomeMeta(EntitySkeleton.class, 100, 4, 4));

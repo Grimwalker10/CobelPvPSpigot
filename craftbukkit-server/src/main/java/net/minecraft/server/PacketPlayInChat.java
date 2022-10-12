@@ -2,8 +2,8 @@ package net.minecraft.server;
 
 import java.io.IOException; // CraftBukkit
 
-import net.frozenorb.ThreadingManager; // Poweruser
-import net.frozenorb.ThreadingManager.TaskQueueWorker; // Poweruser
+import net.minecraft.optimizations.ThreadingManager; // CobelPvP
+import net.minecraft.optimizations.ThreadingManager.TaskQueueWorker; // CobelPvP
 
 public class PacketPlayInChat extends Packet {
 
@@ -46,20 +46,20 @@ public class PacketPlayInChat extends Packet {
     }
     // CraftBukkit end
 
-    private static TaskQueueWorker taskQueue; // Poweruser
+    private static TaskQueueWorker taskQueue; // CobelPvP
     // Spigot Start
     public void handle(final PacketListener packetlistener)
     {
         if ( a() )
         {
-            // Poweruser start
+            // CobelPvP start
             TaskQueueWorker worker = taskQueue;
             if(worker == null) {
                 taskQueue = worker = ThreadingManager.createTaskQueue();
             }
 
-            worker.queueTask(new Runnable() // Poweruser
-            // Poweruser end
+            worker.queueTask(new Runnable() // CobelPvP
+            // CobelPvP end
             {
 
                 @Override

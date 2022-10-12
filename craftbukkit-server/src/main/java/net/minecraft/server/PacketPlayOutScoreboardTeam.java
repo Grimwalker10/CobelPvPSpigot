@@ -18,11 +18,15 @@ public class PacketPlayOutScoreboardTeam extends Packet {
     public PacketPlayOutScoreboardTeam() {}
 
     public PacketPlayOutScoreboardTeam(ScoreboardTeam scoreboardteam, int i) {
+        if (16 < scoreboardteam.getName().length()) throw new IllegalArgumentException("Scoreboard team name '" + scoreboardteam.getName() + "' exceeds maximum length of 16.");
         this.a = scoreboardteam.getName();
         this.f = i;
         if (i == 0 || i == 2) {
+            if (16 < scoreboardteam.getDisplayName().length()) throw new IllegalArgumentException("Scoreboard team display name '" + scoreboardteam.getDisplayName() + "' exceeds maximum length of 16.");
             this.b = scoreboardteam.getDisplayName();
+            if (16 < scoreboardteam.getPrefix().length()) throw new IllegalArgumentException("Scoreboard team prefix '" + scoreboardteam.getPrefix() + "' exceeds maximum length of 16.");
             this.c = scoreboardteam.getPrefix();
+            if (16 < scoreboardteam.getSuffix().length()) throw new IllegalArgumentException("Scoreboard team suffix '" + scoreboardteam.getSuffix() + "' exceeds maximum length of 16.");
             this.d = scoreboardteam.getSuffix();
             this.g = scoreboardteam.packOptionData();
         }

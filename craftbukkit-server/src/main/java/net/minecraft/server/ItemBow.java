@@ -65,7 +65,11 @@ public class ItemBow extends Item {
             }
 
             if (event.getProjectile() == entityarrow.getBukkitEntity()) {
-                world.addEntity(entityarrow);
+                // CobelPvP start
+                if (!world.addEntity(entityarrow)) {
+                    return;
+                }
+                // CobelPvP end
             }
             // CraftBukkit end
 

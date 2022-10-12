@@ -32,7 +32,7 @@ public class PortalTravelAgent {
         } else {
             // CraftBukkit start - Modularize end portal creation
             ChunkCoordinates created = this.createEndPortal(d0, d1, d2);
-            // Poweruser start
+            // CobelPvP start
             float yaw = entity.yaw;
             float pitch = 0.0F;
             if(this.a.spigotConfig.useAlternateEndSpawn) {
@@ -40,14 +40,14 @@ public class PortalTravelAgent {
                 pitch = this.a.getWorldData().getSpawnPitch();
             }
             entity.setPositionRotation((double) created.x, (double) created.y, (double) created.z, yaw, pitch);
-            // Poweruser end
+            // CobelPvP end
             entity.motX = entity.motY = entity.motZ = 0.0D;
         }
     }
 
     // Split out from original a(Entity, double, double, double, float) method in order to enable being called from createPortal
     private ChunkCoordinates createEndPortal(double x, double y, double z) {
-        if(this.a.spigotConfig.useAlternateEndSpawn) { return this.a.getSpawn(); } // Poweruser
+        if(this.a.spigotConfig.useAlternateEndSpawn) { return this.a.getSpawn(); } // CobelPvP
             int i = MathHelper.floor(x);
             int j = MathHelper.floor(y) - 1;
             int k = MathHelper.floor(z);
@@ -74,7 +74,7 @@ public class PortalTravelAgent {
 
     // use logic based on creation to verify end portal
     private ChunkCoordinates findEndPortal(ChunkCoordinates portal) {
-        if(this.a.spigotConfig.useAlternateEndSpawn) { return this.a.getSpawn(); } // Poweruser
+        if(this.a.spigotConfig.useAlternateEndSpawn) { return this.a.getSpawn(); } // CobelPvP
         int i = portal.x;
         int j = portal.y - 1;
         int k = portal.z;
@@ -102,12 +102,12 @@ public class PortalTravelAgent {
     public boolean b(Entity entity, double d0, double d1, double d2, float f) {
         // CraftBukkit start - Modularize portal search process and entity teleportation
 
-        // Poweruser start - check a small area first
+        // CobelPvP start - check a small area first
         ChunkCoordinates found = this.findPortal(entity.locX, entity.locY, entity.locZ, 10);
         if(found == null) {
             found = this.findPortal(entity.locX, entity.locY, entity.locZ, 128);
         }
-        // Poweruser end
+        // CobelPvP end
 
         if (found == null) {
             return false;
@@ -151,24 +151,24 @@ public class PortalTravelAgent {
             chunkcoordinatesportal.d = this.a.getTime();
             flag = false;
         } else {
-            // Poweruser start
+            // CobelPvP start
             int zOffset = 0, yOffset = 0;
             for (k1 = l - short1; k1 <= l + short1; ++k1) {
                 zOffset = (zOffset + 1) % 2;
                 for (int l1 = i1 - short1 + zOffset; l1 <= i1 + short1; l1 = l1 + 2) { // skipping every 2nd block in z direction and alternating from row to row in x direction
                     yOffset = (yOffset + 1) % 3;
                     for (int i2 = this.a.S() - (1 + yOffset) ; i2 >= 0; i2 = i2 - 3) { // checking only every 3rd block in y direction and alternating in high in each column
-            // Poweruser end
+            // CobelPvP end
                         if (this.a.getType(k1, i2, l1) == Blocks.PORTAL) {
                             while (this.a.getType(k1, i2 - 1, l1) == Blocks.PORTAL) {
                                 --i2;
                             }
 
                             d4 = (double) i2 + 0.5D - y; // CraftBukkit
-                            // Poweruser start
+                            // CobelPvP start
                             double d5 = (double) k1 + 0.5D - x; // CraftBukkit
                             double d6 = (double) l1 + 0.5D - z; // CraftBukkit
-                            // Poweruser end
+                            // CobelPvP end
                             double d7 = d5 * d5 + d4 * d4 + d6 * d6;
 
                             if (d3 < 0.0D || d7 < d3) {
@@ -206,14 +206,14 @@ public class PortalTravelAgent {
         if (this.a.getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END) {
             // entity.setPositionRotation((double) i, (double) j, (double) k, entity.yaw, 0.0F);
             // entity.motX = entity.motY = entity.motZ = 0.0D;
-            // Poweruser start
+            // CobelPvP start
             float pitch = 0.0F;
             if(this.a.spigotConfig.useAlternateEndSpawn) {
                 pitch = this.a.getWorldData().getSpawnPitch();
                 position.setYaw(this.a.getWorldData().getSpawnYaw());
             }
             position.setPitch(pitch);
-            // Poweruser end
+            // CobelPvP end
             velocity.setX(0);
             velocity.setY(0);
             velocity.setZ(0);

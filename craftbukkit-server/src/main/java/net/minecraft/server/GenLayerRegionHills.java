@@ -6,10 +6,12 @@ import org.apache.logging.log4j.Logger;
 public class GenLayerRegionHills extends GenLayer {
 
     private static final Logger c = LogManager.getLogger();
+    private final World world;
     private GenLayer d;
 
-    public GenLayerRegionHills(long i, GenLayer genlayer, GenLayer genlayer1) {
+    public GenLayerRegionHills(long i, GenLayer genlayer, GenLayer genlayer1, World world) {
         super(i);
+        this.world = world;
         this.a = genlayer;
         this.d = genlayer1;
     }
@@ -42,43 +44,43 @@ public class GenLayerRegionHills extends GenLayer {
                     int i2 = k1;
                     int j2;
 
-                    if (k1 == BiomeBase.DESERT.id) {
+                    if (k1 == BiomeBase.DESERT.id && this.world.generatorConfig.biomeDesertHills) {
                         i2 = BiomeBase.DESERT_HILLS.id;
-                    } else if (k1 == BiomeBase.FOREST.id) {
+                    } else if (k1 == BiomeBase.FOREST.id && this.world.generatorConfig.biomeForestHills) {
                         i2 = BiomeBase.FOREST_HILLS.id;
-                    } else if (k1 == BiomeBase.BIRCH_FOREST.id) {
+                    } else if (k1 == BiomeBase.BIRCH_FOREST.id && this.world.generatorConfig.biomeBirchForestHills) {
                         i2 = BiomeBase.BIRCH_FOREST_HILLS.id;
-                    } else if (k1 == BiomeBase.ROOFED_FOREST.id) {
+                    } else if (k1 == BiomeBase.ROOFED_FOREST.id && this.world.generatorConfig.biomePlains) {
                         i2 = BiomeBase.PLAINS.id;
-                    } else if (k1 == BiomeBase.TAIGA.id) {
+                    } else if (k1 == BiomeBase.TAIGA.id && this.world.generatorConfig.biomeTaigaHills) {
                         i2 = BiomeBase.TAIGA_HILLS.id;
-                    } else if (k1 == BiomeBase.MEGA_TAIGA.id) {
+                    } else if (k1 == BiomeBase.MEGA_TAIGA.id && this.world.generatorConfig.biomeMegaTaigaHills) {
                         i2 = BiomeBase.MEGA_TAIGA_HILLS.id;
-                    } else if (k1 == BiomeBase.COLD_TAIGA.id) {
+                    } else if (k1 == BiomeBase.COLD_TAIGA.id && this.world.generatorConfig.biomeColdTaigaHills) {
                         i2 = BiomeBase.COLD_TAIGA_HILLS.id;
                     } else if (k1 == BiomeBase.PLAINS.id) {
-                        if (this.a(3) == 0) {
+                        if (this.a(3) == 0 && this.world.generatorConfig.biomeForestHills) {
                             i2 = BiomeBase.FOREST_HILLS.id;
-                        } else {
+                        } else if (this.world.generatorConfig.biomeForest) {
                             i2 = BiomeBase.FOREST.id;
                         }
-                    } else if (k1 == BiomeBase.ICE_PLAINS.id) {
+                    } else if (k1 == BiomeBase.ICE_PLAINS.id && this.world.generatorConfig.biomeIceMountains) {
                         i2 = BiomeBase.ICE_MOUNTAINS.id;
-                    } else if (k1 == BiomeBase.JUNGLE.id) {
+                    } else if (k1 == BiomeBase.JUNGLE.id && this.world.generatorConfig.biomeJungleHills) {
                         i2 = BiomeBase.JUNGLE_HILLS.id;
                     } else if (k1 == BiomeBase.OCEAN.id) {
                         i2 = BiomeBase.DEEP_OCEAN.id;
-                    } else if (k1 == BiomeBase.EXTREME_HILLS.id) {
+                    } else if (k1 == BiomeBase.EXTREME_HILLS.id && this.world.generatorConfig.biomeExtremeHillsPlus) {
                         i2 = BiomeBase.EXTREME_HILLS_PLUS.id;
-                    } else if (k1 == BiomeBase.SAVANNA.id) {
+                    } else if (k1 == BiomeBase.SAVANNA.id && this.world.generatorConfig.biomeSavannaPlateau) {
                         i2 = BiomeBase.SAVANNA_PLATEAU.id;
-                    } else if (a(k1, BiomeBase.MESA_PLATEAU_F.id)) {
+                    } else if (a(k1, BiomeBase.MESA_PLATEAU_F.id) && this.world.generatorConfig.biomeMesa) {
                         i2 = BiomeBase.MESA.id;
                     } else if (k1 == BiomeBase.DEEP_OCEAN.id && this.a(3) == 0) {
                         j2 = this.a(2);
-                        if (j2 == 0) {
+                        if (j2 == 0 && this.world.generatorConfig.biomePlains) {
                             i2 = BiomeBase.PLAINS.id;
-                        } else {
+                        } else if (this.world.generatorConfig.biomeForest) {
                             i2 = BiomeBase.FOREST.id;
                         }
                     }

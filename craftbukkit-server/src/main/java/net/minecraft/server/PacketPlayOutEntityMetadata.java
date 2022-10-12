@@ -7,7 +7,7 @@ public class PacketPlayOutEntityMetadata extends Packet {
 
     private int a;
     private List b;
-    private boolean found = false; // MineHQ
+    private boolean found = false; // CobelPvP
 
     public PacketPlayOutEntityMetadata() {}
 
@@ -48,7 +48,7 @@ public class PacketPlayOutEntityMetadata extends Packet {
     }
     // Kohi end
 
-    // MineHQ start
+    // CobelPvP start
     public boolean didFindHealth() {
         return this.found;
     }
@@ -56,7 +56,7 @@ public class PacketPlayOutEntityMetadata extends Packet {
     public List getMetadata() {
         return this.b;
     }
-    // MineHQ end
+    // CobelPvP end
 
     public void a(PacketDataSerializer packetdataserializer) {
         this.a = packetdataserializer.readInt();

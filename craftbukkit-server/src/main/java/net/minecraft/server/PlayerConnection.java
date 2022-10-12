@@ -1,14 +1,7 @@
 package net.minecraft.server;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.concurrent.Callable;
-
+import net.minecraft.optimizations.CraftSpigot;
+import com.cobelpvp.handler.PacketHandler;
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.google.common.collect.Lists;
 import net.minecraft.util.io.netty.buffer.Unpooled;
@@ -16,51 +9,40 @@ import net.minecraft.util.io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.util.org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-// CraftBukkit start
-import java.io.UnsupportedEncodingException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import java.util.HashSet;
-
+import org.bukkit.Location;
 import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.LazyPlayerSet;
 import org.bukkit.craftbukkit.util.Waitable;
-
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCreativeEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.event.inventory.InventoryType.SlotType;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerAnimationEvent;
-import org.bukkit.event.player.PlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerToggleFlightEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.event.player.PlayerToggleSprintEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.util.NumberConversions;
-// CraftBukkit end
+import org.github.paperspigot.PaperSpigotConfig;
 
-import org.github.paperspigot.PaperSpigotConfig; // PaperSpigot
+import com.google.common.collect.Sets;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+
+// CraftBukkit start
+// CraftBukkit end
 
 public class PlayerConnection implements PacketPlayInListener {
 
@@ -84,12 +66,26 @@ public class PlayerConnection implements PacketPlayInListener {
     public boolean checkMovement = true; // CraftBukkit - private -> public
     private boolean processedDisconnect; // CraftBukkit - added
 
-    // Poweruser start
+    // CobelPvP start
     private int movedWronglyViolations = 0;
     private int movedTooQuicklyViolations = 0;
     private int lastViolationTick = MinecraftServer.currentTick;
     private double offsetDistanceSum = 0.0D;
-    // Poweruser end
+    // CobelPvP end
+
+    // Alfie start
+    private static Set<Block> glitchBlocks = Sets.newHashSet(Block.getById(13), 
+            Block.getById(94),
+            Block.getById(145),
+            Block.getById(54),
+            Block.getById(146),
+            Block.getById(44),
+            Block.getById(154),
+            Block.getById(88),
+            Block.getById(78),
+            Block.getById(126)
+    );
+    // Alfie end
 
     public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
         this.minecraftServer = minecraftserver;
@@ -134,10 +130,11 @@ public class PlayerConnection implements PacketPlayInListener {
         this.g = false;
         ++this.e;
         this.minecraftServer.methodProfiler.a("keepAlive");
-        if ((long) this.e - this.k > 40L) {
+        if ((long) this.e - this.k > 10L) {
             this.k = (long) this.e;
             this.i = this.d();
             this.h = (int) this.i;
+
             this.sendPacket(new PacketPlayOutKeepAlive(this.h));
         }
 
@@ -382,7 +379,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 double d10 = d7 * d7 + d8 * d8 + d9 * d9;
 
                 // Spigot: make "moved too quickly" limit configurable
-                // Poweruser start
+                // CobelPvP start
                 boolean violationDelayPassed = (this.lastViolationTick + 60 < MinecraftServer.currentTick);
                 if(this.movedTooQuicklyViolations > 0 && violationDelayPassed) {
                     c.warn(this.player.getName() + " moved too quickly! Violations: " + this.movedTooQuicklyViolations);
@@ -391,12 +388,12 @@ public class PlayerConnection implements PacketPlayInListener {
                 if (d10 > org.spigotmc.SpigotConfig.movedTooQuicklyThreshold && this.checkMovement && (!this.minecraftServer.N() || !this.minecraftServer.M().equals(this.player.getName()))) { // CraftBukkit - Added this.checkMovement condition to solve this check being triggered by teleports
                     this.movedTooQuicklyViolations++;
                     this.lastViolationTick = MinecraftServer.currentTick;
-                // Poweruser end
+                    // CobelPvP end
                     this.a(this.y, this.z, this.q, this.player.yaw, this.player.pitch);
                     return;
                 }
 
-                SpigotTimings.connectionTimer_PacketFlying_move.startTiming(); // Poweruser
+                SpigotTimings.connectionTimer_PacketFlying_move.startTiming(); // CobelPvP
 
                 float f4 = 0.0625F;
                 boolean flag = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
@@ -421,7 +418,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 boolean flag1 = false;
 
                 // Spigot: make "moved wrongly" limit configurable
-                // Poweruser start
+                // CobelPvP start
                 double positionOffset = d10;
                 if(this.player.playerInteractManager.isCreative()) {
                     positionOffset *= 2.0D;
@@ -439,9 +436,9 @@ public class PlayerConnection implements PacketPlayInListener {
                     this.movedWronglyViolations++;
                     this.offsetDistanceSum += MathHelper.sqrt(d10);
                 }
-                // Poweruser end
+                // CobelPvP end
 
-                // Poweruser start
+                // CobelPvP start
                 double calculatedX = this.player.locX;
                 double calculatedY = this.player.locY;
                 double calculatedZ = this.player.locZ;
@@ -451,7 +448,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
                 this.player.setLocation(calculatedX, calculatedY, calculatedZ, f2, f3);
 
-                SpigotTimings.connectionTimer_PacketFlying_move.stopTiming(); // Poweruser
+                SpigotTimings.connectionTimer_PacketFlying_move.stopTiming(); // CobelPvP
 
                 if (flag1 || (!this.player.isSleeping() && flag && !flag2) || rayTraceCollision) {
                     if(!rayTraceCollision && !flag && e % 3 != 0) {
@@ -461,7 +458,7 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
                     return;
                 }
-                // Poweruser end
+                // CobelPvP end
 
                 AxisAlignedBB axisalignedbb = this.player.boundingBox.clone().grow((double) f4, (double) f4, (double) f4).a(0.0D, -0.55D, 0.0D);
 
@@ -479,14 +476,26 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
 
                 this.player.onGround = packetplayinflying.i();
-                SpigotTimings.connectionTimer_PacketFlying_playerChunks.startTiming(); // Poweruser
+                SpigotTimings.connectionTimer_PacketFlying_playerChunks.startTiming(); // CobelPvP
                 this.minecraftServer.getPlayerList().d(this.player);
-                SpigotTimings.connectionTimer_PacketFlying_playerChunks.stopTiming(); // Poweruser
+                SpigotTimings.connectionTimer_PacketFlying_playerChunks.stopTiming(); // CobelPvP
                 this.player.b(this.player.locY - d0, packetplayinflying.i());
             } else if (this.e % 20 == 0) {
                 this.a(this.y, this.z, this.q, this.player.yaw, this.player.pitch);
             }
         }
+    }
+
+
+    private AxisAlignedBB getBoundingBoxRounded() {
+        AxisAlignedBB bb = this.player.boundingBox.clone();
+        bb.a = (Math.round(bb.a * 1000000.0D) / 1000000.0D);
+        bb.b = (Math.round(bb.b * 1000000.0D) / 1000000.0D);
+        bb.c = (Math.round(bb.c * 1000000.0D) / 1000000.0D);
+        bb.d = (Math.round(bb.d * 1000000.0D) / 1000000.0D);
+        bb.e = (Math.round(bb.e * 1000000.0D) / 1000000.0D);
+        bb.f = (Math.round(bb.f * 1000000.0D) / 1000000.0D);
+        return bb;
     }
 
     public void a(double d0, double d1, double d2, float f, float f1) {
@@ -553,7 +562,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 // Else we increment the drop count and check the amount.
                 this.dropCount++;
                 if (this.dropCount >= 20) {
-                    this.c.warn(this.player.getName() + " dropped their items too quickly!");
+                    PlayerConnection.c.warn(this.player.getName() + " dropped their items too quickly!");
                     this.disconnect("You dropped your items too quickly (Hacking?)");
                     return;
                 }
@@ -676,7 +685,8 @@ public class PlayerConnection implements PacketPlayInListener {
         int l = packetplayinblockplace.getFace();
 
         this.player.v();
-        if (packetplayinblockplace.getFace() == 255) {
+        boolean isEnderPearl = false;
+        if (packetplayinblockplace.getFace() == 255 || (isEnderPearl = (!isChest(i, j, k) && itemstack != null && itemstack.getItem() != null && CraftMagicNumbers.getMaterial(itemstack.getItem()) == org.bukkit.Material.ENDER_PEARL))) {
             if (itemstack == null) {
                 return;
             }
@@ -688,6 +698,10 @@ public class PlayerConnection implements PacketPlayInListener {
             org.bukkit.event.player.PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.RIGHT_CLICK_AIR, itemstack);
             if (event.useItemInHand() != Event.Result.DENY) {
                 this.player.playerInteractManager.useItem(this.player, this.player.world, itemstack);
+
+                if (isEnderPearl) {
+                    flag = true;
+                }
             }
             }
             // Spigot end
@@ -721,31 +735,27 @@ public class PlayerConnection implements PacketPlayInListener {
 
         if (flag) {
             this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, worldserver));
+
+            boolean sendSecondUpdate = true;
             if (l == 0) {
                 --j;
-            }
-
-            if (l == 1) {
+            } else if (l == 1) {
                 ++j;
-            }
-
-            if (l == 2) {
+            } else if (l == 2) {
                 --k;
-            }
-
-            if (l == 3) {
+            } else if (l == 3) {
                 ++k;
-            }
-
-            if (l == 4) {
+            } else if (l == 4) {
                 --i;
-            }
-
-            if (l == 5) {
+            } else if (l == 5) {
                 ++i;
+            } else {
+                sendSecondUpdate = false;
             }
 
-            this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, worldserver));
+            if (sendSecondUpdate) {
+                this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, worldserver));
+            }
         }
 
         itemstack = this.player.inventory.getItemInHand();
@@ -766,6 +776,11 @@ public class PlayerConnection implements PacketPlayInListener {
                 this.sendPacket(new PacketPlayOutSetSlot(this.player.activeContainer.windowId, slot.rawSlotIndex, this.player.inventory.getItemInHand()));
             }
         }
+    }
+
+    private boolean isChest(int x, int y, int z) {
+        org.bukkit.Material bukkitMaterial = CraftMagicNumbers.getMaterial(this.player.world.getType(x, y, z));
+        return bukkitMaterial == org.bukkit.Material.CHEST || bukkitMaterial == org.bukkit.Material.TRAPPED_CHEST || bukkitMaterial == org.bukkit.Material.ENDER_CHEST;
     }
 
     public void a(IChatBaseComponent ichatbasecomponent) {
@@ -845,14 +860,26 @@ public class PlayerConnection implements PacketPlayInListener {
         // CraftBukkit start
         if (packet == null) {
             return;
-        } else if (packet instanceof PacketPlayOutSpawnPosition) {
-            PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet;
-            this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.x, packet6.y, packet6.z);
         }
-        // CraftBukkit end
 
         try {
-            this.networkManager.handle(packet, NetworkManager.emptyListenerArray); // Poweruser
+            // Loop through cancellable handlers first
+            for (PacketHandler handler : CraftSpigot.INSTANCE.getPacketHandlers()) {
+                try {
+                    if (!handler.handleSentPacketCancellable(this, packet)) {
+                        return;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // Loop through normal handlers
+            for (PacketHandler handler : CraftSpigot.INSTANCE.getPacketHandlers()) {
+                handler.handleSentPacket(this, packet);
+            }
+
+            this.networkManager.handle(packet, NetworkManager.emptyListenerArray); // CobelPvP
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
@@ -860,6 +887,12 @@ public class PlayerConnection implements PacketPlayInListener {
             crashreportsystemdetails.a("Packet class", (Callable) (new CrashReportConnectionPacketClass(this, packet)));
             throw new ReportedException(crashreport);
         }
+
+        if (packet instanceof PacketPlayOutSpawnPosition) {
+            PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet;
+            this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.x, packet6.y, packet6.z);
+        }
+        // CraftBukkit end
     }
 
     public void a(PacketPlayInHeldItemSlot packetplayinhelditemslot) {
@@ -900,7 +933,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 if (!SharedConstants.isAllowedChatCharacter(s.charAt(i))) {
                     // CraftBukkit start - threadsafety
                     if (packetplayinchat.a()) {
-                        // Poweruser start
+                        // CobelPvP start
                         if(!this.networkManager.lockDownIncomingTraffic()) {
                             Runnable runnable = new Runnable() {
                                 @Override
@@ -914,7 +947,7 @@ public class PlayerConnection implements PacketPlayInListener {
                             };
                             this.minecraftServer.processQueue.add(runnable);
                         }
-                        // Poweruser end
+                        // CobelPvP end
                     } else {
                         this.disconnect("Illegal characters in chat");
                     }
@@ -974,7 +1007,7 @@ public class PlayerConnection implements PacketPlayInListener {
             // this.chatThrottle += 20;
             if (counted && chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
                 if (packetplayinchat.a()) {
-                    // Poweruser start
+                    // CobelPvP start
                     if(!this.networkManager.lockDownIncomingTraffic()) {
                         Runnable runnable = new Runnable() {
                             @Override
@@ -988,7 +1021,7 @@ public class PlayerConnection implements PacketPlayInListener {
                         };
                         this.minecraftServer.processQueue.add(runnable);
                     }
-                    // Poweruser end
+                    // CobelPvP end
                 } else {
                     this.disconnect("disconnect.spam");
                 }
@@ -1016,7 +1049,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 // Evil plugins still listening to deprecated event
                 final PlayerChatEvent queueEvent = new PlayerChatEvent(player, event.getMessage(), event.getFormat(), event.getRecipients());
                 queueEvent.setCancelled(event.isCancelled());
-                // Poweruser start
+                // CobelPvP start
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
@@ -1047,7 +1080,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 } else {
                     runnable.run();
                 }
-                // Poweruser end
+                // CobelPvP end
             } else {
                 if (event.isCancelled()) {
                     return;
@@ -1073,7 +1106,7 @@ public class PlayerConnection implements PacketPlayInListener {
         org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.startTiming(); // Spigot
 
         // CraftBukkit start - whole method
-        if ( org.spigotmc.SpigotConfig.logCommands ) this.c.info(this.player.getName() + " issued server command: " + s);
+        if ( org.spigotmc.SpigotConfig.logCommands ) PlayerConnection.c.info(this.player.getName() + " issued server command: " + s);
 
         CraftPlayer player = this.getPlayer();
 
@@ -1106,26 +1139,30 @@ public class PlayerConnection implements PacketPlayInListener {
         this.player.v();
         if (packetplayinarmanimation.d() == 1) {
             // CraftBukkit start - Raytrace to look for 'rogue armswings'
-            float f = 1.0F;
-            float f1 = this.player.lastPitch + (this.player.pitch - this.player.lastPitch) * f;
-            float f2 = this.player.lastYaw + (this.player.yaw - this.player.lastYaw) * f;
-            double d0 = this.player.lastX + (this.player.locX - this.player.lastX) * (double) f;
-            double d1 = this.player.lastY + (this.player.locY - this.player.lastY) * (double) f + 1.62D - (double) this.player.height;
-            double d2 = this.player.lastZ + (this.player.locZ - this.player.lastZ) * (double) f;
-            Vec3D vec3d = Vec3D.a(d0, d1, d2);
 
-            float f3 = MathHelper.cos(-f2 * 0.017453292F - 3.1415927F);
-            float f4 = MathHelper.sin(-f2 * 0.017453292F - 3.1415927F);
-            float f5 = -MathHelper.cos(-f1 * 0.017453292F);
-            float f6 = MathHelper.sin(-f1 * 0.017453292F);
-            float f7 = f4 * f5;
-            float f8 = f3 * f5;
-            double d3 = player.playerInteractManager.getGameMode() == EnumGamemode.CREATIVE ? 5.0D : 4.5D; // Spigot
-            Vec3D vec3d1 = vec3d.add((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
-            MovingObjectPosition movingobjectposition = this.player.world.rayTrace(vec3d, vec3d1, false);
+            // we only ever use this event when players are sneaking so why raytrace for no reason
+            if (this.player.isSneaking()) {
+                float f = 1.0F;
+                float f1 = this.player.lastPitch + (this.player.pitch - this.player.lastPitch) * f;
+                float f2 = this.player.lastYaw + (this.player.yaw - this.player.lastYaw) * f;
+                double d0 = this.player.lastX + (this.player.locX - this.player.lastX) * (double) f;
+                double d1 = this.player.lastY + (this.player.locY - this.player.lastY) * (double) f + 1.62D - (double) this.player.height;
+                double d2 = this.player.lastZ + (this.player.locZ - this.player.lastZ) * (double) f;
+                Vec3D vec3d = Vec3D.a(d0, d1, d2);
 
-            if (movingobjectposition == null || movingobjectposition.type != EnumMovingObjectType.BLOCK) {
-                CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_AIR, this.player.inventory.getItemInHand());
+                float f3 = MathHelper.cos(-f2 * 0.017453292F - 3.1415927F);
+                float f4 = MathHelper.sin(-f2 * 0.017453292F - 3.1415927F);
+                float f5 = -MathHelper.cos(-f1 * 0.017453292F);
+                float f6 = MathHelper.sin(-f1 * 0.017453292F);
+                float f7 = f4 * f5;
+                float f8 = f3 * f5;
+                double d3 = player.playerInteractManager.getGameMode() == EnumGamemode.CREATIVE ? 5.0D : 4.5D; // Spigot
+                Vec3D vec3d1 = vec3d.add((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
+                MovingObjectPosition movingobjectposition = this.player.world.rayTrace(vec3d, vec3d1, false);
+
+                if (movingobjectposition == null || movingobjectposition.type != EnumMovingObjectType.BLOCK) {
+                    CraftEventFactory.callPlayerInteractEvent(this.player, Action.LEFT_CLICK_AIR, this.player.inventory.getItemInHand());
+                }
             }
 
             // Arm swing animation
@@ -1169,6 +1206,7 @@ public class PlayerConnection implements PacketPlayInListener {
             this.player.setSneaking(false);
         } else if (packetplayinentityaction.d() == 4) {
             this.player.setSprinting(true);
+            this.player.setSneaking(false); // CobelPvP
         } else if (packetplayinentityaction.d() == 5) {
             this.player.setSprinting(false);
         } else if (packetplayinentityaction.d() == 3) {
@@ -1604,7 +1642,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 this.n.a(this.player.activeContainer.windowId, Short.valueOf(packetplayinwindowclick.f()));
                 this.player.playerConnection.sendPacket(new PacketPlayOutTransaction(packetplayinwindowclick.c(), packetplayinwindowclick.f(), false));
                 this.player.activeContainer.a(this.player, false);
-                ArrayList arraylist = new ArrayList();
+                ArrayList arraylist = new ArrayList(this.player.activeContainer.c.size()); // CobelPvP
 
                 for (int i = 0; i < this.player.activeContainer.c.size(); ++i) {
                     arraylist.add(((Slot) this.player.activeContainer.c.get(i)).getItem());
@@ -1813,6 +1851,12 @@ public class PlayerConnection implements PacketPlayInListener {
     }
 
     public void a(PacketPlayInTabComplete packetplayintabcomplete) {
+        // Spigot start - Update 20141113a
+        if (PlayerConnection.chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
+            this.disconnect("disconnect.spam");
+            return;
+        }
+        // Spigot end
         ArrayList arraylist = Lists.newArrayList();
         Iterator iterator = this.minecraftServer.a(this.player, packetplayintabcomplete.c()).iterator();
 
@@ -1856,7 +1900,14 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (itemstack.getItem() == Items.BOOK_AND_QUILL && itemstack.getItem() == itemstack1.getItem()) {
-                        CraftEventFactory.handleEditBookEvent(player, itemstack); // CraftBukkit
+                        // CobelPvP start - handle book editting better
+                        ItemStack newBook = itemstack1.cloneItemStack();
+                        if (!newBook.hasTag()) {
+                            newBook.setTag(new NBTTagCompound());
+                        }
+                        newBook.tag.set("pages", itemstack.getTag().getList("pages", 8));
+                        CraftEventFactory.handleEditBookEvent(player, newBook); // CraftBukkit
+                        // CobelPvP end
                     }
 
                     return;
@@ -1888,7 +1939,17 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (itemstack.getItem() == Items.WRITTEN_BOOK && itemstack1.getItem() == Items.BOOK_AND_QUILL) {
-                        CraftEventFactory.handleEditBookEvent(player, itemstack); // CraftBukkit
+                        // CobelPvP start - handle book editting better
+                        ItemStack newBook = itemstack1.cloneItemStack();
+                        if (!newBook.hasTag()) {
+                            newBook.setTag(new NBTTagCompound());
+                        }
+                        newBook.tag.set("author", new NBTTagString(this.player.getName()));
+                        newBook.tag.set("title", new NBTTagString(itemstack.getTag().getString("title")));
+                        newBook.tag.set("pages", itemstack.getTag().getList("pages", 8));
+                        newBook.setItem(Items.WRITTEN_BOOK);
+                        CraftEventFactory.handleEditBookEvent(player, newBook); // CraftBukkit
+                        // CobelPvP end
                     }
 
                     return;

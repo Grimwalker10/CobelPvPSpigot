@@ -1,5 +1,8 @@
 package net.minecraft.server;
 
+import com.cobelpvp.generator.GenLayerRemoveSpawnRivers;
+import com.cobelpvp.generator.GenLayerSpawnBiome;
+
 import java.util.concurrent.Callable;
 
 public abstract class GenLayer {
@@ -9,9 +12,9 @@ public abstract class GenLayer {
     private long d;
     protected long b;
 
-    public static GenLayer[] a(long i, WorldType worldtype) {
+    public static GenLayer[] a(long i, WorldType worldtype, World world) { // CobelPvP - add world
         boolean flag = false;
-        LayerIsland layerisland = new LayerIsland(1L);
+        LayerIsland layerisland = new LayerIsland(1L, world); // CobelPvP - add world
         GenLayerZoomFuzzy genlayerzoomfuzzy = new GenLayerZoomFuzzy(2000L, layerisland);
         GenLayerIsland genlayerisland = new GenLayerIsland(1L, genlayerzoomfuzzy);
         GenLayerZoom genlayerzoom = new GenLayerZoom(2001L, genlayerisland);
@@ -45,7 +48,7 @@ public abstract class GenLayer {
 
         GenLayer genlayer1 = GenLayerZoom.b(1000L, genlayer, 0);
         GenLayerCleaner genlayercleaner = new GenLayerCleaner(100L, genlayer1);
-        Object object = new GenLayerBiome(200L, genlayer, worldtype);
+        Object object = new GenLayerBiome(200L, genlayer, worldtype, world); // CobelPvP - add world
 
         if (!flag) {
             GenLayer genlayer2 = GenLayerZoom.b(1000L, (GenLayer) object, 2);
@@ -54,14 +57,20 @@ public abstract class GenLayer {
         }
 
         GenLayer genlayer3 = GenLayerZoom.b(1000L, genlayercleaner, 2);
-        GenLayerRegionHills genlayerregionhills = new GenLayerRegionHills(1000L, (GenLayer) object, genlayer3);
+        GenLayerRegionHills genlayerregionhills = new GenLayerRegionHills(1000L, (GenLayer) object, genlayer3, world); // CobelPvP - add world
 
         genlayer1 = GenLayerZoom.b(1000L, genlayercleaner, 2);
         genlayer1 = GenLayerZoom.b(1000L, genlayer1, b0);
-        GenLayerRiver genlayerriver = new GenLayerRiver(1L, genlayer1);
+        GenLayer genlayerriver = new GenLayerRiver(1L, genlayer1);
+        if (world.generatorConfig.spawnBiomeRadius > 0 && !world.generatorConfig.spawnBiomeRivers) {
+            genlayerriver = new GenLayerRemoveSpawnRivers(genlayerriver, world);
+        }
         GenLayerSmooth genlayersmooth = new GenLayerSmooth(1000L, genlayerriver);
 
         object = new GenLayerPlains(1001L, genlayerregionhills);
+        if (world.generatorConfig.spawnBiomeRadius > 0) {
+            object = new GenLayerSpawnBiome((GenLayer) object, b0, world);
+        }
 
         for (int j = 0; j < b0; ++j) {
             object = new GenLayerZoom((long) (1000 + j), (GenLayer) object);

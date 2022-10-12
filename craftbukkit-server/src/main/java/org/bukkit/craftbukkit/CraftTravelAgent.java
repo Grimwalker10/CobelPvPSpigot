@@ -43,12 +43,12 @@ public class CraftTravelAgent extends PortalTravelAgent implements TravelAgent {
     public Location findPortal(Location location) {
         PortalTravelAgent pta = ((CraftWorld) location.getWorld()).getHandle().getTravelAgent();
 
-        // Poweruser start - check a smaller area first
+        // CobelPvP start - check a smaller area first
         ChunkCoordinates found = pta.findPortal(location.getX(), location.getY(), location.getZ(), 10);
         if(found == null) {
             found = pta.findPortal(location.getX(), location.getY(), location.getZ(), this.getSearchRadius());
         }
-        // Poweruser end
+        // CobelPvP end
 
         return found != null ? new Location(location.getWorld(), found.x, found.y, found.z, location.getYaw(), location.getPitch()) : null;
     }

@@ -36,7 +36,7 @@ public class EntitySheep extends EntityAnimal {
     public void h() {
         super.h();
 
-        // MineHQ - Add mobsEnabled check.
+        // CobelPvP - Add mobsEnabled check.
         if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
             this.die();
         }

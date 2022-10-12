@@ -105,7 +105,7 @@ public class EntityCreeper extends EntityMonster {
             }
         }
 
-        // MineHQ - Add mobsEnabled check.
+        // CobelPvP - Add mobsEnabled check.
         if (!this.world.isStatic && !this.world.spigotConfig.mobsEnabled) {
             this.die();
         }

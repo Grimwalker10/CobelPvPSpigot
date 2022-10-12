@@ -20,7 +20,7 @@ public class Village {
     private List aggressors = new ArrayList();
     private int ironGolemCount;
 
-    // Poweruser start
+    // CobelPvP start
     private int[][] positions = null;
 
     private void calculateNewCheckPositions() {
@@ -40,7 +40,7 @@ public class Village {
         }
         return false;
     }
-    // Poweruser end
+    // CobelPvP end
 
     public Village() {}
 
@@ -53,7 +53,7 @@ public class Village {
     }
 
     public void tick(int i) {
-        if(!this.isVillageAreaLoaded()) { return; } // Poweruser
+        if(!this.isVillageAreaLoaded()) { return; } // CobelPvP
         this.time = i;
         this.m();
         this.l();
@@ -353,7 +353,7 @@ public class Village {
 
             this.size = Math.max(32, (int) Math.sqrt((double) j) + 1);
         }
-        this.calculateNewCheckPositions(); // Poweruser
+        this.calculateNewCheckPositions(); // CobelPvP
     }
 
     public int a(String s) {
@@ -403,7 +403,7 @@ public class Village {
 
             this.playerStandings.put(nbttagcompound2.getString("Name"), Integer.valueOf(nbttagcompound2.getInt("S")));
         }
-        this.calculateNewCheckPositions(); // Poweruser
+        this.calculateNewCheckPositions(); // CobelPvP
     }
 
     public void b(NBTTagCompound nbttagcompound) {

@@ -33,7 +33,7 @@ public class RegistryBlocks extends RegistryMaterials {
         return this.get((String) object);
     }
 
-    // Poweruser start
+    // CobelPvP start
     public Object getDefaultBlock() {
         return this.e;
     }
@@ -41,5 +41,5 @@ public class RegistryBlocks extends RegistryMaterials {
     public Object getByIdWithoutDefaulting(int i) {
         return super.a(i);
     }
-    // Poweruser end
+    // CobelPvP end
 }

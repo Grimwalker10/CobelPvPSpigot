@@ -71,11 +71,9 @@ public class ItemDoor extends Item {
             flag2 = true;
         }
 
-        // Spigot start - update physics after the block multi place event
-        world.setTypeAndData(i, j, k, block, l, 3);
-        world.setTypeAndData(i, j + 1, k, block, 8 | (flag2 ? 1 : 0), 3);
-        // world.applyPhysics(i, j, k, block);
-        // world.applyPhysics(i, j + 1, k, block);
-        // Spigot end
+        world.setTypeAndData(i, j, k, block, l, 3); // Spigot Update - 20141001a
+        world.setTypeAndData(i, j + 1, k, block, 8 | (flag2 ? 1 : 0), 3); // Spigot Update - 20141001a
+        //world.applyPhysics(i, j, k, block); // Spigot Update - 20141001a
+        //world.applyPhysics(i, j + 1, k, block); // Spigot Update - 20141001a
     }
 }

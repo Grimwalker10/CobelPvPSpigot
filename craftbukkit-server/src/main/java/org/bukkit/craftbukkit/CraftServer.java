@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -23,6 +24,7 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.server.ChunkCoordinates;
 import net.minecraft.server.CommandAchievement;
 import net.minecraft.server.CommandBan;
@@ -180,6 +182,7 @@ import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.scheduler.BukkitWorker;
 import org.bukkit.util.StringUtil;
 import org.bukkit.util.permissions.DefaultPermissions;
+import org.spigotmc.SpigotConfig;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
@@ -197,6 +200,7 @@ import jline.console.ConsoleReader;
 public final class CraftServer implements Server {
     private static final Player[] EMPTY_PLAYER_ARRAY = new Player[0];
     private final String serverName = "CraftBukkit";
+    private String serverGroup = "Dev"; // PowerSpigot
     private final String serverVersion;
     private final String bukkitVersion = Versioning.getBukkitVersion();
     private final Logger logger = Logger.getLogger("Minecraft");
@@ -570,16 +574,10 @@ public final class CraftServer implements Server {
         // PaperSpigot end
     }
 
-    // TODO: In 1.8+ this should use the server's UUID->EntityPlayer map
     @Override
     public Player getPlayer(UUID id) {
-        for (Player player : getOnlinePlayers()) {
-            if (player.getUniqueId().equals(id)) {
-                return player;
-            }
-        }
-
-        return null;
+        EntityPlayer player = playerList.uuidMap.get(id);
+        return player != null ? player.getBukkitEntity() : null;
     }
 
     @Override
@@ -641,6 +639,15 @@ public final class CraftServer implements Server {
     @Override
     public String getServerName() {
         return this.getConfigString("server-name", "Unknown Server");
+    }
+
+    @Override
+    public String getServerGroup() {
+        return serverGroup;
+    }
+
+    public void setServerGroup(String serverGroup) {
+        this.serverGroup = serverGroup;
     }
 
     @Override
@@ -1858,13 +1865,8 @@ public final class CraftServer implements Server {
             return org.spigotmc.SpigotConfig.config;
         }
 
-        /**
-         * Sends the component to the player
-         *
-         * @param component the components to send
-         */
         @Override
-        public void broadcast(net.md_5.bungee.api.chat.BaseComponent component)
+        public void broadcast( BaseComponent component )
         {
             for ( Player player : getOnlinePlayers() )
             {
@@ -1872,14 +1874,8 @@ public final class CraftServer implements Server {
             }
         }
 
-        /**
-         * Sends an array of components as a single message to the
-         * player
-         *
-         * @param components the components to send
-         */
         @Override
-        public void broadcast(net.md_5.bungee.api.chat.BaseComponent ...components)
+        public void broadcast( BaseComponent... components )
         {
             for ( Player player : getOnlinePlayers() )
             {

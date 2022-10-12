@@ -1,31 +1,34 @@
 package net.minecraft.server;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-
-// CraftBukkit start
-import java.util.ArrayList;
-import com.google.common.base.Function;
+import com.google.common.collect.Sets;
+import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.craftbukkit.util.CraftPotionUtils;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.PotionEffectAddEvent;
+import org.bukkit.event.entity.PotionEffectExpireEvent;
+import org.bukkit.event.entity.PotionEffectExtendEvent;
+import org.bukkit.event.entity.PotionEffectRemoveEvent;
+import org.bukkit.event.player.PlayerAttackEvent;
+import org.spigotmc.ActivationRange;
+import org.spigotmc.SpigotConfig;
+
+import com.google.common.base.Function;
+
+import java.util.*;
+
+// CraftBukkit start
 // CraftBukkit end
 
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
-import org.spigotmc.ActivationRange;
-
 public abstract class EntityLiving extends Entity {
-
     private static final UUID b = UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D");
     private static final AttributeModifier c = (new AttributeModifier(b, "Sprinting speed boost", 0.30000001192092896D, 2)).a(false);
     private AttributeMapBase d;
     public CombatTracker combatTracker = new CombatTracker(this); // CraftBukkit - private -> public, remove final
-    public final HashMap effects = new HashMap(); // CraftBukkit - protected -> public
+    private final Map<Integer, MobEffect> effects = new HashMap<>();
     private final ItemStack[] g = new ItemStack[5];
     public boolean at;
     public int au;
@@ -83,14 +86,17 @@ public abstract class EntityLiving extends Entity {
     // CraftBukkit start
     public int expToDrop;
     public int maxAirTicks = 300;
+    private boolean applyingSprintKnockback;
     ArrayList<org.bukkit.inventory.ItemStack> drops = null;
+    private DamageSource lastDamageSource;
+
     // CraftBukkit end
     // Spigot start
-    public void inactiveTick()
-    {
+    public void inactiveTick() {
         super.inactiveTick();
         ++this.aU; // Above all the floats
     }
+
     // Spigot end
     public double knockbackReduction; // Kohi
 
@@ -163,7 +169,7 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void C() {
-        SpigotTimings.timerEntityLiving_C.startTiming(); // Poweruser
+        SpigotTimings.timerEntityLiving_C.startTiming(); // CobelPvP
         this.aC = this.aD;
         super.C();
         this.world.methodProfiler.a("livingEntityBaseTick");
@@ -177,8 +183,8 @@ public abstract class EntityLiving extends Entity {
 
         boolean flag = this instanceof EntityHuman && ((EntityHuman) this).abilities.isInvulnerable;
 
-        if (this.isAlive() && this.a(Material.WATER)) {
-            if (!this.aE() && !this.hasEffect(MobEffectList.WATER_BREATHING.id) && !flag) {
+        if (this.isAlive() && this.inWater && this.a(Material.WATER)) {
+            if (!this.aE() && !flag && !this.hasEffect(MobEffectList.WATER_BREATHING.id)) {
                 this.setAirTicks(this.j(this.getAirTicks()));
                 if (this.getAirTicks() == -20) {
                     this.setAirTicks(0);
@@ -206,7 +212,7 @@ public abstract class EntityLiving extends Entity {
             // CraftBukkit end
         }
 
-        if (this.isAlive() && this.L()) {
+        if (this.isAlive() && 0 < this.fireTicks && this.L()) {
             this.extinguish();
         }
 
@@ -252,7 +258,7 @@ public abstract class EntityLiving extends Entity {
         this.lastYaw = this.yaw;
         this.lastPitch = this.pitch;
         this.world.methodProfiler.b();
-        SpigotTimings.timerEntityLiving_C.stopTiming(); // Poweruser
+        SpigotTimings.timerEntityLiving_C.stopTiming(); // CobelPvP
     }
 
     // CraftBukkit start
@@ -451,22 +457,28 @@ public abstract class EntityLiving extends Entity {
     }
 
     protected void aO() {
-        Iterator iterator = this.effects.keySet().iterator();
-
+        Iterator<Map.Entry<Integer, MobEffect>> iterator = Sets.newHashSet(this.effects.entrySet()).iterator();
         while (iterator.hasNext()) {
-            Integer integer = (Integer) iterator.next();
-            MobEffect mobeffect = (MobEffect) this.effects.get(integer);
+            Map.Entry<Integer, MobEffect> next = iterator.next();
+            MobEffect mobeffect = next.getValue();
 
             if (!mobeffect.tick(this)) {
                 if (!this.world.isStatic) {
-                    iterator.remove();
+                    PotionEffectExpireEvent event = new PotionEffectExpireEvent((LivingEntity) this.getBukkitEntity(),
+                            CraftPotionUtils.toBukkit(mobeffect));
+                    this.world.getServer().getPluginManager().callEvent(event);
+                    if (event.isCancelled()) {
+                        CraftPotionUtils.extendDuration(mobeffect, event.getDuration());
+                        continue;
+                    }
+
+                    this.effects.remove(next.getKey());
                     this.b(mobeffect);
                 }
             } else if (mobeffect.getDuration() % 600 == 0) {
                 this.a(mobeffect, false);
             }
         }
-
         int i;
 
         if (this.updateEffects) {
@@ -498,11 +510,11 @@ public abstract class EntityLiving extends Entity {
                 flag1 = this.random.nextInt(15) == 0;
             }
 
-            if (flag) {
+            if (flag && !flag1) {
                 flag1 &= this.random.nextInt(5) == 0;
             }
 
-            if (flag1 && i > 0) {
+            if (flag1) {
                 double d0 = (double) (i >> 16 & 255) / 255.0D;
                 double d1 = (double) (i >> 8 & 255) / 255.0D;
                 double d2 = (double) (i >> 0 & 255) / 255.0D;
@@ -513,15 +525,14 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void removeAllEffects() {
-        Iterator iterator = this.effects.keySet().iterator();
-
+        Set<Map.Entry<Integer, MobEffect>> set = this.effects.entrySet();
+        Iterator<Map.Entry<Integer, MobEffect>> iterator = new HashSet<>(set).iterator();
         while (iterator.hasNext()) {
-            Integer integer = (Integer) iterator.next();
-            MobEffect mobeffect = (MobEffect) this.effects.get(integer);
+            Map.Entry<Integer, MobEffect> next = iterator.next();
+            int integer = next.getKey();
 
             if (!this.world.isStatic) {
-                iterator.remove();
-                this.b(mobeffect);
+                this.removeEffect(integer);
             }
         }
     }
@@ -545,15 +556,32 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void addEffect(MobEffect mobeffect) {
+        this.addEffect(mobeffect, PotionEffectAddEvent.EffectCause.UNKNOWN);
+    }
+
+    public void addEffect(MobEffect mobeffect, PotionEffectAddEvent.EffectCause effectCause) {
         if (this.d(mobeffect)) {
-            if (this.effects.containsKey(Integer.valueOf(mobeffect.getEffectId()))) {
-                ((MobEffect) this.effects.get(Integer.valueOf(mobeffect.getEffectId()))).a(mobeffect);
-                this.a((MobEffect) this.effects.get(Integer.valueOf(mobeffect.getEffectId())), true);
+            if (this.effects.containsKey(mobeffect.getEffectId())) {
+                MobEffect current = this.effects.get(mobeffect.getEffectId());
+
+                PotionEffectExtendEvent event = new PotionEffectExtendEvent((LivingEntity) this.getBukkitEntity(),
+                        CraftPotionUtils.toBukkit(mobeffect),
+                        CraftPotionUtils.toBukkit(current), effectCause);
+                this.world.getServer().getPluginManager().callEvent(event);
+                if (event.isCancelled()) return;
+
+                current.a(mobeffect);
+                this.a(current, true);
             } else {
-                this.effects.put(Integer.valueOf(mobeffect.getEffectId()), mobeffect);
+                PotionEffectAddEvent event = new PotionEffectAddEvent((LivingEntity) this.getBukkitEntity(),
+                        CraftPotionUtils.toBukkit(mobeffect), effectCause);
+                this.world.getServer().getPluginManager().callEvent(event);
+                if (event.isCancelled()) return;
+                this.effects.put(mobeffect.getEffectId(), mobeffect);
                 this.a(mobeffect);
             }
         }
+
     }
 
     public boolean d(MobEffect mobeffect) {
@@ -573,11 +601,21 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void removeEffect(int i) {
-        MobEffect mobeffect = (MobEffect) this.effects.remove(Integer.valueOf(i));
+        MobEffect mobeffect = this.effects.remove(i);
 
         if (mobeffect != null) {
+            PotionEffectRemoveEvent event = new PotionEffectRemoveEvent((LivingEntity) this.getBukkitEntity(),
+                    CraftPotionUtils.toBukkit(mobeffect));
+            this.world.getServer().getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                this.effects.put(i, mobeffect);
+                return;
+            }
+
             this.b(mobeffect);
         }
+
+        return;
     }
 
     protected void a(MobEffect mobeffect) {
@@ -642,7 +680,13 @@ public abstract class EntityLiving extends Entity {
                 player.setRealHealth(f);
             }
 
-            this.datawatcher.watch(6, Float.valueOf(player.getScaledHealth()));
+            // Griffin start - Instant respawn
+            // only send the update to anyone if the player has not died.
+            // if they do die, we handle all our stuff in EntityPlayer#die(DamageSource)
+            if (player.getHealth() != 0 || !SpigotConfig.instantRespawn) {
+                this.datawatcher.watch(6, Float.valueOf(player.getScaledHealth()));
+            }
+            // Griffin end - Instant respawn
             return;
         }
         // CraftBukkit end
@@ -669,9 +713,27 @@ public abstract class EntityLiving extends Entity {
 
                 this.aF = 1.5F;
                 boolean flag = true;
+                boolean noDamage = true;
 
-                if ((float) this.noDamageTicks > (float) this.maxNoDamageTicks / 2.0F) {
-                    if (f <= this.lastDamage) {
+                //cobelpvp start
+                //TODO: Invisibility tick fix
+                if(lastDamageSource != null){
+                     if((damagesource instanceof EntityDamageSourceIndirect)){
+                        EntityDamageSourceIndirect sourceIndirect = (EntityDamageSourceIndirect) damagesource;
+                        if(sourceIndirect.i() instanceof EntityArrow){
+                            noDamage = false;
+                        }
+                    } else if(lastDamageSource.o() &&
+                             (damagesource instanceof EntityDamageSource)){
+                         noDamage = false;
+                     }
+                }
+                //cobelpvp end
+
+                if (noDamage && (float) this.noDamageTicks > (float) this.maxNoDamageTicks / 2.0F) {
+                    return false;
+                    /*if (f <= this.lastDamage) {
+                        this.forceExplosionKnockback = true; // CraftBukkit - SPIGOT-949 - for vanilla consistency, cooldown does not prevent explosion knockback
                         return false;
                     }
 
@@ -681,7 +743,7 @@ public abstract class EntityLiving extends Entity {
                     }
                     // CraftBukkit end
                     this.lastDamage = f;
-                    flag = false;
+                    flag = false;*/
                 } else {
                     // CraftBukkit start
                     float previousHealth = this.getHealth();
@@ -696,6 +758,7 @@ public abstract class EntityLiving extends Entity {
                     // Kohi - activate for twice the no damage time
                     this.activatedTick = MinecraftServer.currentTick + (this.maxNoDamageTicks * 2);
                 }
+                lastDamageSource = damagesource;
 
                 this.az = 0.0F;
                 Entity entity = damagesource.getEntity();
@@ -734,7 +797,7 @@ public abstract class EntityLiving extends Entity {
                         }
 
                         this.az = (float) (Math.atan2(d1, d0) * 180.0D / 3.1415927410125732D) - this.yaw;
-                        this.a(entity, f, d0, d1);
+                        this.a(damagesource, f, d0, d1);
                     } else {
                         this.az = (float) ((int) (Math.random() * 2.0D) * 180);
                     }
@@ -826,29 +889,27 @@ public abstract class EntityLiving extends Entity {
         this.world.broadcastEntityEffect(this, (byte) 3);
     }
 
-    protected void dropEquipment(boolean flag, int i) {}
+    protected void dropEquipment(boolean flag, int i) {
+    }
 
-    public void a(Entity entity, float f, double d0, double d1) {
+    public void a(DamageSource damageSource, float f, double d0, double d1) {
         if (this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.c).getValue()) {
             this.al = true;
-            float f1 = MathHelper.sqrt(d0 * d0 + d1 * d1);
-            float f2 = 0.4F;
+            // Kohi start - configurable knockback
+            double magnitude = MathHelper.sqrt(d0 * d0 + d1 * d1);
 
-            // Kohi start
-            double friction = 2.0d - knockbackReduction;
-            f2 *= (1d - knockbackReduction);
+            this.motX /= SpigotConfig.knockbackFriction;
+            this.motY /= SpigotConfig.knockbackFriction;
+            this.motZ /= SpigotConfig.knockbackFriction;
 
-            this.motX /= friction;
-            this.motY /= friction;
-            this.motZ /= friction;
-            // Kohi end
+            this.motX -= d0 / magnitude * SpigotConfig.knockbackHorizontal;
+            this.motY += SpigotConfig.knockbackVertical;
+            this.motZ -= d1 / magnitude * SpigotConfig.knockbackHorizontal;
 
-            this.motX -= d0 / (double) f1 * (double) f2;
-            this.motY += (double) f2;
-            this.motZ -= d1 / (double) f1 * (double) f2;
-            if (this.motY > 0.4000000059604645D * (1d - knockbackReduction)) {
-                this.motY = 0.4000000059604645D * (1d - knockbackReduction);
+            if (this.motY > SpigotConfig.knockbackVerticalLimit) {
+                this.motY = SpigotConfig.knockbackVerticalLimit;
             }
+            // Kohi end
         }
     }
 
@@ -860,9 +921,11 @@ public abstract class EntityLiving extends Entity {
         return "game.neutral.die";
     }
 
-    protected void getRareDrop(int i) {}
+    protected void getRareDrop(int i) {
+    }
 
-    protected void dropDeathLoot(boolean flag, int i) {}
+    protected void dropDeathLoot(boolean flag, int i) {
+    }
 
     public boolean h_() {
         int i = MathHelper.floor(this.locX);
@@ -926,7 +989,8 @@ public abstract class EntityLiving extends Entity {
         return i;
     }
 
-    protected void damageArmor(float f) {}
+    protected void damageArmor(float f) {
+    }
 
     protected float applyArmorModifier(DamageSource damagesource, float f) {
         if (!damagesource.ignoresArmor()) {
@@ -1170,6 +1234,7 @@ public abstract class EntityLiving extends Entity {
 
     public void setSprinting(boolean flag) {
         super.setSprinting(flag);
+        this.setApplyingSprintKnockback(flag);
         AttributeInstance attributeinstance = this.getAttributeInstance(GenericAttributes.d);
 
         if (attributeinstance.a(b) != null) {
@@ -1180,6 +1245,15 @@ public abstract class EntityLiving extends Entity {
             attributeinstance.a(c);
         }
     }
+
+    public void setApplyingSprintKnockback(final boolean flag) {
+        this.applyingSprintKnockback = flag;
+    }
+
+    public boolean isApplyingSprintKnockback() {
+        return this.applyingSprintKnockback;
+    }
+
 
     public abstract ItemStack[] getEquipment();
 
@@ -1605,11 +1679,12 @@ public abstract class EntityLiving extends Entity {
         this.world.methodProfiler.b();
     }
 
-    protected void bn() {}
+    protected void bn() {
+    }
 
     protected void bo() {
         // Kohi - skip checks if not activated
-        if (!ActivationRange.checkIfActive(this)) {
+        if (SpigotConfig.disableEntityCollisions || !ActivationRange.checkIfActive(this)) { // CobelPvP
             return;
         }
 
@@ -1618,8 +1693,11 @@ public abstract class EntityLiving extends Entity {
         if (this.R() && list != null && !list.isEmpty()) { // Spigot: Add this.R() condition
             numCollisions -= world.spigotConfig.maxCollisionsPerEntity; // Spigot
             for (int i = 0; i < list.size(); ++i) {
-                if (numCollisions > world.spigotConfig.maxCollisionsPerEntity) { break; } // Spigot
+                if (numCollisions > world.spigotConfig.maxCollisionsPerEntity) {
+                    break;
+                } // Spigot
                 Entity entity = (Entity) list.get(i);
+                if (entity instanceof EntityPlayer) continue; // CobelPvP - players don't get pushed
 
                 // TODO better check now?
                 // CraftBukkit start - Only handle mob (non-player) collisions every other tick
@@ -1649,7 +1727,8 @@ public abstract class EntityLiving extends Entity {
         this.fallDistance = 0.0F;
     }
 
-    protected void bp() {}
+    protected void bp() {
+    }
 
     protected void bq() {
         ++this.aU;
@@ -1757,7 +1836,9 @@ public abstract class EntityLiving extends Entity {
         return this.getScoreboardTeam() != null ? this.getScoreboardTeam().isAlly(scoreboardteambase) : false;
     }
 
-    public void bu() {}
+    public void bu() {
+    }
 
-    public void bv() {}
+    public void bv() {
+    }
 }

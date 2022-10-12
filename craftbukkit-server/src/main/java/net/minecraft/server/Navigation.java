@@ -1,16 +1,16 @@
 package net.minecraft.server;
 
-// Poweruser start
-import net.frozenorb.pathsearch.PositionPathSearchType;
-import net.frozenorb.pathsearch.jobs.PathSearchJob;
-import net.frozenorb.pathsearch.jobs.PathSearchJobNavigationEntity;
-import net.frozenorb.pathsearch.jobs.PathSearchJobNavigationPosition;
-//Poweruser end
+// CobelPvP start
+import net.minecraft.optimizations.pathsearch.PositionPathSearchType;
+import net.minecraft.optimizations.pathsearch.jobs.PathSearchJob;
+import net.minecraft.optimizations.pathsearch.jobs.PathSearchJobNavigationEntity;
+import net.minecraft.optimizations.pathsearch.jobs.PathSearchJobNavigationPosition;
+//CobelPvP end
 
 public class Navigation {
 
-    protected EntityInsentient a; // Poweruser - private -> protected
-    protected World b; // Poweruser - private -> protected
+    protected EntityInsentient a; // CobelPvP - private -> protected
+    protected World b; // CobelPvP - private -> protected
     private PathEntity c;
     private double d;
     private AttributeInstance e;
@@ -18,12 +18,12 @@ public class Navigation {
     private int g;
     private int h;
     private Vec3D i = Vec3D.a(0.0D, 0.0D, 0.0D);
-    protected boolean j = true; // Poweruser - private -> protected
-    protected boolean k; // Poweruser - private -> protected
-    protected boolean l; // Poweruser - private -> protected
-    protected boolean m; // Poweruser - private -> protected
+    protected boolean j = true; // CobelPvP - private -> protected
+    protected boolean k; // CobelPvP - private -> protected
+    protected boolean l; // CobelPvP - private -> protected
+    protected boolean m; // CobelPvP - private -> protected
 
-    // Poweruser start
+    // CobelPvP start
     public void setSearchResult(PathSearchJobNavigationEntity pathSearch) { }
 
     public void setSearchResult(PathSearchJobNavigationPosition pathSearch) { }
@@ -39,7 +39,7 @@ public class Navigation {
     public void cleanUpExpiredSearches() { }
 
     public void cancelSearch(PathSearchJob pathSearch) { }
-    // Poweruser end
+    // CobelPvP end
 
     public Navigation(EntityInsentient entityinsentient, World world) {
         this.a = entityinsentient;
@@ -230,7 +230,7 @@ public class Navigation {
         }
     }
 
-    protected boolean l() { // Poweruser - private -> protected
+    protected boolean l() { // CobelPvP - private -> protected
         return this.a.onGround || this.m && this.m() || this.a.am() && this.a instanceof EntityZombie && this.a.vehicle instanceof EntityChicken;
     }
 

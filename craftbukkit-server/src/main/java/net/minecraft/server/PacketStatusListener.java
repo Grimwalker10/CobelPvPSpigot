@@ -125,11 +125,11 @@ public class PacketStatusListener implements PacketStatusInListener {
         ping.setPlayerSample(playerSample);
         ping.setServerInfo(new ServerPingServerData(minecraftServer.getServerModName() + " " + minecraftServer.getVersion(), networkManager.getVersion())); // TODO: Update when protocol changes
 
-        this.networkManager.handle(new PacketStatusOutServerInfo(ping), NetworkManager.emptyListenerArray); // Poweruser
+        this.networkManager.handle(new PacketStatusOutServerInfo(ping), NetworkManager.emptyListenerArray); // CobelPvP
         // CraftBukkit end
     }
 
     public void a(PacketStatusInPing packetstatusinping) {
-        this.networkManager.handle(new PacketStatusOutPong(packetstatusinping.c()), NetworkManager.emptyListenerArray); // Poweruser
+        this.networkManager.handle(new PacketStatusOutPong(packetstatusinping.c()), NetworkManager.emptyListenerArray); // CobelPvP
     }
 }

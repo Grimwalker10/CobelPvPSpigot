@@ -26,8 +26,6 @@ public class VersionCommand extends BukkitCommand {
 
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if (!testPermission(sender)) return true;
-
         if (args.length == 0) {
             sender.sendMessage("This server is running " + Bukkit.getName() + " version " + Bukkit.getVersion() + " (Implementing API version " + Bukkit.getBukkitVersion() + ")");
         } else {
@@ -58,8 +56,8 @@ public class VersionCommand extends BukkitCommand {
             }
 
             if (!found) {
-                sender.sendMessage("This server is not running any plugin by that name.");
-                sender.sendMessage("Use /plugins to get a list of plugins.");
+                sender.sendMessage(ChatColor.DARK_RED + "This server is not running any plugin by that name.");
+                sender.sendMessage(ChatColor.DARK_RED + "Use /plugins to get a list of plugins.");
             }
         }
         return true;
@@ -70,7 +68,7 @@ public class VersionCommand extends BukkitCommand {
         sender.sendMessage(ChatColor.GREEN + desc.getName() + ChatColor.WHITE + " version " + ChatColor.GREEN + desc.getVersion());
 
         if (desc.getDescription() != null) {
-            sender.sendMessage(desc.getDescription());
+            sender.sendMessage(ChatColor.GOLD + desc.getDescription());
         }
 
         if (desc.getWebsite() != null) {

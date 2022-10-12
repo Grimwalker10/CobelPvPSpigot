@@ -98,7 +98,7 @@ public class CraftWorld implements World {
     }
 
     public Location getSpawnLocation() {
-    // Poweruser start
+    // CobelPvP start
         WorldData worlddata = world.getWorldData();
         return new Location(this, worlddata.c(), worlddata.d(), worlddata.e(), worlddata.getSpawnYaw(), worlddata.getSpawnPitch());
     }
@@ -117,7 +117,7 @@ public class CraftWorld implements World {
             return false;
         }
     }
-    // Poweruser end
+    // CobelPvP end
 
     public boolean setSpawnLocation(int x, int y, int z) {
         try {
@@ -198,18 +198,18 @@ public class CraftWorld implements World {
 
     public boolean unloadChunkRequest(int x, int z, boolean safe) {
         org.spigotmc.AsyncCatcher.catchOp( "chunk unload"); // Spigot
-        if (safe && isChunkInUse(x, z)) {
+        if (isChunkInUse(x, z)) { // CobelPvP - never unload in-use chunks
             return false;
         }
 
-        world.chunkProviderServer.queueUnload(x, z);
+        world.chunkProviderServer.queueUnload(x, z, true); // CobelPvP
 
         return true;
     }
 
     public boolean unloadChunk(int x, int z, boolean save, boolean safe) {
         org.spigotmc.AsyncCatcher.catchOp( "chunk unload"); // Spigot
-        if (safe && isChunkInUse(x, z)) {
+        if (isChunkInUse(x, z)) { // CobelPvP - never unload in-use chunks
             return false;
         }
 
@@ -232,7 +232,7 @@ public class CraftWorld implements World {
         }
 
         world.chunkProviderServer.unloadQueue.remove(x, z);
-        world.chunkProviderServer.chunks.remove(LongHash.toLong(x, z));
+        world.chunkProviderServer.chunks.remove(x, z); // CobelPvP
 
         return true;
     }
@@ -290,7 +290,7 @@ public class CraftWorld implements World {
         }
 
         world.chunkProviderServer.unloadQueue.remove(x, z);
-        net.minecraft.server.Chunk chunk = world.chunkProviderServer.chunks.get(LongHash.toLong(x, z));
+        net.minecraft.server.Chunk chunk = world.chunkProviderServer.chunks.get(LongHash.toLong(x, z)); // CobelPvP
 
         if (chunk == null) {
             world.timings.syncChunkLoadTimer.startTiming(); // Spigot
@@ -304,7 +304,7 @@ public class CraftWorld implements World {
 
     private void chunkLoadPostProcess(net.minecraft.server.Chunk chunk, int x, int z) {
         if (chunk != null) {
-            world.chunkProviderServer.chunks.put(LongHash.toLong(x, z), chunk);
+            world.chunkProviderServer.chunks.put(LongHash.toLong(x, z), chunk); // CobelPvP
 
             chunk.addEntities();
 
@@ -713,7 +713,7 @@ public class CraftWorld implements World {
     public List<Player> getPlayers() {
         List<Player> list = new ArrayList<Player>();
 
-        for (Object o : world.entityList) {
+        for (Object o : world.players) {
             if (o instanceof net.minecraft.server.Entity) {
                 net.minecraft.server.Entity mcEnt = (net.minecraft.server.Entity) o;
                 Entity bukkitEntity = mcEnt.getBukkitEntity();

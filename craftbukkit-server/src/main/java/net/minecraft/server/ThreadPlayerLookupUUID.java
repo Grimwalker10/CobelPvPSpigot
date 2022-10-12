@@ -12,19 +12,19 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
 // CraftBukkit end
 
-// Poweruser start
+// CobelPvP start
 import java.security.PrivateKey;
 import java.util.Arrays;
-// Poweruser end
+// CobelPvP end
 
-class ThreadPlayerLookupUUID implements Runnable { // Poweruser
+class ThreadPlayerLookupUUID implements Runnable { // CobelPvP
 
     final LoginListener a;
 
-    // Poweruser start
+    // CobelPvP start
     final PacketLoginInEncryptionBegin packetlogininencryptionbegin;
 
-    ThreadPlayerLookupUUID(LoginListener loginlistener, PacketLoginInEncryptionBegin packetlogininencryptionbegin) { // Poweruser
+    ThreadPlayerLookupUUID(LoginListener loginlistener, PacketLoginInEncryptionBegin packetlogininencryptionbegin) { // CobelPvP
         this.a = loginlistener;
         this.packetlogininencryptionbegin = packetlogininencryptionbegin;
     }
@@ -32,10 +32,10 @@ class ThreadPlayerLookupUUID implements Runnable { // Poweruser
     public ThreadPlayerLookupUUID(LoginListener loginlistener) {
         this(loginlistener, null);
     }
-    // Poweruser end
+    // CobelPvP end
 
     public void run() {
-        // Poweruser start
+        // CobelPvP start
         if (this.packetlogininencryptionbegin != null) {
             try {
                 PrivateKey privatekey = MinecraftServer.getServer().K().getPrivate();
@@ -51,7 +51,7 @@ class ThreadPlayerLookupUUID implements Runnable { // Poweruser
                 return;
             }
         }
-        // Poweruser end
+        // CobelPvP end
 
         GameProfile gameprofile = LoginListener.a(this.a);
 
