@@ -171,7 +171,7 @@ public class PaperSpigotConfig
     public static double weaknessEffectModifier;
     private static void effectModifiers()
     {
-        strengthEffectModifier = getDouble( "effect-modifiers.strength", 0.5D );
+        strengthEffectModifier = getDouble( "effect-modifiers.strength", 0.4D );
         weaknessEffectModifier = getDouble( "effect-modifiers.weakness", -0.5D );
     }
 
