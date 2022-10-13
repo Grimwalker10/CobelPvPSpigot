@@ -1,31 +1,28 @@
 package net.minecraft.server;
 
 public class PacketPlayInUseEntity extends Packet {
-
-    private int a;
+    public int a;
     private EnumEntityUseAction action;
 
-    public PacketPlayInUseEntity() {}
+    public PacketPlayInUseEntity() {
+    }
 
     public void a(PacketDataSerializer packetdataserializer) {
-        // Spigot start
-        if ( packetdataserializer.version < 16 )
-        {
+        if (packetdataserializer.version < 16) {
             this.a = packetdataserializer.readInt();
             this.action = EnumEntityUseAction.values()[packetdataserializer.readByte() % EnumEntityUseAction.values().length];
         } else {
             this.a = packetdataserializer.a();
             int val = packetdataserializer.a();
-            if ( val == 2 ) {
+            if (val == 2) {
                 packetdataserializer.readFloat();
                 packetdataserializer.readFloat();
                 packetdataserializer.readFloat();
-            } else
-            {
-                this.action = EnumEntityUseAction.values()[ val % EnumEntityUseAction.values().length ];
+            } else {
+                this.action = EnumEntityUseAction.values()[val % EnumEntityUseAction.values().length];
             }
         }
-        // Spigot end
+
     }
 
     public void b(PacketDataSerializer packetdataserializer) {
@@ -46,6 +43,6 @@ public class PacketPlayInUseEntity extends Packet {
     }
 
     public void handle(PacketListener packetlistener) {
-        this.a((PacketPlayInListener) packetlistener);
+        this.a((PacketPlayInListener)packetlistener);
     }
 }
