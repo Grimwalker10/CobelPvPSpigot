@@ -48,7 +48,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     private final boolean j;
     private final Queue k = Queues.newConcurrentLinkedQueue();
     // private final Queue l = Queues.newConcurrentLinkedQueue(); // CobelPvP
-    private Channel m;
+    public Channel m;
     // Spigot Start
     public SocketAddress n;
     public java.util.UUID spoofedUUID;
