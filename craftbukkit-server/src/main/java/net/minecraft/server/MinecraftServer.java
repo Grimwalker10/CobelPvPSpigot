@@ -131,6 +131,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     // CobelPvP end
 
     public float lastTickTime = 0F; // CobelPvP
+    public static List<Runnable> PRE_ENTITY_TRACKER_RUNNABLE_LIST = new ArrayList();
+    public static List<Runnable> POST_ENTITY_TRACKER_RUNNABLE_LIST = new ArrayList();
 
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
         net.minecraft.util.io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
@@ -780,7 +782,9 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.methodProfiler.b();
                 this.methodProfiler.a("tracker");
                 worldserver.timings.tracker.startTiming(); // Spigot
+                PRE_ENTITY_TRACKER_RUNNABLE_LIST.forEach(Runnable::run);
                 worldserver.getTracker().updatePlayers();
+                POST_ENTITY_TRACKER_RUNNABLE_LIST.forEach(Runnable::run);
                 worldserver.timings.tracker.stopTiming(); // Spigot
                 this.methodProfiler.b();
                 this.methodProfiler.b();
