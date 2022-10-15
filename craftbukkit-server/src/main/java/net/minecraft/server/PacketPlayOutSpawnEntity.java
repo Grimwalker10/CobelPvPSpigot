@@ -1,20 +1,20 @@
 package net.minecraft.server;
 
 public class PacketPlayOutSpawnEntity extends Packet {
-
     public int a;
-    private int b;
-    private int c;
-    private int d;
-    private int e;
-    private int f;
-    private int g;
-    private int h;
-    private int i;
+    public int b;
+    public int c;
+    public int d;
+    public int e;
+    public int f;
+    public int g;
+    public int h;
+    public int i;
     public int j;
-    private int k;
+    public int k;
 
-    public PacketPlayOutSpawnEntity() {}
+    public PacketPlayOutSpawnEntity() {
+    }
 
     public PacketPlayOutSpawnEntity(Entity entity, int i) {
         this(entity, i, 0);
@@ -34,7 +34,6 @@ public class PacketPlayOutSpawnEntity extends Packet {
             double d1 = entity.motY;
             double d2 = entity.motZ;
             double d3 = 3.9D;
-
             if (d0 < -d3) {
                 d0 = -d3;
             }
@@ -59,10 +58,11 @@ public class PacketPlayOutSpawnEntity extends Packet {
                 d2 = d3;
             }
 
-            this.e = (int) (d0 * 8000.0D);
-            this.f = (int) (d1 * 8000.0D);
-            this.g = (int) (d2 * 8000.0D);
+            this.e = (int)(d0 * 8000.0D);
+            this.f = (int)(d1 * 8000.0D);
+            this.g = (int)(d2 * 8000.0D);
         }
+
     }
 
     public void a(PacketDataSerializer packetdataserializer) {
@@ -79,50 +79,42 @@ public class PacketPlayOutSpawnEntity extends Packet {
             this.f = packetdataserializer.readShort();
             this.g = packetdataserializer.readShort();
         }
+
     }
 
     public void b(PacketDataSerializer packetdataserializer) {
         packetdataserializer.b(this.a);
         packetdataserializer.writeByte(this.j);
-        // Spigot start - protocol patch
-        if ( j == 71 && packetdataserializer.version >= 28 )
-        {
-            // North: 0   256
-            // West:  64  192
-            // South: 128 128
-            // East:  192 320
-            switch ( k ) {
+        if (this.j == 71 && packetdataserializer.version >= 28) {
+            switch(this.k) {
                 case 0:
-                    d += 32;
-                    i = 0;
+                    this.d += 32;
+                    this.i = 0;
                     break;
                 case 1:
-                    b -= 32;
-                    i = 64;
+                    this.b -= 32;
+                    this.i = 64;
                     break;
                 case 2:
-                    d -= 32;
-                    i = 128;
+                    this.d -= 32;
+                    this.i = 128;
                     break;
                 case 3:
-                    b += 32;
-                    i = 192;
-                    break;
+                    this.b += 32;
+                    this.i = 192;
             }
         }
-        if ( j == 70 && packetdataserializer.version >= 36 )
-        {
-            int id = k & 0xFFFF;
-            int data = k >> 16;
-            k = id | ( data << 12 );
+
+        if (this.j == 70 && packetdataserializer.version >= 36) {
+            int id = this.k & '\uffff';
+            int data = this.k >> 16;
+            this.k = id | data << 12;
         }
 
-        if ( ( j == 50 || j == 70 || j == 74 ) && packetdataserializer.version >= 16 ) // Spigot Update - 20140916a
-        {
-            c -= 16;
+        if ((this.j == 50 || this.j == 70 || this.j == 74) && packetdataserializer.version >= 16) {
+            this.c -= 16;
         }
 
-        // Spigot end
         packetdataserializer.writeInt(this.b);
         packetdataserializer.writeInt(this.c);
         packetdataserializer.writeInt(this.d);
@@ -134,6 +126,7 @@ public class PacketPlayOutSpawnEntity extends Packet {
             packetdataserializer.writeShort(this.f);
             packetdataserializer.writeShort(this.g);
         }
+
     }
 
     public void a(PacketPlayOutListener packetplayoutlistener) {
@@ -141,7 +134,7 @@ public class PacketPlayOutSpawnEntity extends Packet {
     }
 
     public String b() {
-        return String.format("id=%d, type=%d, x=%.2f, y=%.2f, z=%.2f", new Object[] { Integer.valueOf(this.a), Integer.valueOf(this.j), Float.valueOf((float) this.b / 32.0F), Float.valueOf((float) this.c / 32.0F), Float.valueOf((float) this.d / 32.0F)});
+        return String.format("id=%d, type=%d, x=%.2f, y=%.2f, z=%.2f", this.a, this.j, (float)this.b / 32.0F, (float)this.c / 32.0F, (float)this.d / 32.0F);
     }
 
     public void a(int i) {
@@ -169,6 +162,6 @@ public class PacketPlayOutSpawnEntity extends Packet {
     }
 
     public void handle(PacketListener packetlistener) {
-        this.a((PacketPlayOutListener) packetlistener);
+        this.a((PacketPlayOutListener)packetlistener);
     }
 }
