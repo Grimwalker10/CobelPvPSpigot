@@ -1,25 +1,22 @@
 package net.minecraft.server;
 
 public class PacketPlayInKeepAlive extends Packet {
-
     private int a;
 
-    public PacketPlayInKeepAlive() {}
+    public PacketPlayInKeepAlive() {
+    }
 
     public void a(PacketPlayInListener packetplayinlistener) {
         packetplayinlistener.a(this);
     }
 
     public void a(PacketDataSerializer packetdataserializer) {
-        // Spigot start - protocol patch
-        if ( packetdataserializer.version < 16 )
-        {
+        if (packetdataserializer.version < 16) {
             this.a = packetdataserializer.readInt();
-        } else
-        {
+        } else {
             this.a = packetdataserializer.a();
         }
-        // Spigot end
+
     }
 
     public void b(PacketDataSerializer packetdataserializer) {
@@ -35,6 +32,6 @@ public class PacketPlayInKeepAlive extends Packet {
     }
 
     public void handle(PacketListener packetlistener) {
-        this.a((PacketPlayInListener) packetlistener);
+        this.a((PacketPlayInListener)packetlistener);
     }
 }

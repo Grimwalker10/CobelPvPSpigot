@@ -2,7 +2,6 @@ package com.cobelpvp.generator;
 
 import net.minecraft.server.BiomeBase;
 import org.bukkit.configuration.file.YamlConfiguration;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -74,7 +73,7 @@ public class GeneratorConfig {
         conf = YamlConfiguration.loadConfiguration(file);
         conf.options().copyDefaults(true);
 
-        oceans = getBoolean("oceans", true);
+        oceans = getBoolean("oceans", false);
         biomePlains = getBoolean("biome.plains", true);
         biomeDesert = getBoolean("biome.desert", true);
         biomeDesertHills = getBoolean("biome.desert-hills", true);
@@ -104,7 +103,7 @@ public class GeneratorConfig {
         biomeMesaPlateau = getBoolean("biome.mesa-plateau", true);
 
         spawnBiome = getBiome(getString("spawn.biome", "plains"));
-        spawnBiomeRadius = getInt("spawn.radius", 0);
+        spawnBiomeRadius = getInt("spawn.radius", 600);
         spawnBiomeRivers = getBoolean("spawn.rivers", false);
 
         cavesMultiplier = (float) getDouble("caves.multiplier", 1.0);
@@ -128,7 +127,7 @@ public class GeneratorConfig {
         lapisSize = getInt("ores.lapis.size", 6);
         lapisMustTouchAir = getBoolean("ores.lapis.must-touch-air", false);
 
-        sugarCaneMultiplier = (float) getDouble("sugar-cane.multiplier", 1.0);
+        sugarCaneMultiplier = (float) getDouble("sugar-cane.multiplier", 1.5);
 
         try {
             conf.save(file);
