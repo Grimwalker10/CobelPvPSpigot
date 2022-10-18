@@ -17,7 +17,7 @@ public class TicksPerSecondCommand extends Command
         super( name );
         this.description = "Gets the current ticks per second for the server";
         this.usageMessage = "/tps";
-        this.setPermission( "bukkit.command.tps" );
+        this.setPermission( "" );
     }
 
     @Override
@@ -27,7 +27,7 @@ public class TicksPerSecondCommand extends Command
             return true;
         }
 
-        if (sender.hasPermission("bukkit.command.tps.advanced")) {
+        if (sender.hasPermission("")) {
             double[] tps = Bukkit.spigot().getTPS();
             String[] tpsAvg = new String[tps.length];
 
