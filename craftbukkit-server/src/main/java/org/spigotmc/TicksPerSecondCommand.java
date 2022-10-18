@@ -27,7 +27,7 @@ public class TicksPerSecondCommand extends Command
             return true;
         }
 
-        if (sender.hasPermission("")) {
+        if (sender.hasPermission("spigot.tps")) {
             double[] tps = Bukkit.spigot().getTPS();
             String[] tpsAvg = new String[tps.length];
 
