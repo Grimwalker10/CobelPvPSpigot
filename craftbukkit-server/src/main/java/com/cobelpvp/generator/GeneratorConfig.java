@@ -74,21 +74,21 @@ public class GeneratorConfig {
         conf.options().copyDefaults(true);
 
         oceans = getBoolean("oceans", false);
-        biomePlains = getBoolean("biome.plains", true);
+        biomePlains = getBoolean("biome.plains", false);
         biomeDesert = getBoolean("biome.desert", true);
         biomeDesertHills = getBoolean("biome.desert-hills", true);
         biomeExtremeHills = getBoolean("biome.extreme-hills", true);
         biomeExtremeHillsPlus = getBoolean("biome.extreme-hills-plus", true);
-        biomeForest = getBoolean("biome.forest", true);
-        biomeForestHills = getBoolean("biome.forest-hills", true);
+        biomeForest = getBoolean("biome.forest", false);
+        biomeForestHills = getBoolean("biome.forest-hills", false);
         biomeTaiga = getBoolean("biome.taiga", true);
         biomeTaigaHills = getBoolean("biome.taiga-hills", true);
-        biomeSwampland = getBoolean("biome.swampland", true);
+        biomeSwampland = getBoolean("biome.swampland", false);
         biomeIcePlains = getBoolean("biome.ice-plains", true);
-        biomeIceMountains = getBoolean("biome.ice-mountains", true);
+        biomeIceMountains = getBoolean("biome.ice-mountains", false);
         biomeMushroomIsland = getBoolean("biome.mushroom-island", true);
-        biomeJungle = getBoolean("biome.jungle", true);
-        biomeJungleHills = getBoolean("biome.jungle-hills", true);
+        biomeJungle = getBoolean("biome.jungle", false);
+        biomeJungleHills = getBoolean("biome.jungle-hills", false);
         biomeBirchForest = getBoolean("biome.birch-forest", true);
         biomeBirchForestHills = getBoolean("biome.birch-forest-hills", true);
         biomeRoofedForest = getBoolean("biome.roofed-forest", true);
@@ -98,33 +98,33 @@ public class GeneratorConfig {
         biomeMegaTaigaHills = getBoolean("biome.mega-taiga-hills", true);
         biomeSavanna = getBoolean("biome.savanna", true);
         biomeSavannaPlateau = getBoolean("biome.savanna-plateau", true);
-        biomeMesa = getBoolean("biome.mesa", true);
-        biomeMesaPlateauF = getBoolean("biome.mesa-plateau-f", true);
-        biomeMesaPlateau = getBoolean("biome.mesa-plateau", true);
+        biomeMesa = getBoolean("biome.mesa", false);
+        biomeMesaPlateauF = getBoolean("biome.mesa-plateau-f", false);
+        biomeMesaPlateau = getBoolean("biome.mesa-plateau", false);
 
-        spawnBiome = getBiome(getString("spawn.biome", "plains"));
-        spawnBiomeRadius = getInt("spawn.radius", 600);
+        spawnBiome = getBiome(getString("spawn.biome", "savanna"));
+        spawnBiomeRadius = getInt("spawn.radius", 900);
         spawnBiomeRivers = getBoolean("spawn.rivers", false);
 
         cavesMultiplier = (float) getDouble("caves.multiplier", 1.0);
 
-        coalMultiplier = (float) getDouble("ores.coal.multiplier", 1.0);
-        coalSize = getInt("ores.coal.size", 16);
+        coalMultiplier = (float) getDouble("ores.coal.multiplier", 4.0);
+        coalSize = getInt("ores.coal.size", 10);
         coalMustTouchAir = getBoolean("ores.coal.must-touch-air", false);
-        ironMultiplier = (float) getDouble("ores.iron.multiplier", 1.0);
+        ironMultiplier = (float) getDouble("ores.iron.multiplier", 10.0);
         ironSize = getInt("ores.iron.size", 8);
         ironMustTouchAir = getBoolean("ores.iron.must-touch-air", false);
-        goldMultiplier = (float) getDouble("ores.gold.multiplier", 1.0);
-        goldSize = getInt("ores.gold.size", 8);
+        goldMultiplier = (float) getDouble("ores.gold.multiplier", 11.0);
+        goldSize = getInt("ores.gold.size", 11);
         goldMustTouchAir = getBoolean("ores.gold.must-touch-air", false);
-        redstoneMultiplier = (float) getDouble("ores.redstone.multiplier", 1.0);
+        redstoneMultiplier = (float) getDouble("ores.redstone.multiplier", 5.0);
         redstoneSize = getInt("ores.redstone.size", 7);
         redstoneMustTouchAir = getBoolean("ores.redstone.must-touch-air", false);
-        diamondMultiplier = (float) getDouble("ores.diamond.multiplier", 1.0);
-        diamondSize = getInt("ores.diamond.size", 7);
+        diamondMultiplier = (float) getDouble("ores.diamond.multiplier", 16.0);
+        diamondSize = getInt("ores.diamond.size", 14);
         diamondMustTouchAir = getBoolean("ores.diamond.must-touch-air", false);
-        lapisMultiplier = (float) getDouble("ores.lapis.multiplier", 1.0);
-        lapisSize = getInt("ores.lapis.size", 6);
+        lapisMultiplier = (float) getDouble("ores.lapis.multiplier", 0.1);
+        lapisSize = getInt("ores.lapis.size", 1);
         lapisMustTouchAir = getBoolean("ores.lapis.must-touch-air", false);
 
         sugarCaneMultiplier = (float) getDouble("sugar-cane.multiplier", 1.5);

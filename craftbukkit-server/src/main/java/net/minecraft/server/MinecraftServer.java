@@ -1401,7 +1401,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public int getSpawnProtection() {
-        return 16;
+        return 8;
     }
 
     public boolean a(World world, int i, int j, int k, EntityHuman entityhuman) {

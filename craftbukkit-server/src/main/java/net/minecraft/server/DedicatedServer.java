@@ -94,7 +94,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             this.setPvP(this.propertyManager.getBoolean("pvp", true));
             this.setAllowFlight(this.propertyManager.getBoolean("allow-flight", false));
             this.setTexturePack(this.propertyManager.getString("resource-pack", ""));
-            this.setMotd(this.propertyManager.getString("motd", "A Minecraft Server"));
+            this.setMotd(this.propertyManager.getString("motd", "Dev CobelPvP"));
             this.setForceGamemode(this.propertyManager.getBoolean("force-gamemode", false));
             this.setIdleTimeout(this.propertyManager.getInt("player-idle-timeout", 0));
             if (this.propertyManager.getInt("difficulty", 1) < 0) {
@@ -417,7 +417,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     }
 
     public boolean at() {
-        return this.propertyManager.getBoolean("announce-player-achievements", true);
+        return this.propertyManager.getBoolean("announce-player-achievements", false);
     }
 
     protected boolean aE() {

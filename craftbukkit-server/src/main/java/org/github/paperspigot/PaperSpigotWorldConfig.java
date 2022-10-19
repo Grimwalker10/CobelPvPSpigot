@@ -232,10 +232,10 @@ public class PaperSpigotWorldConfig
         generateDungeon = getBoolean( "generator-settings.dungeon", true );
         generateFortress = getBoolean( "generator-settings.fortress", true );
         generateMineshaft = getBoolean( "generator-settings.mineshaft", true );
-        generateStronghold = getBoolean( "generator-settings.stronghold", true );
+        generateStronghold = getBoolean( "generator-settings.stronghold", false );
         generateTemple = getBoolean( "generator-settings.temple", true );
         generateVillage = getBoolean( "generator-settings.village", true );
-        generateFlatBedrock = getBoolean( "generator-settings.flat-bedrock", false );
+        generateFlatBedrock = getBoolean( "generator-settings.flat-bedrock", true );
     }
 
     public boolean loadUnloadedEnderPearls;
