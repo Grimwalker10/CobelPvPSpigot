@@ -40,7 +40,6 @@ public class EntityEnderPearl extends EntityProjectile {
 
     protected void a(MovingObjectPosition movingobjectposition) {
         Block block = this.world.getType(movingobjectposition.b, movingobjectposition.c, movingobjectposition.d);
-        if (!Options.PEARL_STRING.getBooleanValue() || block != Blocks.TRIPWIRE) {
             if (Options.PEARL_GATE.getBooleanValue() && block == Blocks.FENCE_GATE) {
                 BlockIterator bi = null;
 
@@ -168,7 +167,6 @@ public class EntityEnderPearl extends EntityProjectile {
             }
 
         }
-    }
 
     private void refund(Player player) {
         player.getInventory().addItem(new ItemStack[]{enderpearl});

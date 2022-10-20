@@ -4,7 +4,6 @@ import com.cobelpvp.CobelSpigot;
 
 public enum Options {
     PEARL_GATE(true, "options.pearls.fencegates"),
-    PEARL_STRING(false, "options.pearls.string"),
     PEARL_COBWEB(true, "options.pearls.cobweb"),
     PEARL_STAIRS(true, "options.pearls.taliban.stairs"),
     PEARL_SLABS(true, "options.pearls.taliban.slabs"),
