@@ -115,14 +115,14 @@ public class SpigotWorldConfig
     public double itemMerge;
     private void itemMerge()
     {
-        itemMerge = getDouble("merge-radius.item", 2.5 );
+        itemMerge = getDouble("merge-radius.item", 3.5 );
         log( "Item Merge Radius: " + itemMerge );
     }
 
     public double expMerge;
     private void expMerge()
     {
-        expMerge = getDouble("merge-radius.exp", 3.0 );
+        expMerge = getDouble("merge-radius.exp", 6.0 );
         log( "Experience Merge Radius: " + expMerge );
     }
 
@@ -136,7 +136,7 @@ public class SpigotWorldConfig
     public byte mobSpawnRange;
     private void mobSpawnRange()
     {
-        mobSpawnRange = (byte) getInt( "mob-spawn-range", 4 );
+        mobSpawnRange = (byte) getInt( "mob-spawn-range", 5 );
         log( "Mob Spawn Range: " + mobSpawnRange );
     }
 
@@ -154,7 +154,7 @@ public class SpigotWorldConfig
     public int playerTrackingRange = 48;
     public int animalTrackingRange = 48;
     public int monsterTrackingRange = 48;
-    public int miscTrackingRange = 32;
+    public int miscTrackingRange = 16;
     public int otherTrackingRange = 64;
     private void trackingRange()
     {
@@ -228,14 +228,14 @@ public class SpigotWorldConfig
     public int itemDespawnRate;
     private void itemDespawnRate()
     {
-        itemDespawnRate = getInt( "item-despawn-rate", 6000 );
+        itemDespawnRate = getInt( "item-despawn-rate", 5000 );
         log( "Item Despawn Rate: " + itemDespawnRate );
     }
 
     public int arrowDespawnRate;
     private void arrowDespawnRate()
     {
-        arrowDespawnRate = getInt( "arrow-despawn-rate", 1200  );
+        arrowDespawnRate = getInt( "arrow-despawn-rate", 300  );
         log( "Arrow Despawn Rate: " + arrowDespawnRate );
     }
     
@@ -281,7 +281,7 @@ public class SpigotWorldConfig
     public boolean nerfSpawnerMobs;
     private void nerfSpawnerMobs()
     {
-        nerfSpawnerMobs = getBoolean( "nerf-spawner-mobs", false );
+        nerfSpawnerMobs = getBoolean( "nerf-spawner-mobs", true );
         log( "Nerfing mobs spawned from spawners: " + nerfSpawnerMobs );
     }
 
