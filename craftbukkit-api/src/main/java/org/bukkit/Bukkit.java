@@ -66,7 +66,7 @@ public final class Bukkit {
         }
 
         Bukkit.server = server;
-        server.getLogger().info(ChatColor.GREEN + "This server is running CobelPvP Spigot" + " version " + getVersion() + ChatColor.GOLD + " (Implementing API version CraftBukkit 1.7 ");
+        server.getLogger().info(ChatColor.GREEN + "This server is running CobelPvP Spigot" + " version " + getVersion() + ChatColor.GOLD + " (Implementing API version CraftBukkit 1.7)");
     }
 
     /**
