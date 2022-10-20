@@ -21,6 +21,7 @@ import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.TravelAgent;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
@@ -206,6 +207,8 @@ public abstract class PlayerList {
                 entity.attachedToPlayer = false;
             }
         }
+
+        ((CraftPlayer) bukkitPlayer).connect();// IPVP - Update last login time
 
         // CraftBukkit - Moved from above, added world
         g.info(entityplayer.getName() + " logged in at (" + entityplayer.world.worldData.getName() + ", " + String.format("%.1f", entityplayer.locX) + ", " + String.format("%.1f", entityplayer.locY) + ", " + String.format("%.1f", entityplayer.locZ) + ")");

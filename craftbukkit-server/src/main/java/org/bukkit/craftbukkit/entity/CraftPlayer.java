@@ -1085,7 +1085,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         data.setInt("expToDrop", handle.expToDrop);
         data.setBoolean("keepLevel", handle.keepLevel);
         data.setLong("firstPlayed", getFirstPlayed());
-        data.setLong("lastPlayed", System.currentTimeMillis());
+        data.setLong("lastPlayed", lastPlayed);
         data.setString("lastKnownName", handle.getName());
     }
 
@@ -1200,6 +1200,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
         getHandle().setContainerData(container, prop.getId(), value);
         return true;
+    }
+
+    public void connect() {
+        this.lastPlayed = System.currentTimeMillis();
     }
 
     public void disconnect(String reason) {
