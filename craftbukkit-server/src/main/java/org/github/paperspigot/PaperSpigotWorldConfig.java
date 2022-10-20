@@ -134,8 +134,8 @@ public class PaperSpigotWorldConfig
     public Integer hardDespawnDistance;
     private void despawnDistances()
     {
-        softDespawnDistance = getInt( "despawn-ranges.soft", 32 ); // 32^2 = 1024, Minecraft Default
-        hardDespawnDistance = getInt( "despawn-ranges.hard", 128 ); // 128^2 = 16384, Minecraft Default;
+        softDespawnDistance = getInt( "despawn-ranges.soft", 28 ); // 32^2 = 1024, Minecraft Default
+        hardDespawnDistance = getInt( "despawn-ranges.hard", 98 ); // 128^2 = 16384, Minecraft Default;
         
         if ( softDespawnDistance > hardDespawnDistance)
         {

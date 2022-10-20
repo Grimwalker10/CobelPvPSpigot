@@ -302,7 +302,7 @@ public class SpigotWorldConfig
     public int maxCollisionsPerEntity;
     private void maxEntityCollision()
     {
-        maxCollisionsPerEntity = getInt( "max-entity-collisions", 8 );
+        maxCollisionsPerEntity = getInt( "max-entity-collisions", 6 );
         log( "Max Entity Collisions: " + maxCollisionsPerEntity );
     }
 

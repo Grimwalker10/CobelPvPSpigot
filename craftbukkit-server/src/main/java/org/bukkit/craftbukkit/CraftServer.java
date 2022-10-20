@@ -622,7 +622,7 @@ public final class CraftServer implements Server {
 
     @Override
     public int getViewDistance() {
-        return this.getConfigInt("view-distance", 10);
+        return this.getConfigInt("view-distance", 7);
     }
 
     @Override

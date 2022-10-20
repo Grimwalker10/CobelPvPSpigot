@@ -242,7 +242,7 @@ public class SpigotConfig
 
     public static boolean lateBind;
     private static void lateBind() {
-        lateBind = getBoolean( "settings.late-bind", false );
+        lateBind = getBoolean( "settings.late-bind", true );
     }
 
     public static boolean disableStatSaving = true;
