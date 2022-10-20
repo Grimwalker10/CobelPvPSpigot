@@ -478,7 +478,6 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.a(StatisticList.v, 1);
         this.aW().g();
 
-        // Griffin start - Instant respawn
         if (getBukkitEntity().isOnline() && SpigotConfig.instantRespawn) {
             // exp start - we have to handle it here because that's handled somewhere else (while the entity is still dead, which doesn't happen with this)
             // code borrowed from EntityLiving
@@ -533,7 +532,6 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
             dead = false;
         }
-        // Griffin end - Instant respawn
     }
 
     public boolean damageEntity(DamageSource damagesource, float f) {

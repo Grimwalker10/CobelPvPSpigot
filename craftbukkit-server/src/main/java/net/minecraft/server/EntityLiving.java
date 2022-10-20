@@ -680,13 +680,11 @@ public abstract class EntityLiving extends Entity {
                 player.setRealHealth(f);
             }
 
-            // Griffin start - Instant respawn
             // only send the update to anyone if the player has not died.
             // if they do die, we handle all our stuff in EntityPlayer#die(DamageSource)
             if (player.getHealth() != 0 || !SpigotConfig.instantRespawn) {
                 this.datawatcher.watch(6, Float.valueOf(player.getScaledHealth()));
             }
-            // Griffin end - Instant respawn
             return;
         }
         // CraftBukkit end

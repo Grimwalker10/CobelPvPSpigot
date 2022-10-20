@@ -449,7 +449,6 @@ public class SpigotConfig
     }
     // CobelPvP end
 
-    // Griffin start
     public static int brewingMultiplier;
     private static void brewingMultiplier() {
         brewingMultiplier = getInt("settings.brewingMultiplier", 1);
@@ -464,7 +463,6 @@ public class SpigotConfig
     private static void instantRespawn()  {
         instantRespawn = getBoolean("settings.instantRespawn", false);
     }
-    // Griffin end
 
     // CobelPvP start
     private static void noTrackCommand() {

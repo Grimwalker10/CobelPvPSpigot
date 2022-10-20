@@ -23,6 +23,10 @@ public class CobelSpigotConfig {
 
     private Map<Options, Boolean> optionCache = new HashMap<>();
 
+    public static float potionI = 0.05F;
+    public static float potionE = 0.5F;
+    public static float potionF = -20.0F;
+
     public CobelSpigotConfig() {
         this.configFile = new File("CobelSpigot.yml");
         if (!this.configFile.exists())
@@ -62,6 +66,9 @@ public class CobelSpigotConfig {
     private void loadConfig() {
         getChunkThreads();
         getPlayersPerThread();
+        potionI = this.getFloat("potionI", 0.05F);
+        potionE = this.getFloat("potionE", 0.5F);
+        potionF = this.getFloat("potionF", -20.0F);
         try {
             this.config.save(this.configFile);
         } catch (IOException ex) {
