@@ -12,6 +12,7 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit; // PaperSpigot
 
+import com.cobelpvp.CobelSpigot;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -120,6 +121,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             // Spigot start
             this.a((PlayerList) (new DedicatedPlayerList(this)));
             org.spigotmc.SpigotConfig.init();
+            CobelSpigot cobelSpigot=CobelSpigot.INSTANCE;
+            cobelSpigot.init();
             org.spigotmc.SpigotConfig.registerCommands();
             // Spigot end
             // PaperSpigot start
