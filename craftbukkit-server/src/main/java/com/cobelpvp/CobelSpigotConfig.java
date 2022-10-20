@@ -48,11 +48,6 @@ public class CobelSpigotConfig {
         loadConfig();
     }
 
-
-    public String getPrefix() {
-        return ChatColor.translateAlternateColorCodes('&', getString("prefix", "Spigot"));
-    }
-
     public boolean getValue(Options option) {
         return ((Boolean)this.optionCache.get(option)).booleanValue();
     }
@@ -66,7 +61,6 @@ public class CobelSpigotConfig {
     }
 
     private void loadConfig() {
-        getPrefix();
         getChunkThreads();
         getPlayersPerThread();
         try {
