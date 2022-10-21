@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-import net.minecraft.optimizations.CraftSpigot;
+import com.cobelpvp.CobelSpigot;
 import com.cobelpvp.handler.PacketHandler;
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.google.common.collect.Lists;
@@ -864,7 +864,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
         try {
             // Loop through cancellable handlers first
-            for (PacketHandler handler : CraftSpigot.INSTANCE.getPacketHandlers()) {
+            for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
                 try {
                     if (!handler.handleSentPacketCancellable(this, packet)) {
                         return;
@@ -875,7 +875,7 @@ public class PlayerConnection implements PacketPlayInListener {
             }
 
             // Loop through normal handlers
-            for (PacketHandler handler : CraftSpigot.INSTANCE.getPacketHandlers()) {
+            for (PacketHandler handler : CobelSpigot.INSTANCE.getPacketHandlers()) {
                 handler.handleSentPacket(this, packet);
             }
 
