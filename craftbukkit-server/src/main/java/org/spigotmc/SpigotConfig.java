@@ -537,6 +537,6 @@ public class SpigotConfig
     public static double knockbackVertical = 0.35D;
     public static double knockbackVerticalLimit = 0.4D;
     public static double knockbackExtraHorizontal = 0.425D;
-    public static double knockbackExtraVertical = 0.08D;
+    public static double knockbackExtraVertical = 0.085D;
     
 }
