@@ -94,7 +94,7 @@ public class PaperSpigotWorldConfig
     public float playerBlockingDamageMultiplier;
     private void playerBlockingDamageMultiplier()
     {
-        playerBlockingDamageMultiplier = getFloat( "player-blocking-damage-multiplier", 0.5F );
+        playerBlockingDamageMultiplier = getFloat( "player-blocking-damage-multiplier", 0.1F );
         log( "Player blocking damage multiplier set to " + playerBlockingDamageMultiplier);
     }
 
