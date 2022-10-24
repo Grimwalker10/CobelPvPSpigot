@@ -226,6 +226,7 @@ public class WorldServer extends World {
         timings.doTickTiles.startTiming(); // Spigot
         if (!SpigotConfig.disableBlockTicking) this.g(); // CobelPvP
         timings.doTickTiles.stopTiming(); // Spigot
+        spigotConfig.antiXrayInstance.flushUpdates(this); // PaperSpigot
         this.methodProfiler.c("chunkMap");
         timings.doChunkMap.startTiming(); // Spigot
         this.manager.flush();
