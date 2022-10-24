@@ -89,6 +89,12 @@ public interface OfflinePlayer extends ServerOperator, AnimalTamer, Configuratio
     public long getFirstPlayed();
 
     /**
+     * @deprecated Use {@link #getLastLogin()} or {@link #getLastLogout()}
+     */
+    @Deprecated
+    public long getLastPlayed();
+
+    /**
      * Gets the last date and time that this player was witnessed on this
      * server.
      * <p>
@@ -98,7 +104,19 @@ public interface OfflinePlayer extends ServerOperator, AnimalTamer, Configuratio
      *
      * @return Date of last log-in for this player, or 0
      */
-    public long getLastPlayed();
+    public long getLastLogin();
+
+    /**
+     * Gets the last date and time that this player logged out of the server.
+     * <p>
+     * If the player has never played before, this will return 0. Otherwise,
+     * it will be the amount of milliseconds since midnight, January 1, 1970
+     * UTC.
+     *
+     * @see #getLastLogin
+     * @return Date of last log-in for this player, or 0
+     */
+    public long getLastLogout();
 
     /**
      * Checks if this player has played on this server before.

@@ -15,6 +15,7 @@ import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.help.HelpMap;
@@ -24,6 +25,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.map.MapView;
+import org.bukkit.metadata.MetadataStore;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.messaging.Messenger;
@@ -525,6 +527,27 @@ public final class Bukkit {
      */
     public static Set<OfflinePlayer> getOperators() {
         return server.getOperators();
+    }
+
+    /**
+     * @see Server#getEntityMetadata()
+     */
+    public static MetadataStore<Entity> getEntityMetadata() {
+        return server.getEntityMetadata();
+    }
+
+    /**
+     * @see Server#getPlayerMetadata()
+     */
+    public static MetadataStore<OfflinePlayer> getPlayerMetadata() {
+        return server.getPlayerMetadata();
+    }
+
+    /**
+     * @see Server#getWorldMetadata()
+     */
+    public static MetadataStore<World> getWorldMetadata() {
+        return server.getWorldMetadata();
     }
 
     /**

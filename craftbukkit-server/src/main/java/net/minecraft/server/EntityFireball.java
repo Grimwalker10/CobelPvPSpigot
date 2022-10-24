@@ -132,7 +132,7 @@ public abstract class EntityFireball extends Entity {
 
                 // CraftBukkit start - Fire ProjectileHitEvent
                 if (this.dead) {
-                    CraftEventFactory.callProjectileHitEvent(this);
+                    CraftEventFactory.callProjectileHitEvent(this, movingobjectposition);
                 }
                 // CraftBukkit end
             }

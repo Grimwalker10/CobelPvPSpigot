@@ -1514,8 +1514,9 @@ public abstract class Entity {
         if (entity == null) {
             if (this.vehicle != null) {
                 // CraftBukkit start
+                Location exit = new Location(this.world.getWorld(), this.vehicle.locX, this.vehicle.boundingBox.b + (double) this.vehicle.length, this.vehicle.locZ, this.yaw, this.pitch);
                 if ((this.bukkitEntity instanceof LivingEntity) && (this.vehicle.getBukkitEntity() instanceof Vehicle)) {
-                    VehicleExitEvent event = new VehicleExitEvent((Vehicle) this.vehicle.getBukkitEntity(), (LivingEntity) this.bukkitEntity);
+                    VehicleExitEvent event = new VehicleExitEvent((Vehicle) this.vehicle.getBukkitEntity(), (LivingEntity) this.bukkitEntity, exit);
                     pluginManager.callEvent(event);
 
                     if (event.isCancelled() || this.vehicle != originalVehicle) {
@@ -1525,7 +1526,7 @@ public abstract class Entity {
                 // CraftBukkit end
                 pluginManager.callEvent( new org.spigotmc.event.entity.EntityDismountEvent( this.getBukkitEntity(), this.vehicle.getBukkitEntity() ) ); // Spigot
 
-                this.setPositionRotation(this.vehicle.locX, this.vehicle.boundingBox.b + (double) this.vehicle.length, this.vehicle.locZ, this.yaw, this.pitch);
+                this.setPositionRotation(exit.getX(), exit.getY(), exit.getZ(), exit.getYaw(), exit.getPitch());
                 this.vehicle.passenger = null;
             }
 
@@ -1536,7 +1537,8 @@ public abstract class Entity {
                 // It's possible to move from one vehicle to another.  We need to check if they're already in a vehicle, and fire an exit event if they are.
                 VehicleExitEvent exitEvent = null;
                 if (this.vehicle != null && this.vehicle.getBukkitEntity() instanceof Vehicle) {
-                    exitEvent = new VehicleExitEvent((Vehicle) this.vehicle.getBukkitEntity(), (LivingEntity) this.bukkitEntity);
+                    Location exit = new Location(this.world.getWorld(), this.vehicle.locX, this.vehicle.boundingBox.b + (double) this.vehicle.length, this.vehicle.locZ, this.yaw, this.pitch);
+                    exitEvent = new VehicleExitEvent((Vehicle) this.vehicle.getBukkitEntity(), (LivingEntity) this.bukkitEntity, exit);
                     pluginManager.callEvent(exitEvent);
 
                     if (exitEvent.isCancelled() || this.vehicle != originalVehicle || (this.vehicle != null && this.vehicle.passenger != originalPassenger)) {
@@ -1551,7 +1553,8 @@ public abstract class Entity {
                 if (event.isCancelled() || this.vehicle != originalVehicle || (this.vehicle != null && this.vehicle.passenger != originalPassenger)) {
                     // If we only cancelled the enterevent then we need to put the player in a decent position.
                     if (exitEvent != null && this.vehicle == originalVehicle && this.vehicle != null && this.vehicle.passenger == originalPassenger) {
-                        this.setPositionRotation(this.vehicle.locX, this.vehicle.boundingBox.b + (double) this.vehicle.length, this.vehicle.locZ, this.yaw, this.pitch);
+                        Location exit = exitEvent.getExitLocation();
+                        this.setPositionRotation(exit.getX(), exit.getY(), exit.getZ(), exit.getYaw(), exit.getPitch());
                         this.vehicle.passenger = null;
                         this.vehicle = null;
                     }

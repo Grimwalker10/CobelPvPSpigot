@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 public class CraftPlayer extends CraftHumanEntity implements Player {
     private long firstPlayed = 0;
     private long lastPlayed = 0;
+    private long lastLogout = 0;
     private boolean hasPlayedBefore = false;
     private final ConversationTracker conversationTracker = new ConversationTracker();
     private final Set<String> channels = new HashSet<String>();
@@ -548,7 +549,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (fromWorld == toWorld) {
             entity.playerConnection.teleport(to);
         } else {
-            server.getHandle().moveToWorld(entity, toWorld.dimension, true, to, true);
+            server.getHandle().moveToWorld(entity, toWorld.dimension, true, to, false);
         }
 
         // PaperSpigot start
@@ -1039,8 +1040,19 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         return firstPlayed;
     }
 
+    @Deprecated
     public long getLastPlayed() {
+        return getLastLogin();
+    }
+
+    @Override
+    public long getLastLogin() {
         return lastPlayed;
+    }
+
+    @Override
+    public long getLastLogout() {
+        return lastLogout;
     }
 
     public boolean hasPlayedBefore() {
@@ -1207,6 +1219,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void disconnect(String reason) {
+        this.lastLogout = System.currentTimeMillis();
         conversationTracker.abandonAllConversations();
         perm.clearPermissions();
     }
@@ -1240,11 +1253,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public int getNoDamageTicks() {
-        if (getHandle().invulnerableTicks > 0) {
-            return Math.max(getHandle().invulnerableTicks, getHandle().noDamageTicks);
-        } else {
-            return getHandle().noDamageTicks;
-        }
+        return Math.max(getHandle().invulnerableTicks, Math.max(0, getHandle().noDamageTicks - getHandle().maxNoDamageTicks / 2));
     }
 
     public void setFlySpeed(float value) {

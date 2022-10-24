@@ -28,6 +28,7 @@ import net.minecraft.server.Explosion;
 import net.minecraft.server.InventoryCrafting;
 import net.minecraft.server.ItemStack;
 import net.minecraft.server.Items;
+import net.minecraft.server.MovingObjectPosition;
 import net.minecraft.server.PacketPlayInCloseWindow;
 import net.minecraft.server.PacketPlayOutSetSlot;
 import net.minecraft.server.Slot;
@@ -755,8 +756,8 @@ public class CraftEventFactory {
         return event;
     }
 
-    public static ProjectileHitEvent callProjectileHitEvent(Entity entity) {
-        ProjectileHitEvent event = new ProjectileHitEvent((Projectile) entity.getBukkitEntity());
+    public static ProjectileHitEvent callProjectileHitEvent(Entity entity, MovingObjectPosition position) {
+        ProjectileHitEvent event = new ProjectileHitEvent((Projectile) entity.getBukkitEntity(), position.entity == null ? null : position.entity.getBukkitEntity());
         entity.world.getServer().getPluginManager().callEvent(event);
         return event;
     }

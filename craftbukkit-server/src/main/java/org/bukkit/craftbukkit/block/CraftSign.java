@@ -37,6 +37,16 @@ public class CraftSign extends CraftBlockState implements Sign {
     }
 
     @Override
+    public void setEditable(boolean b) {
+        sign.isEditable = b;
+    }
+
+    @Override
+    public boolean isEditable() {
+        return sign.isEditable;
+    }
+
+    @Override
     public boolean update(boolean force, boolean applyPhysics) {
         boolean result = super.update(force, applyPhysics);
 

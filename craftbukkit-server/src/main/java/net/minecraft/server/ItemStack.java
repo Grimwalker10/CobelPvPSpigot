@@ -172,6 +172,10 @@ public final class ItemStack {
                     }
 
                     world.notifyAndUpdatePhysics(x, y, z, null, oldBlock, block, updateFlag); // send null chunk as chunk.k() returns false by this point
+                    if (this.getItem() instanceof ItemBlock) {
+                        ItemBlock itemBlock = (ItemBlock) this.getItem();
+                        world.makeSound((double) ((float) i + 0.5F), (double) ((float) j + 0.5F), (double) ((float) k + 0.5F), itemBlock.block.stepSound.getPlaceSound(), (itemBlock.block.stepSound.getVolume1() + 1.0F) / 2.0F, itemBlock.block.stepSound.getVolume2() * 0.8F);
+                    }
                 }
                 entityhuman.a(StatisticList.USE_ITEM_COUNT[Item.getId(this.item)], 1);
             }

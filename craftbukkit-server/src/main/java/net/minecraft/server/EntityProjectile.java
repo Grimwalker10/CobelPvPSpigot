@@ -166,7 +166,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
                 this.a(movingobjectposition);
                 // CraftBukkit start
                 if (this.dead) {
-                    org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this);
+                    org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition);
                 }
                 // CraftBukkit end
             }

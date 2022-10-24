@@ -763,6 +763,7 @@ public class CraftWorld implements World {
         return Difficulty.getByValue(this.getHandle().difficulty.ordinal());
     }
 
+    @Override
     public BlockMetadataStore getBlockMetadata() {
         return blockMetadata;
     }

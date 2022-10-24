@@ -210,7 +210,13 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         }
     }
 
+    @Deprecated
     public long getLastPlayed() {
+        return getLastLogin();
+    }
+
+    @Override
+    public long getLastLogin() {
         Player player = getPlayer();
         if (player != null) return player.getLastPlayed();
 
@@ -219,6 +225,25 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         if (data != null) {
             if (data.hasKey("lastPlayed")) {
                 return data.getLong("lastPlayed");
+            } else {
+                File file = getDataFile();
+                return file.lastModified();
+            }
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public long getLastLogout() {
+        Player player = getPlayer();
+        if (player != null) return player.getLastLogout();
+
+        NBTTagCompound data = getBukkitData();
+
+        if (data != null) {
+            if (data.hasKey("lastLogout")) {
+                return data.getLong("lastLogout");
             } else {
                 File file = getDataFile();
                 return file.lastModified();

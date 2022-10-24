@@ -380,7 +380,7 @@ public abstract class Command {
         }
 
         for (Permissible user : users) {
-            if (user instanceof CommandSender) {
+            if (user instanceof CommandSender && user.hasPermission(Server.BROADCAST_CHANNEL_ADMINISTRATIVE)) {
                 CommandSender target = (CommandSender) user;
                 target.sendMessage(colored);
             }

@@ -13,6 +13,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.MetadataStore;
 import org.bukkit.metadata.Metadatable;
 import org.bukkit.plugin.messaging.PluginMessageRecipient;
 import org.bukkit.util.Vector;
@@ -43,6 +44,13 @@ public interface World extends PluginMessageRecipient, Metadatable {
      *     of the block
      */
     public Block getBlockAt(Location location);
+
+    /**
+     * Gets the metadata store for all blocks.
+     *
+     * @return block metadata store
+     */
+    public MetadataStore<Block> getBlockMetadata();
 
     /**
      * Gets the block type ID at the given coordinates

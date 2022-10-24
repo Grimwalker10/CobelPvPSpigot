@@ -7,6 +7,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 
+import net.minecraft.server.EntityPlayer; // PaperSpigot
+
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
@@ -124,7 +126,10 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         if (name == null) {
             profile = null;
         } else {
-            profile = new GameProfile(null, name);
+            // PaperSpigot start - Check usercache if the player is online
+            EntityPlayer player = MinecraftServer.getServer().getPlayerList().getPlayer(name);
+            profile = player != null ? player.getProfile() : new GameProfile(null, name);
+            // PaperSpigot end
         }
 
         return true;

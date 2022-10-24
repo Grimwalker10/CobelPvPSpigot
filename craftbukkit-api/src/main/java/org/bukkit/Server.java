@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.bukkit.Warning.WarningState;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -27,6 +28,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.map.MapView;
+import org.bukkit.metadata.MetadataStore;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicesManager;
@@ -690,6 +692,27 @@ public interface Server extends PluginMessageRecipient {
      * @return a console command sender
      */
     public ConsoleCommandSender getConsoleSender();
+
+    /**
+     * Gets the metadata store for all entities.
+     *
+     * @return entity metadata store
+     */
+    public MetadataStore<Entity> getEntityMetadata();
+
+    /**
+     * Gets the metadata store for all players.
+     *
+     * @return player metadata store
+     */
+    public MetadataStore<OfflinePlayer> getPlayerMetadata();
+
+    /**
+     * Gets the metadata store for all worlds.
+     *
+     * @return world metadata store
+     */
+    public MetadataStore<World> getWorldMetadata();
 
     /**
      * Gets the folder that contains all of the various {@link World}s.

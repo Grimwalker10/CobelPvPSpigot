@@ -69,7 +69,7 @@ public abstract class Event {
      *
      * @return false by default, true if the event fires asynchronously
      */
-    public final boolean isAsynchronous() {
+    public boolean isAsynchronous() {
         return async;
     }
 

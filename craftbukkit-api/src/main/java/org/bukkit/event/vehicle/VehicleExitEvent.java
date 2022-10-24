@@ -1,5 +1,6 @@
 package org.bukkit.event.vehicle;
 
+import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.event.Cancellable;
@@ -12,10 +13,12 @@ public class VehicleExitEvent extends VehicleEvent implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private boolean cancelled;
     private final LivingEntity exited;
+    private final Location exit;
 
-    public VehicleExitEvent(final Vehicle vehicle, final LivingEntity exited) {
+    public VehicleExitEvent(final Vehicle vehicle, final LivingEntity exited, final Location exit) {
         super(vehicle);
         this.exited = exited;
+        this.exit = exit;
     }
 
     /**
@@ -25,6 +28,15 @@ public class VehicleExitEvent extends VehicleEvent implements Cancellable {
      */
     public LivingEntity getExited() {
         return exited;
+    }
+
+    /**
+     * Returns the dismount location for the entity
+     *
+     * @return the exit location
+     */
+    public Location getExitLocation() {
+        return exit;
     }
 
     public boolean isCancelled() {

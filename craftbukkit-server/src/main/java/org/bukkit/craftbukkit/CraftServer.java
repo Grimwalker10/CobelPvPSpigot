@@ -135,6 +135,7 @@ import org.bukkit.craftbukkit.inventory.CraftShapedRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapelessRecipe;
 import org.bukkit.craftbukkit.inventory.RecipeIterator;
 import org.bukkit.craftbukkit.map.CraftMapView;
+import org.bukkit.craftbukkit.metadata.BlockMetadataStore;
 import org.bukkit.craftbukkit.metadata.EntityMetadataStore;
 import org.bukkit.craftbukkit.metadata.PlayerMetadataStore;
 import org.bukkit.craftbukkit.metadata.WorldMetadataStore;
@@ -1559,14 +1560,17 @@ public final class CraftServer implements Server {
         return console.console;
     }
 
+    @Override
     public EntityMetadataStore getEntityMetadata() {
         return entityMetadata;
     }
 
+    @Override
     public PlayerMetadataStore getPlayerMetadata() {
         return playerMetadata;
     }
 
+    @Override
     public WorldMetadataStore getWorldMetadata() {
         return worldMetadata;
     }
