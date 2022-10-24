@@ -366,7 +366,7 @@ public abstract class Entity {
             this.fallDistance *= 0.5F;
         }
 
-        if (this.locY < -64.0D) {
+        if (this.locY < -64.0D || this.paperNetherCheck()) { // PaperSpigot - Configurable top-of-nether void damage
             this.G();
         }
 
@@ -1997,4 +1997,11 @@ public abstract class Entity {
     }
 
     public void i(int i) {}
+
+    /**
+     * PaperSpigot - Checks if the feature is enabled and the entity is above the nether world bedrock height
+     */
+    private boolean paperNetherCheck() {
+        return this.world.paperSpigotConfig.netherVoidTopDamage && this.world.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER && this.locY >= 128.0D;
+    }
 }
