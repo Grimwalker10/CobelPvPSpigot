@@ -34,4 +34,18 @@ public interface Sign extends BlockState {
      * @throws IndexOutOfBoundsException If the index is out of the range 0..3
      */
     public void setLine(int index, String line) throws IndexOutOfBoundsException;
+
+    /**
+     * Sets the editable status of this sign.
+     *
+     * @param editable the new status
+     */
+    public void setEditable(boolean editable);
+
+    /**
+     * Returns whether or not this sign is editable.
+     *
+     * @return editable status
+     */
+    public boolean isEditable();
 }
