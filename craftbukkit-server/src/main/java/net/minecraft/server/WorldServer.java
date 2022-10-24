@@ -377,7 +377,7 @@ public class WorldServer extends World {
             int k1;
             int l1;
 
-            if (this.random.nextInt(100000) == 0 && this.Q() && this.P()) {
+            if (!this.paperSpigotConfig.disableThunder && this.random.nextInt(100000) == 0 && this.Q() && this.P()) { // PaperSpigot - Disable thunder
                 this.k = this.k * 3 + 1013904223;
                 i1 = this.k >> 2;
                 j1 = k + (i1 & 15);

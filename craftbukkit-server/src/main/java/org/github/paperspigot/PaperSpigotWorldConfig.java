@@ -82,6 +82,12 @@ public class PaperSpigotWorldConfig
         log( "Allow undead horse types to be leashed: " + allowUndeadHorseLeashing );
     }
 
+    public boolean disableThunder;
+    private void disableThunder()
+    {
+        disableThunder = getBoolean( "disable-thunder", true );
+    }
+
     public double squidMinSpawnHeight;
     public double squidMaxSpawnHeight;
     private void squidSpawnHeight()
