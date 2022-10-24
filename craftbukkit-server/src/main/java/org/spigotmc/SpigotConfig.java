@@ -219,7 +219,6 @@ public class SpigotConfig
         restartScript = getString( "settings.restart-script", restartScript );
         restartMessage = transform( getString( "messages.restart", "Server is restarting" ) );
         commands.put( "restart", new RestartCommand( "restart" ) );
-        commands.put("pvparmor", new PvPArmorCommand("pvparmor"));
         WatchdogThread.doStart( timeoutTime, restartOnCrash );
     }
 
