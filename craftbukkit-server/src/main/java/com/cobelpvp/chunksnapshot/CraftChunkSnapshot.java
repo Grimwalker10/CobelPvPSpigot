@@ -5,10 +5,15 @@ import java.util.List;
 
 import net.minecraft.server.NBTTagCompound;
 
-public class CraftChunkSnapshot implements ChunkSnapshot {
+public class CraftChunkSnapshot implements ChunkSnapshot
+{
+    private final ChunkSectionSnapshot[] sections;
+    private final List<NBTTagCompound> tileEntities;
 
-    private final ChunkSectionSnapshot[] sections = new ChunkSectionSnapshot[16];
-    private final List<NBTTagCompound> tileEntities = new ArrayList<NBTTagCompound>();
+    public CraftChunkSnapshot() {
+        this.sections = new ChunkSectionSnapshot[16];
+        this.tileEntities = new ArrayList<NBTTagCompound>();
+    }
 
     public ChunkSectionSnapshot[] getSections() {
         return this.sections;

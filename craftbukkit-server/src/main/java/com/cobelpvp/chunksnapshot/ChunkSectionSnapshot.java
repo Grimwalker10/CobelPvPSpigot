@@ -2,8 +2,8 @@ package com.cobelpvp.chunksnapshot;
 
 import net.minecraft.server.NibbleArray;
 
-public class ChunkSectionSnapshot {
-
+public class ChunkSectionSnapshot
+{
     private final int nonEmptyBlockCount;
     private final int tickingBlockCount;
     private final byte[] blockIds;
@@ -15,16 +15,7 @@ public class ChunkSectionSnapshot {
     private final byte compactEmitted;
     private final byte compactSky;
 
-    public ChunkSectionSnapshot(int nonEmptyBlockCount,
-            int tickingBlockCount,
-            byte[] blockIds,
-            NibbleArray blockData,
-            NibbleArray emittedLight,
-            NibbleArray skyLight,
-            int compactId,
-            byte compactData,
-            byte compactEmitted,
-            byte compactSky) {
+    public ChunkSectionSnapshot(final int nonEmptyBlockCount, final int tickingBlockCount, final byte[] blockIds, final NibbleArray blockData, final NibbleArray emittedLight, final NibbleArray skyLight, final int compactId, final byte compactData, final byte compactEmitted, final byte compactSky) {
         this.nonEmptyBlockCount = nonEmptyBlockCount;
         this.tickingBlockCount = tickingBlockCount;
         this.blockIds = blockIds;
@@ -38,42 +29,42 @@ public class ChunkSectionSnapshot {
     }
 
     public final int getNonEmptyBlockCount() {
-        return nonEmptyBlockCount;
+        return this.nonEmptyBlockCount;
     }
 
     public final int getTickingBlockCount() {
-        return tickingBlockCount;
+        return this.tickingBlockCount;
     }
 
     public final byte[] getBlockIds() {
-        return blockIds;
+        return this.blockIds;
     }
 
     public final NibbleArray getBlockData() {
-        return blockData;
+        return this.blockData;
     }
 
     public final NibbleArray getEmittedLight() {
-        return emittedLight;
+        return this.emittedLight;
     }
 
     public final NibbleArray getSkyLight() {
-        return skyLight;
+        return this.skyLight;
     }
 
     public final int getCompactId() {
-        return compactId;
+        return this.compactId;
     }
 
     public final byte getCompactData() {
-        return compactData;
+        return this.compactData;
     }
 
     public final byte getCompactEmitted() {
-        return compactEmitted;
+        return this.compactEmitted;
     }
 
     public final byte getCompactSky() {
-        return compactSky;
+        return this.compactSky;
     }
 }
