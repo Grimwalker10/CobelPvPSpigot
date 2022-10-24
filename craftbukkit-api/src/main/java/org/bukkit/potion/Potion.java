@@ -397,7 +397,7 @@ public class Potion {
         if ((damage & SPLASH_BIT) > 0) {
             potion = potion.splash();
         }
-        if ((damage & EXTENDED_BIT) > 0) {
+        if ((type == null || !type.isInstant()) && (damage & EXTENDED_BIT) > 0) {
             potion = potion.extend();
         }
         return potion;
