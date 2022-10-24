@@ -9,6 +9,7 @@ import net.minecraft.util.com.google.common.collect.Multimap;
 // CraftBukkit start
 import java.util.List;
 
+import net.minecraft.util.com.mojang.authlib.GameProfile;
 import org.bukkit.Location;
 import org.bukkit.TreeType;
 import org.bukkit.block.BlockState;
@@ -254,7 +255,7 @@ public final class ItemStack {
                 public void run()
                 {
 
-                    final net.minecraft.util.com.mojang.authlib.GameProfile profile = TileEntitySkull.skinCache.getUnchecked( finalOwner.toLowerCase() );
+                    final GameProfile profile = TileEntitySkull.skinCache.getUnchecked(finalOwner.toLowerCase());
                     if ( profile != null )
                     {
                         MinecraftServer.getServer().processQueue.add( new Runnable()
