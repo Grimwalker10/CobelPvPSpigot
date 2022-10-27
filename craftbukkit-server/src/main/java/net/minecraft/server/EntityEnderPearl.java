@@ -1,421 +1,184 @@
 package net.minecraft.server;
 
-import java.util.HashSet;
-import java.util.stream.Stream;
-
-import com.cobelpvp.CobelSpigot;
-import net.minecraft.optimizations.util.Options;
+import java.util.*;
+import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.entity.CraftEnderPearl;
-import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EnderpearlLandEvent;
-import org.bukkit.event.entity.EnderpearlLandEvent.Reason;
+import org.bukkit.event.player.PlayerPearlRefundEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Gate;
-import org.bukkit.material.Stairs;
+import org.bukkit.material.Openable;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
+import org.spigotmc.SpigotConfig;
 
-public class EntityEnderPearl extends EntityProjectile {
-    private static final BlockFace[] faces;
-    private static final ItemStack enderpearl;
-    private Location valid;
+public class EntityEnderPearl extends EntityProjectile
+{
+    private Location lastValidTeleport;
+    private Item toRefundPearl;
+    private EntityLiving c;
+    private static Set<Block> PROHIBITED_PEARL_BLOCKS;
+    public static List<String> pearlAbleType;
+    public static List<Material> forwardTypes;
 
-    public EntityEnderPearl(World world) {
+    static {
+        EntityEnderPearl.PROHIBITED_PEARL_BLOCKS = Sets.newHashSet(Block.getById(85), Block.getById(107));
+        EntityEnderPearl.pearlAbleType = Arrays.asList("STEP", "STAIR");
+        EntityEnderPearl.forwardTypes = Collections.singletonList(Material.ENDER_PORTAL_FRAME);
+    }
+
+    public EntityEnderPearl(final World world) {
         super(world);
+        this.toRefundPearl = null;
         this.loadChunks = world.paperSpigotConfig.loadUnloadedEnderPearls;
     }
 
-    public EntityEnderPearl(World world, EntityLiving entityliving) {
+    public EntityEnderPearl(final World world, final EntityLiving entityliving) {
         super(world, entityliving);
+        this.toRefundPearl = null;
+        this.c = entityliving;
         this.loadChunks = world.paperSpigotConfig.loadUnloadedEnderPearls;
     }
 
-    protected void a(MovingObjectPosition movingobjectposition) {
-        Block block = this.world.getType(movingobjectposition.b, movingobjectposition.c, movingobjectposition.d);
-            if (Options.PEARL_GATE.getBooleanValue() && block == Blocks.FENCE_GATE) {
+    @Override
+    protected void a(final MovingObjectPosition movingobjectposition) {
+        if (SpigotConfig.pearlThroughGatesAndTripwire) {
+            final Block block = this.world.getType(movingobjectposition.b, movingobjectposition.c, movingobjectposition.d);
+            if (block == Blocks.TRIPWIRE) {
+                return;
+            }
+            if (block == Blocks.FENCE_GATE) {
                 BlockIterator bi = null;
-
                 try {
-                    Vector l = new Vector(this.locX, this.locY, this.locZ);
-                    Vector l2 = new Vector(this.locX + this.motX, this.locY + this.motY, this.locZ + this.motZ);
-                    Vector dir = (new Vector(l2.getX() - l.getX(), l2.getY() - l.getY(), l2.getZ() - l.getZ())).normalize();
-                    bi = new BlockIterator(this.world.getWorld(), l, dir, 0.0D, 1);
-                } catch (IllegalStateException var11) {
+                    final Vector l = new Vector(this.locX, this.locY, this.locZ);
+                    final Vector l2 = new Vector(this.locX + this.motX, this.locY + this.motY, this.locZ + this.motZ);
+                    final Vector dir = new Vector(l2.getX() - l.getX(), l2.getY() - l.getY(), l2.getZ() - l.getZ()).normalize();
+                    bi = new BlockIterator(this.world.getWorld(), l, dir, 0.0, 1);
                 }
-
+                catch (IllegalStateException ex) {}
                 if (bi != null) {
                     boolean open = true;
                     boolean hasSolidBlock = false;
-
-                    while(bi.hasNext()) {
-                        org.bukkit.block.Block b = bi.next();
+                    while (bi.hasNext()) {
+                        final org.bukkit.block.Block b = bi.next();
                         if (b.getType().isSolid() && b.getType().isOccluding()) {
                             hasSolidBlock = true;
                         }
-
                         if (b.getState().getData() instanceof Gate && !((Gate)b.getState().getData()).isOpen()) {
                             open = false;
                             break;
                         }
                     }
-
                     if (open && !hasSolidBlock) {
                         return;
                     }
                 }
-            } else if (Options.PEARL_COBWEB.getBooleanValue() && block == Blocks.WEB) {
+            }
+        }
+        if (movingobjectposition.entity != null) {
+            if (movingobjectposition.entity == this.c) {
                 return;
             }
-
-            if (Options.DAMAGE_PEARLS.getBooleanValue() && movingobjectposition.entity != null) {
-                movingobjectposition.entity.damageEntity(DamageSource.projectile(this, this.getShooter()), 0.0F);
-            }
-
-            if (this.inUnloadedChunk && this.world.paperSpigotConfig.removeUnloadedEnderPearls) {
-                this.die();
-            }
-
-            if (Options.PEARL_PARTICLES.getBooleanValue()) {
-                for(int i = 0; i < 32; ++i) {
-                    this.world.addParticle("portal", this.locX, this.locY + this.random.nextDouble() * 2.0D, this.locZ, this.random.nextGaussian(), 0.0D, this.random.nextGaussian());
-                }
-            }
-
-            if (!this.world.isStatic) {
-                if (this.getShooter() != null && this.getShooter() instanceof EntityPlayer) {
-                    EntityPlayer entityplayer = (EntityPlayer)this.getShooter();
-                    if (entityplayer.playerConnection.b().isConnected() && entityplayer.world == this.world) {
-                        if (this.valid != null) {
-                            CraftPlayer player = entityplayer.getBukkitEntity();
-                            Reason reason = movingobjectposition.entity != null ? Reason.ENTITY : Reason.BLOCK;
-                            CraftEntity bukkitHitEntity = movingobjectposition.entity != null ? movingobjectposition.entity.getBukkitEntity() : null;
-                            EnderpearlLandEvent landEvent = new EnderpearlLandEvent((CraftEnderPearl)this.getBukkitEntity(), reason, bukkitHitEntity);
-                            Bukkit.getPluginManager().callEvent(landEvent);
-                            if (landEvent.isCancelled()) {
-                                this.die();
-                                return;
+            movingobjectposition.entity.damageEntity(DamageSource.projectile(this, this.getShooter()), 0.0f);
+        }
+        if (this.inUnloadedChunk && this.world.paperSpigotConfig.removeUnloadedEnderPearls) {
+            this.die();
+        }
+        for (int i = 0; i < 32; ++i) {
+            this.world.addParticle("portal", this.locX, this.locY + this.random.nextDouble() * 2.0, this.locZ, this.random.nextGaussian(), 0.0, this.random.nextGaussian());
+        }
+        if (!this.world.isStatic) {
+            if (this.getShooter() != null && this.getShooter() instanceof EntityPlayer) {
+                final EntityPlayer entityplayer = (EntityPlayer)this.getShooter();
+                if (entityplayer.playerConnection.b().isConnected() && entityplayer.world == this.world) {
+                    if (this.lastValidTeleport != null) {
+                        final CraftPlayer player = entityplayer.getBukkitEntity();
+                        final Location location = this.lastValidTeleport;
+                        location.setPitch(player.getLocation().getPitch());
+                        location.setYaw(player.getLocation().getYaw());
+                        final PlayerTeleportEvent teleEvent = new PlayerTeleportEvent(player, player.getLocation(), location, PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
+                        Bukkit.getPluginManager().callEvent(teleEvent);
+                        if (!teleEvent.isCancelled() && !entityplayer.playerConnection.isDisconnected()) {
+                            if (this.getShooter().am()) {
+                                this.getShooter().mount(null);
                             }
-
-                            Location location = this.getBukkitEntity().getLocation();
-                            location.setPitch(player.getLocation().getPitch());
-                            location.setYaw(player.getLocation().getYaw());
-                            if (!this.tali(location, player)) {
-                                this.die();
-                                this.refund(player);
-                                return;
-                            }
-
-                            if (!this.taliNotPassable(location, player)) {
-                                this.die();
-                                this.refund(player);
-                                return;
-                            }
-
-                            if (Options.PEARL_ANTI_GLITCH.getBooleanValue()) {
-                                label211: {
-                                    if (location.getBlock().getType() != Material.WEB && location.getBlock().getRelative(BlockFace.UP).getType() != Material.WEB) {
-                                        if (location.getBlock().getType() != Material.TRIPWIRE && location.getBlock().getRelative(BlockFace.UP).getType() != Material.TRIPWIRE) {
-                                            this.badTeleport(location);
-                                            break label211;
-                                        }
-
-                                        this.die();
-                                        this.refund(player);
-                                        return;
-                                    }
-
-                                    this.die();
-                                    this.refund(player);
-                                    return;
-                                }
-                            }
-
-                            PlayerTeleportEvent teleEvent = new PlayerTeleportEvent(player, player.getLocation(), location, PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
-                            Bukkit.getPluginManager().callEvent(teleEvent);
-                            if (!teleEvent.isCancelled() && !entityplayer.playerConnection.isDisconnected()) {
-                                if (this.getShooter().am()) {
-                                    this.getShooter().mount((Entity)null);
-                                }
-
-                                entityplayer.playerConnection.teleport(teleEvent.getTo());
-                                this.getShooter().fallDistance = 0.0F;
-                                if (Options.DAMAGE_PEARLS.getBooleanValue()) {
-                                    CraftEventFactory.entityDamage = this;
-                                    this.getShooter().damageEntity(DamageSource.FALL, 5.0F);
-                                    CraftEventFactory.entityDamage = null;
-                                }
-                            }
-                        } else if (Options.PEARL_ANTI_GLITCH.getBooleanValue()) {
-                            this.die();
-
-                            entityplayer.getBukkitEntity().getInventory().addItem(new ItemStack[]{enderpearl});
-                            entityplayer.getBukkitEntity().updateInventory();
-                            return;
+                            entityplayer.playerConnection.teleport(teleEvent.getTo());
+                            this.getShooter().fallDistance = 0.0f;
+                            CraftEventFactory.entityDamage = this;
+                            this.getShooter().damageEntity(DamageSource.FALL, 5.0f);
+                            CraftEventFactory.entityDamage = null;
                         }
                     }
-                }
-
-                this.die();
-            }
-
-        }
-
-    private void refund(Player player) {
-        player.getInventory().addItem(new ItemStack[]{enderpearl});
-        player.updateInventory();
-    }
-
-    private Location badTeleport(final Location location) {
-        final org.bukkit.block.Block block = location.getBlock();
-        if (block.getType() == Material.AIR) {
-            final org.bukkit.block.Block up = block.getRelative(BlockFace.UP);
-            final org.bukkit.block.Block down = block.getRelative(BlockFace.DOWN);
-            if (down.getType() == Material.AIR) {
-                if (up.getType() != Material.AIR) {
-                    location.setY(location.getBlockY() - 1.0);
-                }
-                else if (up.getRelative(BlockFace.UP).getType() != Material.AIR) {
-                    if (location.getBlockY() < 5) {
-                        return location;
+                    else {
+                        Bukkit.getPluginManager().callEvent(new PlayerPearlRefundEvent(entityplayer.getBukkitEntity()));
                     }
-                    location.setY(location.getBlockY() - 2.0);
                 }
             }
-            else if (up.getRelative(BlockFace.UP).getType() != Material.AIR) {
-                location.setY(location.getBlockY());
-            }
-        }
-        final boolean check = Stream.of(EntityEnderPearl.faces).filter(face -> block.getRelative(face).getType() != Material.AIR).findAny().orElse(null) != null;
-        if (check) {
-            location.setX(location.getBlockX() + 0.5);
-            location.setZ(location.getBlockZ() + 0.5);
-        }
-        return location;
-    }
-
-    private boolean tali(Location location, Player player) {
-        org.bukkit.block.Block current = location.getBlock();
-        org.bukkit.block.Block above = current.getRelative(BlockFace.UP);
-        org.bukkit.block.Block down = current.getRelative(BlockFace.DOWN);
-        org.bukkit.block.Block west = current.getRelative(BlockFace.WEST);
-        org.bukkit.block.Block east = current.getRelative(BlockFace.EAST);
-        org.bukkit.block.Block north = current.getRelative(BlockFace.NORTH);
-        org.bukkit.block.Block south = current.getRelative(BlockFace.SOUTH);
-        Material westType = west.getRelative(BlockFace.UP).getType();
-        Material eastType = east.getRelative(BlockFace.UP).getType();
-        Material northType = north.getRelative(BlockFace.UP).getType();
-        Material southType = south.getRelative(BlockFace.UP).getType();
-        boolean stairCurrent = false;
-        boolean stairUp = false;
-        boolean crittable = Options.PEARL_CRITICAL_BLOCK.getBooleanValue();
-        if (!(current.getLocation().distance(player.getLocation()) > 4.0D) && (this.isSlab(current.getType()) && Options.PEARL_SLABS.getBooleanValue() || (stairCurrent = this.isStair(current.getType())) && Options.PEARL_STAIRS.getBooleanValue() || this.isSlab(current.getType()) && Options.PEARL_SLABS.getBooleanValue() || (stairUp = this.isStair(current.getType())) && Options.PEARL_STAIRS.getBooleanValue() || current.getType() == Material.COBBLE_WALL && Options.PEARL_COBBLEWALL.getBooleanValue() || current.getType() == Material.BED_BLOCK && Options.PEARL_BED.getBooleanValue() || (current.getType() == Material.PISTON_EXTENSION || current.getType() == Material.PISTON_BASE) && Options.PEARL_PISTON.getBooleanValue())) {
-            BlockFace blockFace = null;
-            if (stairCurrent || stairUp) {
-                Stairs stairs = (Stairs)(stairCurrent ? current : current).getState().getData();
-                blockFace = stairs.getFacing();
-            }
-
-            if (this.getDirectionName(player.getLocation()).contains("E")) {
-                if ((stairCurrent || stairCurrent) && blockFace != null && blockFace != BlockFace.NORTH && blockFace != BlockFace.SOUTH) {
-                    this.die();
-                    return false;
-                }
-
-                if (eastType.isSolid()) {
-                    if (!crittable) {
-                        return false;
-                    }
-
-                    location.setY(east.getLocation().getY() - 1.0D);
-                }
-
-                location.setX(location.getX() + 1.0D);
-            } else if (this.getDirectionName(player.getLocation()).contains("W")) {
-                if ((stairCurrent || stairCurrent) && blockFace != null && blockFace != BlockFace.NORTH && blockFace != BlockFace.SOUTH) {
-                    this.die();
-                    return false;
-                }
-
-                if (westType.isSolid()) {
-                    if (!crittable) {
-                        return false;
-                    }
-
-                    location.setY(west.getLocation().getY() - 1.0D);
-                }
-
-                location.setX(location.getX() - 1.0D);
-            } else if (this.getDirectionName(player.getLocation()).contains("N")) {
-                if ((stairCurrent || stairCurrent) && blockFace != null && blockFace != BlockFace.EAST && blockFace != BlockFace.WEST) {
-                    this.die();
-                    return false;
-                }
-
-                if (northType.isSolid()) {
-                    if (!crittable) {
-                        return false;
-                    }
-
-                    location.setY(north.getLocation().getY() - 1.0D);
-                }
-
-                location.setZ(location.getZ() - 1.0D);
-            } else if (this.getDirectionName(player.getLocation()).contains("S")) {
-                if ((stairCurrent || stairCurrent) && blockFace != null && blockFace != BlockFace.EAST && blockFace != BlockFace.WEST) {
-                    this.die();
-                    return false;
-                }
-
-                if (southType.isSolid()) {
-                    if (!crittable) {
-                        return false;
-                    }
-
-                    location.setY(south.getLocation().getY() - 1.0D);
-                }
-
-                location.setZ(location.getZ() + 1.0D);
-            }
-        }
-
-        return true;
-    }
-
-    private boolean taliNotPassable(Location location, Player player) {
-        org.bukkit.block.Block current = location.getBlock();
-        org.bukkit.block.Block west = current.getRelative(BlockFace.WEST);
-        org.bukkit.block.Block east = current.getRelative(BlockFace.EAST);
-        org.bukkit.block.Block north = current.getRelative(BlockFace.NORTH);
-        org.bukkit.block.Block south = current.getRelative(BlockFace.SOUTH);
-        Material westType = west.getRelative(BlockFace.UP).getType();
-        Material eastType = east.getRelative(BlockFace.UP).getType();
-        Material northType = north.getRelative(BlockFace.UP).getType();
-        Material southType = south.getRelative(BlockFace.UP).getType();
-        boolean crittable = Options.PEARL_CRITICAL_BLOCK.getBooleanValue();
-        if (!(current.getLocation().distance(player.getLocation()) > 4.0D) && Options.PEARL_ENDPORTAL.getBooleanValue()) {
-            org.bukkit.block.Block targetBlock = player.getTargetBlock((HashSet)null, 2);
-            if (this.getDirectionName(player.getLocation()).contains("E") && targetBlock.getType() == Material.ENDER_PORTAL_FRAME) {
-                if (eastType.isSolid()) {
-                    if (!crittable) {
-                        return false;
-                    }
-
-                    location.setY(east.getLocation().getY() - 1.0D);
-                }
-
-                location.setX((double)(targetBlock.getX() + 1));
-            } else if (this.getDirectionName(player.getLocation()).contains("W") && targetBlock.getType() == Material.ENDER_PORTAL_FRAME) {
-                if (westType.isSolid()) {
-                    if (!crittable) {
-                        return false;
-                    }
-
-                    location.setY(west.getLocation().getY() - 1.0D);
-                }
-
-                location.setX((double)(targetBlock.getX() - 1));
-            } else if (this.getDirectionName(player.getLocation()).contains("N") && targetBlock.getType() == Material.ENDER_PORTAL_FRAME) {
-                if (northType.isSolid()) {
-                    if (!crittable) {
-                        return false;
-                    }
-
-                    location.setY(north.getLocation().getY() - 1.0D);
-                }
-
-                location.setZ((double)(targetBlock.getZ() - 1));
-            } else if (this.getDirectionName(player.getLocation()).contains("S") && targetBlock.getType() == Material.ENDER_PORTAL_FRAME) {
-                if (southType.isSolid()) {
-                    if (!crittable) {
-                        return false;
-                    }
-
-                    location.setY(south.getLocation().getY() - 1.0D);
-                }
-
-                location.setZ((double)(targetBlock.getZ() + 1));
-            }
-        }
-
-        return true;
-    }
-
-    private boolean isSlab(Material material) {
-        return material.toString().contains("STEP");
-    }
-
-    private boolean isStair(Material material) {
-        return material.toString().contains("STAIRS");
-    }
-
-    private String getDirectionName(Location location) {
-        double rotation = (double)((location.getYaw() - 90.0F) % 360.0F);
-        if (rotation < 0.0D) {
-            rotation += 360.0D;
-        }
-
-        if (0.0D <= rotation && rotation < 22.5D) {
-            return "W";
-        } else if (22.5D <= rotation && rotation < 67.5D) {
-            return "NW";
-        } else if (67.5D <= rotation && rotation < 112.5D) {
-            return "N";
-        } else if (112.5D <= rotation && rotation < 157.5D) {
-            return "NE";
-        } else if (157.5D <= rotation && rotation < 202.5D) {
-            return "E";
-        } else if (202.5D <= rotation && rotation < 247.5D) {
-            return "SE";
-        } else if (247.5D <= rotation && rotation < 292.5D) {
-            return "S";
-        } else if (292.5D <= rotation && rotation < 337.5D) {
-            return "SW";
-        } else {
-            return 337.5D <= rotation && rotation < 360.0D ? "W" : null;
+            this.die();
         }
     }
 
+    @Override
     public void h() {
-        EntityLiving shooter = this.shooter;
+        final EntityLiving shooter = this.getShooter();
         if (shooter != null && !shooter.isAlive()) {
             this.die();
-        } else {
-            Location location = this.getBukkitEntity().getLocation();
-            org.bukkit.block.Block block = location.getBlock();
-            if (block.isEmpty()) {
-                this.valid = location;
+        }
+        else {
+            final AxisAlignedBB newBoundingBox = AxisAlignedBB.a(this.locX - 0.3, this.locY - 0.05, this.locZ - 0.3, this.locX + 0.3, this.locY + 0.5, this.locZ + 0.3);
+            if (!this.world.boundingBoxContainsMaterials(this.boundingBox.grow(0.25, 0.0, 0.25), EntityEnderPearl.PROHIBITED_PEARL_BLOCKS) && this.world.getCubes(this, newBoundingBox).isEmpty()) {
+                this.lastValidTeleport = this.getBukkitEntity().getLocation();
             }
-
-            if (block.getType().toString().contains("STAIRS") || block.getType().toString().contains("STEP")) {
-                this.valid = location;
+            final org.bukkit.block.Block block = this.world.getWorld().getBlockAt(MathHelper.floor(this.locX), MathHelper.floor(this.locY), MathHelper.floor(this.locZ));
+            final Material typeHere = this.world.getWorld().getBlockAt(MathHelper.floor(this.locX), MathHelper.floor(this.locY), MathHelper.floor(this.locZ)).getType();
+            if (EntityEnderPearl.pearlAbleType.stream().anyMatch(it -> typeHere.name().contains(it))) {
+                this.lastValidTeleport = this.getBukkitEntity().getLocation();
             }
-
-            if (block.getType() == Material.COBBLE_WALL) {
-                this.valid = location;
+            if (shooter != null && EntityEnderPearl.forwardTypes.stream().anyMatch(it -> block.getRelative(getDirection((EntityPlayer)shooter)).getType() == it)) {
+                this.lastValidTeleport = this.getBukkitEntity().getLocation();
             }
-
-            if (block.getType() == Material.BED_BLOCK) {
-                this.valid = location;
+            if (typeHere == Material.FENCE_GATE && ((Openable)block.getState().getData()).isOpen()) {
+                this.lastValidTeleport = this.getBukkitEntity().getLocation();
             }
-
-            if (block.getType() == Material.FENCE_GATE && ((Gate)block.getState().getData()).isOpen()) {
-                this.valid = location;
+            if (shooter != null) {
+                final org.bukkit.block.Block newTrap = block.getRelative(getDirection((EntityPlayer)shooter)).getRelative(BlockFace.DOWN);
+                if (newTrap.getType() == Material.COBBLE_WALL || newTrap.getType() == Material.FENCE) {
+                    this.lastValidTeleport = newTrap.getLocation();
+                }
             }
-
             super.h();
         }
     }
 
-    static {
-        faces = new BlockFace[]{BlockFace.SOUTH, BlockFace.NORTH, BlockFace.EAST, BlockFace.WEST, BlockFace.SELF};
-        enderpearl = new ItemStack(Material.ENDER_PEARL);
+    public static BlockFace getDirection(final EntityPlayer entityPlayer) {
+        float yaw = entityPlayer.getBukkitEntity().getLocation().getYaw();
+        if (yaw < 0.0f) {
+            yaw += 360.0f;
+        }
+        if (yaw >= 315.0f || yaw < 45.0f) {
+            return BlockFace.SOUTH;
+        }
+        if (yaw < 135.0f) {
+            return BlockFace.WEST;
+        }
+        if (yaw < 225.0f) {
+            return BlockFace.NORTH;
+        }
+        if (yaw < 315.0f) {
+            return BlockFace.EAST;
+        }
+        return BlockFace.NORTH;
+    }
+
+    public Item getToRefundPearl() {
+        return this.toRefundPearl;
+    }
+
+    public void setToRefundPearl(final Item pearl) {
+        this.toRefundPearl = pearl;
     }
 }

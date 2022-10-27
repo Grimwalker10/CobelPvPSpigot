@@ -122,7 +122,6 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             this.a((PlayerList) (new DedicatedPlayerList(this)));
             org.spigotmc.SpigotConfig.init();
             CobelSpigot cobelSpigot=CobelSpigot.INSTANCE;
-            cobelSpigot.init();
             org.spigotmc.SpigotConfig.registerCommands();
             // Spigot end
             // PaperSpigot start

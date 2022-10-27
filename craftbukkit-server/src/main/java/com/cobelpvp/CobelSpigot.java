@@ -10,20 +10,6 @@ import java.util.Set;
 public enum CobelSpigot {
     INSTANCE("INSTANCE", 0);
 
-    private CobelSpigotConfig config;
-
-    public void init() {
-        this.config = new CobelSpigotConfig();
-    }
-
-    public CobelSpigotConfig getConfig() {
-        return this.config;
-    }
-
-    public void setConfig(CobelSpigotConfig config) {
-        this.config = config;
-    }
-
     private Set<PacketHandler> packetHandlers;
     private Set<MovementHandler> movementHandlers;
 

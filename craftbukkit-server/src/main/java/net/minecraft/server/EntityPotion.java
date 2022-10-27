@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.HashMap;
 
-import com.cobelpvp.CobelSpigotConfig;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.entity.LivingEntity;
 
@@ -31,15 +30,15 @@ public class EntityPotion extends EntityProjectile {
     }
 
     protected float i() {
-        return CobelSpigotConfig.potionI;
+        return 0.05F;
     }
 
     protected float e() {
-        return CobelSpigotConfig.potionE;
+        return 0.5F;
     }
 
     protected float f() {
-        return CobelSpigotConfig.potionF;
+        return -20.0F;
     }
 
     public void setPotionValue(int i) {
