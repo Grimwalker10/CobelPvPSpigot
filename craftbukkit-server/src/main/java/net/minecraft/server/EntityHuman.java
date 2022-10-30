@@ -85,6 +85,12 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         this.maxFireTicks = 20;
     }
 
+    public void bU() {
+        if (this.f != null) {
+            this.f.b(this.world, this, this.h);
+        }
+    }
+
     protected void aD() {
         super.aD();
         this.getAttributeMap().b(GenericAttributes.e).setValue(1.0D);

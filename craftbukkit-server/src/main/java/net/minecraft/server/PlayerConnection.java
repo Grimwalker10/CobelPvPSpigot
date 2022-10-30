@@ -1288,6 +1288,10 @@ public class PlayerConnection implements PacketPlayInListener {
 
                     this.player.attack(entity);
 
+                    if (this.player.isBlocking()) {
+                        this.player.bU();
+                    }
+
                     // CraftBukkit start
                     if (itemInHand != null && itemInHand.count <= -1) {
                         this.player.updateInventory(this.player.activeContainer);

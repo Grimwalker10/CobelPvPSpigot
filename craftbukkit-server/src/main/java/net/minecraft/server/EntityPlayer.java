@@ -1,23 +1,18 @@
 package net.minecraft.server;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
 import net.minecraft.util.com.google.common.collect.Sets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 import net.minecraft.util.io.netty.buffer.Unpooled;
 import net.minecraft.util.org.apache.commons.io.Charsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-// CraftBukkit start
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.WeatherType;
@@ -25,14 +20,11 @@ import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.util.CraftPotionUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
-// CraftBukkit end
-import org.bukkit.potion.PotionEffect;
-import org.spigotmc.ProtocolData; // Spigot - protocol patch
+import org.spigotmc.ProtocolData;
 import org.spigotmc.SpigotConfig;
 
 public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -45,8 +37,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public double d;
     public double e;
     public final List chunkCoordIntPairQueue = new LinkedList();
-    public final Set<ChunkCoordIntPair> paddingChunks = new HashSet<ChunkCoordIntPair>(); // CobelPvP
-    // public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public // CobelPvP
+    public final Set<ChunkCoordIntPair> paddingChunks = new HashSet<ChunkCoordIntPair>();
     private final ServerStatisticManager bO;
     private float bP = Float.MIN_VALUE;
     private float bQ = -1.0E8F;
