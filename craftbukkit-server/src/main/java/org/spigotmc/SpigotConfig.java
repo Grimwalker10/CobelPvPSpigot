@@ -531,11 +531,11 @@ public class SpigotConfig
         pearlThroughGatesAndTripwire = getBoolean("settings.pearl-through-tripwire", true);
     }
 
-    public static double knockbackFriction = 20.0D;
-    public static double knockbackHorizontal = 0.31D;
+    public static double knockbackFriction = 2.0D;
+    public static double knockbackHorizontal = 0.35D;
     public static double knockbackVertical = 0.35D;
     public static double knockbackVerticalLimit = 0.4D;
-    public static double knockbackExtraHorizontal = 0.525D;
-    public static double knockbackExtraVertical = 0.02D;
+    public static double knockbackExtraHorizontal = 0.425D;
+    public static double knockbackExtraVertical = 0.085D;
     
 }
