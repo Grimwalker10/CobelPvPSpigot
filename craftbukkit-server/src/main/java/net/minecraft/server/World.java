@@ -78,7 +78,7 @@ public abstract class World implements IBlockAccess {
     public Set tileEntityList = new org.spigotmc.WorldTileEntityList(this); // CraftBukkit - ArrayList -> HashSet
     private List a = new ArrayList();
     private List b = new ArrayList();
-    public List players = new ArrayList();
+    public List<EntityPlayer> players = new ArrayList<EntityPlayer>();
     public List i = new ArrayList();
     private long c = 16777215L;
     public int j;
@@ -1257,11 +1257,11 @@ public abstract class World implements IBlockAccess {
             entity.dead = true; // CraftBukkit
             return false;
         } else {
-            if (entity instanceof EntityHuman) {
-                EntityHuman entityhuman = (EntityHuman) entity;
+            if (entity instanceof EntityPlayer) {
+                EntityPlayer entityPlayer = (EntityPlayer) entity;
 
-                this.players.add(entityhuman);
-                this.playerMap.add((EntityPlayer) entityhuman); // CobelPvP 
+                this.players.add(entityPlayer);
+                this.playerMap.add((EntityPlayer) entityPlayer); // CobelPvP
                 this.everyoneSleeping();
                 this.b(entity);
             }
@@ -2417,7 +2417,7 @@ public abstract class World implements IBlockAccess {
         Chunk chunkObj = null; // CobelPvP
 
         for (i = 0; i < this.players.size(); ++i) {
-            entityhuman = (EntityHuman) this.players.get(i);
+            entityhuman = this.players.get(i);
             j = MathHelper.floor(entityhuman.locX / 16.0D);
             k = MathHelper.floor(entityhuman.locZ / 16.0D);
             l = this.p();
@@ -2449,7 +2449,7 @@ public abstract class World implements IBlockAccess {
         this.methodProfiler.a("playerCheckLight");
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
             i = this.random.nextInt(this.players.size());
-            entityhuman = (EntityHuman) this.players.get(i);
+            entityhuman = this.players.get(i);
             j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
             k = MathHelper.floor(entityhuman.locY) + this.random.nextInt(11) - 5;
             l = MathHelper.floor(entityhuman.locZ) + this.random.nextInt(11) - 5;
@@ -3152,7 +3152,7 @@ public abstract class World implements IBlockAccess {
         EntityHuman entityHuman = null;
 
         for (int i = 0; i < this.players.size(); ++i) {
-            EntityHuman nearestPlayer = (EntityHuman) this.players.get(i);
+            EntityHuman nearestPlayer = this.players.get(i);
 
             if (nearestPlayer == null || nearestPlayer.dead || !nearestPlayer.affectsSpawning) {
                 continue;

@@ -12,7 +12,7 @@ import org.bukkit.event.entity.PotionEffectAddEvent;
 import org.bukkit.event.entity.PotionEffectExpireEvent;
 import org.bukkit.event.entity.PotionEffectExtendEvent;
 import org.bukkit.event.entity.PotionEffectRemoveEvent;
-import org.bukkit.event.player.PlayerAttackEvent;
+import java.util.concurrent.ConcurrentHashMap;
 import org.spigotmc.ActivationRange;
 import org.spigotmc.SpigotConfig;
 
@@ -873,7 +873,7 @@ public abstract class EntityLiving extends Entity {
 
                 // CraftBukkit start - Call death event
                 CraftEventFactory.callEntityDeathEvent(this, this.drops, exp); // Kohi - Specify the exp to drop
-                this.drops = null;
+                this.drops.clear();
             } else {
                 CraftEventFactory.callEntityDeathEvent(this);
                 // CraftBukkit end
@@ -881,6 +881,7 @@ public abstract class EntityLiving extends Entity {
         }
 
         this.world.broadcastEntityEffect(this, (byte) 3);
+        effects.clear();
     }
 
     protected void dropEquipment(boolean flag, int i) {

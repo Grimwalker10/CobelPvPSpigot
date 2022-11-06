@@ -17,6 +17,7 @@ public class EntityItem extends Entity {
     private String g;
     public float c;
     private int lastTick = MinecraftServer.currentTick; // CraftBukkit
+    public EntityHuman owner;
 
     public EntityItem(World world, double d0, double d1, double d2) {
         super(world);
@@ -132,6 +133,7 @@ public class EntityItem extends Entity {
                     return;
                 }
                 // CraftBukkit end
+                this.owner = null;
                 this.die();
             }
         }
@@ -154,6 +156,7 @@ public class EntityItem extends Entity {
                 return;
             }
             // CraftBukkit end
+            this.owner = null;
             this.die();
         }
     }
@@ -225,17 +228,17 @@ public class EntityItem extends Entity {
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable()) {
             return false;
-        } else if (this.getItemStack() != null && this.getItemStack().getItem() == Items.NETHER_STAR && damagesource.isExplosion()) {
-            return false;
-        } else {
-            this.Q();
-            this.e = (int) ((float) this.e - f);
-            if (this.e <= 0) {
-                this.die();
-            }
+        }
+        if (this.getItemStack() != null && this.getItemStack().getItem() == Items.NETHER_STAR && damagesource.isExplosion()) {
 
             return false;
         }
+        this.Q();
+        this.e = (int) ((float) this.e - f);
+        if (this.e <= 0) {
+            this.die();
+        }
+        return false;
     }
 
     public void b(NBTTagCompound nbttagcompound) {
@@ -349,6 +352,10 @@ public class EntityItem extends Entity {
 
     public String getName() {
         return LocaleI18n.get("item." + this.getItemStack().a());
+    }
+
+    public EntityHuman getOwner() {
+        return this.owner;
     }
 
     public boolean av() {

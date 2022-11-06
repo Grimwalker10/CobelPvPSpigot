@@ -1,29 +1,19 @@
 package net.minecraft.server;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Proxy;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit; // PaperSpigot
-
 import com.cobelpvp.CobelSpigot;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-// CraftBukkit start
 import java.io.PrintStream;
 import org.apache.logging.log4j.Level;
-
 import org.bukkit.craftbukkit.LoggerOutputStream;
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.event.server.ServerCommandEvent;
-// CraftBukkit end
 
 import net.minecraft.util.com.google.common.collect.Queues;
 
