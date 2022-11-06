@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.projectiles;
 
 import java.util.Random;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -19,25 +18,7 @@ import org.bukkit.entity.WitherSkull;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.util.Vector;
-
-import net.minecraft.server.BlockDispenser;
-import net.minecraft.server.EntityArrow;
-import net.minecraft.server.EntityEgg;
-import net.minecraft.server.EntityEnderPearl;
-import net.minecraft.server.EntityFireball;
-import net.minecraft.server.EntityLargeFireball;
-import net.minecraft.server.EntityPotion;
-import net.minecraft.server.EntityProjectile;
-import net.minecraft.server.EntitySmallFireball;
-import net.minecraft.server.EntitySnowball;
-import net.minecraft.server.EntityThrownExpBottle;
-import net.minecraft.server.EntityWitherSkull;
-import net.minecraft.server.EnumFacing;
-import net.minecraft.server.IPosition;
-import net.minecraft.server.IProjectile;
-import net.minecraft.server.MathHelper;
-import net.minecraft.server.SourceBlock;
-import net.minecraft.server.TileEntityDispenser;
+import net.minecraft.server.*;
 
 public class CraftBlockProjectileSource implements BlockProjectileSource {
     private final TileEntityDispenser dispenserBlock;
