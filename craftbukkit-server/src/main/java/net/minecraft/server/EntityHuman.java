@@ -841,7 +841,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         }
         // CraftBukkit end
         if (!this.isInvulnerable()) {
-            if (!damagesource.ignoresArmor() && f > 0.0F) {
+            if (!damagesource.ignoresArmor() && this.isBlocking() && f > 0.0F) {
                 f = (1.0F + f) ;
             }
 

@@ -1062,7 +1062,7 @@ public abstract class EntityLiving extends Entity {
                 @Override
                 public Double apply(Double f) {
                     if (human) {
-                        if (!damagesource.ignoresArmor() && f > 0.0F) {
+                        if (!damagesource.ignoresArmor() && ((EntityHuman) EntityLiving.this).isBlocking() && f > 0.0F) {
                             return -(f - ((1.0F + f) * 0.5F));
                         }
                     }
