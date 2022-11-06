@@ -3,6 +3,7 @@ package net.minecraft.server;
 import java.util.Iterator;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.entity.LivingEntity;
@@ -69,7 +70,7 @@ public class EntityPotion extends EntityProjectile {
                     Iterator iterator = list1.iterator();
 
                     // CraftBukkit
-                    HashMap<LivingEntity, Double> affected = new HashMap<LivingEntity, Double>();
+                    Map<LivingEntity, Double> affected = new HashMap<LivingEntity, Double>();
 
                     while (iterator.hasNext()) {
                         EntityLiving entityliving = (EntityLiving) iterator.next();

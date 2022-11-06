@@ -2,7 +2,7 @@ package net.minecraft.server;
 
 import java.io.IOException;
 import java.util.List;
-
+import net.minecraft.util.io.netty.handler.codec.DecoderException;
 import net.minecraft.util.com.google.common.collect.BiMap;
 import net.minecraft.util.io.netty.buffer.ByteBuf;
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
@@ -22,7 +22,7 @@ public class PacketDecoder extends ByteToMessageDecoder {
         this.c = networkstatistics;
     }
 
-    protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List list) throws IOException {
+    protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List list) throws IOException, DecoderException {
         int i = bytebuf.readableBytes();
 
         if (i != 0) {

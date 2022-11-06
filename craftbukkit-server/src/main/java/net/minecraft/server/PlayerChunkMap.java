@@ -301,7 +301,7 @@ public class PlayerChunkMap {
     }
 
     public void a(int i) {
-        i = MathHelper.a(i, 3, 20);
+        i = MathHelper.limit(i, 3, 20);
         if (i != this.g) {
             int j = i - this.g;
             Iterator iterator = this.managedPlayers.iterator();

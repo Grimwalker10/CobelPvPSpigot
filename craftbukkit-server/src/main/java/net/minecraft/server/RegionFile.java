@@ -211,7 +211,7 @@ public class RegionFile {
     }
 
     public DataOutputStream b(int i, int j) {
-        return this.d(i, j) ? null : new DataOutputStream(new java.io.BufferedOutputStream(new DeflaterOutputStream(new ChunkBuffer(this, i, j)))); // Spigot - use a BufferedOutputStream to greatly improve file write performance
+        return this.d(i, j) ? null : new DataOutputStream(new java.io.BufferedOutputStream(new DeflaterOutputStream(new ChunkBuffer(this, i, j))));
     }
 
     protected synchronized void a(int i, int j, byte[] abyte, int k) {

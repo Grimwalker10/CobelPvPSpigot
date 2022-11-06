@@ -680,15 +680,11 @@ public abstract class EntityLiving extends Entity {
                 player.setRealHealth(f);
             }
 
-            // only send the update to anyone if the player has not died.
-            // if they do die, we handle all our stuff in EntityPlayer#die(DamageSource)
-            if (player.getHealth() != 0 || !SpigotConfig.instantRespawn) {
-                this.datawatcher.watch(6, Float.valueOf(player.getScaledHealth()));
-            }
+            this.datawatcher.watch(6, player.getScaledHealth());
             return;
         }
         // CraftBukkit end
-        this.datawatcher.watch(6, Float.valueOf(MathHelper.a(f, 0.0F, this.getMaxHealth())));
+        this.datawatcher.watch(6, MathHelper.limit(f, 0.0F, this.getMaxHealth()));
     }
 
     public boolean damageEntity(DamageSource damagesource, float f) {

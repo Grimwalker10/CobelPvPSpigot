@@ -301,7 +301,7 @@ public class EntityTrackerEntry {
             if (this.tracker instanceof EntityPlayer) {
                 Player player = (Player)this.tracker.getBukkitEntity();
                 Vector velocity = player.getVelocity();
-                PlayerVelocityEvent event = new PlayerVelocityEvent(player, velocity);
+                PlayerVelocityEvent event = new PlayerVelocityEvent(player, velocity.clone());
                 this.tracker.world.getServer().getPluginManager().callEvent((Event)event);
                 if (event.isCancelled()) {
                     cancelled = true;
