@@ -396,23 +396,28 @@ public class PlayerInteractManager {
         }
         // Interract event */
         Block block = world.getType(i, j, k);
-        boolean result = false;
-        if (block != Blocks.AIR) {
-            PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(entityhuman, Action.RIGHT_CLICK_BLOCK, i, j, k, l, itemstack);
-            if (event.useInteractedBlock() == Event.Result.DENY) {
-                // If we denied a door from opening, we need to send a correcting update to the client, as it already opened the door.
-                if (block == Blocks.WOODEN_DOOR) {
-                    boolean bottom = (world.getData(i, j, k) & 8) == 0;
-                    ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j + (bottom ? 1 : -1), k, world));
-                }
-                result = (event.useItemInHand() != Event.Result.ALLOW);
-            } else if (!entityhuman.isSneaking() || itemstack == null) {
-                result = block.interact(world, i, j, k, entityhuman, l, f, f1, f2);
-            }
 
-            if (itemstack != null && !result) {
-                int j1 = itemstack.getData();
-                int k1 = itemstack.count;
+        if(block == Blocks.AIR)return false;
+
+        PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(entityhuman, Action.RIGHT_CLICK_BLOCK, i, j, k, l, itemstack);
+
+        if (block == Blocks.FENCE && itemstack != null && itemstack.getName().toLowerCase().contains("sword"))return false;
+
+        boolean result = false;
+        if (event.useInteractedBlock() == Event.Result.DENY) {
+            // If we denied a door from opening, we need to send a correcting update to the client, as it already opened the door.
+            if (block == Blocks.WOODEN_DOOR) {
+                boolean bottom = (world.getData(i, j, k) & 8) == 0;
+                ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j + (bottom ? 1 : -1), k, world));
+            }
+            result = (event.useItemInHand() != Event.Result.ALLOW);
+        } else if (!entityhuman.isSneaking() || itemstack == null) {
+            result = block.interact(world, i, j, k, entityhuman, l, f, f1, f2);
+        }
+
+        if (itemstack != null && !result) {
+            int j1 = itemstack.getData();
+            int k1 = itemstack.count;
 
                 // CobelPvP start - hack to silence sounds from cancelled block place
                 try {
@@ -427,17 +432,16 @@ public class PlayerInteractManager {
                 }
                 // CobelPvP end
 
-                // The item count should not decrement in Creative mode.
-                if (this.isCreative()) {
-                    itemstack.setData(j1);
-                    itemstack.count = k1;
+            // The item count should not decrement in Creative mode.
+            if (this.isCreative()) {
+                itemstack.setData(j1);
+                itemstack.count = k1;
                 }
             }
 
-            // If we have 'true' and no explicit deny *or* an explicit allow -- run the item part of the hook
-            if (itemstack != null && ((!result && event.useItemInHand() != Event.Result.DENY && !(block == Blocks.FENCE || block == Blocks.NETHER_FENCE)) || event.useItemInHand() == Event.Result.ALLOW)) { // CobelPvP - special case fences
-                this.useItem(entityhuman, world, itemstack);
-            }
+        // If we have 'true' and no explicit deny *or* an explicit allow -- run the item part of the hook
+        if (itemstack != null && ((!result && event.useItemInHand() != Event.Result.DENY) || event.useItemInHand() == Event.Result.ALLOW)) {
+            this.useItem(entityhuman, world, itemstack);
         }
         return result;
         // CraftBukkit end

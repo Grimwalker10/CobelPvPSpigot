@@ -19,6 +19,7 @@ import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.inventory.EquipmentSetEvent;
 import org.bukkit.event.player.*;
 // CraftBukkit end
+import org.bukkit.util.Vector;
 import org.spigotmc.ProtocolData; // Spigot - protocol patch
 import org.spigotmc.SpigotConfig;
 
@@ -975,7 +976,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                     double victimMotZ = entity.motZ;
                     // Kohi end
 
-                    boolean flag2 = entity.damageEntity(DamageSource.playerAttack(this), f);
+                    final boolean flag2 = entity.damageEntity(DamageSource.playerAttack(this), f);
 
                     if (flag2) {
                         if (i > 0) {
@@ -999,19 +1000,20 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                         // inconsistent, we simply reverse the knockback after sending it so that KB, like most other
                         // things, doesn't affect server velocity at all.
                         if (entity instanceof EntityPlayer && entity.velocityChanged) {
-                            EntityPlayer attackedPlayer = (EntityPlayer) entity;
-                            PlayerVelocityEvent event = new PlayerVelocityEvent(attackedPlayer.getBukkitEntity(), attackedPlayer.getBukkitEntity().getVelocity());
+                            final EntityPlayer victim = (EntityPlayer) entity;
+                            final Vector vector = new Vector(victimMotX, victimMotY, victimMotZ);
+
+                            final PlayerVelocityEvent event = new PlayerVelocityEvent(victim.getBukkitEntity(), vector.clone());
                             this.world.getServer().getPluginManager().callEvent(event);
-
                             if (!event.isCancelled()) {
-                                attackedPlayer.getBukkitEntity().setVelocityDirect(event.getVelocity());
-                                attackedPlayer.playerConnection.sendPacket(new PacketPlayOutEntityVelocity(attackedPlayer));
+                                if(!vector.equals(event.getVelocity())) victim.getBukkitEntity().setVelocity(event.getVelocity());
+                                if (entity.motY > 0) entity.fallDistance = 0.0f;
+                                victim.playerConnection.sendPacket(new PacketPlayOutEntityVelocity(entity));
+                                entity.velocityChanged = false;
+                                entity.motX = victimMotX;
+                                entity.motY = victimMotY;
+                                entity.motZ = victimMotZ;
                             }
-
-                            attackedPlayer.velocityChanged = false;
-                            attackedPlayer.motX = victimMotX;
-                            attackedPlayer.motY = victimMotY;
-                            attackedPlayer.motZ = victimMotZ;
                         }
                         // Kohi end
 
