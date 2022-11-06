@@ -1,7 +1,7 @@
 package net.minecraft.server;
 
 import java.util.List;
-
+import java.util.Iterator;
 import org.bukkit.Bukkit;
 import org.spigotmc.SpigotConfig;
 
@@ -127,8 +127,10 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
             double d0 = 0.0D;
             EntityLiving entityliving = this.getShooter();
 
-            for (int i = 0; i < list.size(); ++i) {
-                Entity entity1 = (Entity) list.get(i);
+            Iterator<Entity> iterator =  this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D)).iterator();
+
+            while (iterator.hasNext()){
+                Entity entity1 = iterator.next();
 
                 if (entity1.R() && (entity1 != entityliving || this.at >= 5)) {
                     float f = 0.3F;
