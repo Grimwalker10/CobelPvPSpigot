@@ -21,12 +21,11 @@ public class EntityEnderPearl extends EntityProjectile
     private Location lastValidTeleport;
     private Item toRefundPearl;
     private EntityLiving c;
-    private static Set<Block> PROHIBITED_PEARL_BLOCKS;
+    private Location lastValidLocation;
     public static List<String> pearlAbleType;
     public static List<Material> forwardTypes;
 
     static {
-        EntityEnderPearl.PROHIBITED_PEARL_BLOCKS = Sets.newHashSet(Block.getById(85), Block.getById(107));
         EntityEnderPearl.pearlAbleType = Arrays.asList("STEP", "STAIR");
         EntityEnderPearl.forwardTypes = Collections.singletonList(Material.ENDER_PORTAL_FRAME);
     }
@@ -96,8 +95,8 @@ public class EntityEnderPearl extends EntityProjectile
                 final EntityPlayer entityplayer = (EntityPlayer)this.getShooter();
                 if (entityplayer.playerConnection.b().isConnected() && entityplayer.world == this.world) {
                     if (this.lastValidTeleport != null) {
-                        final CraftPlayer player = entityplayer.getBukkitEntity();
-                        final Location location = this.lastValidTeleport;
+                        CraftPlayer player = entityplayer.getBukkitEntity();
+                        Location location = this.lastValidLocation.clone();
                         location.setPitch(player.getLocation().getPitch());
                         location.setYaw(player.getLocation().getYaw());
                         final PlayerTeleportEvent teleEvent = new PlayerTeleportEvent(player, player.getLocation(), location, PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
@@ -122,57 +121,14 @@ public class EntityEnderPearl extends EntityProjectile
         }
     }
 
-    @Override
+    // snHose start - antipearl glitch
     public void h() {
-        final EntityLiving shooter = this.getShooter();
-        if (shooter != null && !shooter.isAlive()) {
-            this.die();
+        if (this.world.getCubes(this, this.boundingBox.grow(0.25D, 0.25D, 0.25D)).isEmpty()) {
+            this.lastValidLocation = getBukkitEntity().getLocation();
         }
-        else {
-            final AxisAlignedBB newBoundingBox = AxisAlignedBB.a(this.locX - 0.3, this.locY - 0.05, this.locZ - 0.3, this.locX + 0.3, this.locY + 0.5, this.locZ + 0.3);
-            if (!this.world.boundingBoxContainsMaterials(this.boundingBox.grow(0.25, 0.0, 0.25), EntityEnderPearl.PROHIBITED_PEARL_BLOCKS) && this.world.getCubes(this, newBoundingBox).isEmpty()) {
-                this.lastValidTeleport = this.getBukkitEntity().getLocation();
-            }
-            final org.bukkit.block.Block block = this.world.getWorld().getBlockAt(MathHelper.floor(this.locX), MathHelper.floor(this.locY), MathHelper.floor(this.locZ));
-            final Material typeHere = this.world.getWorld().getBlockAt(MathHelper.floor(this.locX), MathHelper.floor(this.locY), MathHelper.floor(this.locZ)).getType();
-            if (EntityEnderPearl.pearlAbleType.stream().anyMatch(it -> typeHere.name().contains(it))) {
-                this.lastValidTeleport = this.getBukkitEntity().getLocation();
-            }
-            if (shooter != null && EntityEnderPearl.forwardTypes.stream().anyMatch(it -> block.getRelative(getDirection((EntityPlayer)shooter)).getType() == it)) {
-                this.lastValidTeleport = this.getBukkitEntity().getLocation();
-            }
-            if (typeHere == Material.FENCE_GATE && ((Openable)block.getState().getData()).isOpen()) {
-                this.lastValidTeleport = this.getBukkitEntity().getLocation();
-            }
-            if (shooter != null) {
-                final org.bukkit.block.Block newTrap = block.getRelative(getDirection((EntityPlayer)shooter)).getRelative(BlockFace.DOWN);
-                if (newTrap.getType() == Material.COBBLE_WALL || newTrap.getType() == Material.FENCE) {
-                    this.lastValidTeleport = newTrap.getLocation();
-                }
-            }
-            super.h();
-        }
+        super.h();
     }
-
-    public static BlockFace getDirection(final EntityPlayer entityPlayer) {
-        float yaw = entityPlayer.getBukkitEntity().getLocation().getYaw();
-        if (yaw < 0.0f) {
-            yaw += 360.0f;
-        }
-        if (yaw >= 315.0f || yaw < 45.0f) {
-            return BlockFace.SOUTH;
-        }
-        if (yaw < 135.0f) {
-            return BlockFace.WEST;
-        }
-        if (yaw < 225.0f) {
-            return BlockFace.NORTH;
-        }
-        if (yaw < 315.0f) {
-            return BlockFace.EAST;
-        }
-        return BlockFace.NORTH;
-    }
+    // snHose end
 
     public Item getToRefundPearl() {
         return this.toRefundPearl;
