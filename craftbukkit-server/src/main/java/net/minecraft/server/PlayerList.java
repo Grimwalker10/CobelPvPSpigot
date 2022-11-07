@@ -317,13 +317,10 @@ public abstract class PlayerList {
         PacketPlayOutPlayerInfo displayPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.UPDATE_DISPLAY_NAME, entityplayer); // Spigot - protocol patch
         for (EntityPlayer entityplayer1 : this.players) {
 
-            if (entityplayer1.getBukkitEntity().canSeeFromTab(entityplayer.getBukkitEntity())) {
-                entityplayer1.playerConnection.sendPacket(packet);
-                // Spigot start - Update 20140927a // Update - 20141001a
-                if (!entityplayer.getName().equals(entityplayer.listName) && entityplayer1.playerConnection.networkManager.getVersion() > 28) {
-                    entityplayer1.playerConnection.sendPacket(displayPacket);
-                }
-                // Spigot end
+            entityplayer1.playerConnection.sendPacket(packet);
+            // Spigot start - protocol patch
+            if (!entityplayer.getName().equals(entityplayer.listName) && entityplayer1.playerConnection.networkManager.getVersion() > 28) {
+                entityplayer1.playerConnection.sendPacket(displayPacket);
             }
         }
         // CraftBukkit end
@@ -331,9 +328,6 @@ public abstract class PlayerList {
         for (EntityPlayer player : this.players) {
 
             // CraftBukkit start
-            if (!entityplayer.getBukkitEntity().canSee(player.getBukkitEntity())) {
-                continue;
-            }
             // .name -> .listName
             entityplayer.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.ADD_PLAYER, player)); // Spigot - protocol patch
             // Spigot start - Update 20140927a // Update - 20141001a
@@ -382,12 +376,8 @@ public abstract class PlayerList {
         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.REMOVE_PLAYER, entityplayer); // Spigot - protocol patch
         for (EntityPlayer entityplayer1 : this.players) {
 
-            if (entityplayer1.getBukkitEntity().canSeeFromTab(entityplayer.getBukkitEntity())) {
-                if (!SpigotConfig.playerListPackets) continue; // CobelPvP
-                entityplayer1.playerConnection.sendPacket(packet);
-            } else {
-                entityplayer1.getBukkitEntity().removeDisconnectingPlayer(entityplayer.getBukkitEntity());
-            }
+            entityplayer1.playerConnection.sendPacket(packet);
+            entityplayer1.getBukkitEntity().removeDisconnectingPlayer(entityplayer.getBukkitEntity());
         }
         // This removes the scoreboard (and player reference) for the specific player in the manager
         this.cserver.getScoreboardManager().removePlayer(entityplayer.getBukkitEntity());
@@ -450,12 +440,13 @@ public abstract class PlayerList {
 
     public EntityPlayer processLogin(GameProfile gameprofile, EntityPlayer player) { // CraftBukkit - added EntityPlayer
         UUID uuid = EntityHuman.a(gameprofile);
+        List arraylist = Lists.newArrayList();
 
         EntityPlayer entityplayer;
 
         /* // PaperSpigot start - Use exact lookup below
-        for (EntityPlayer player : this.players) {
-            player.playerConnection.sendPacket(packet);
+        for (int i = 0; i < this.players.size(); ++i) {
+            entityplayer = (EntityPlayer) this.players.get(i);
             if (entityplayer.getUniqueID().equals(uuid)) {
                 arraylist.add(entityplayer);
             }

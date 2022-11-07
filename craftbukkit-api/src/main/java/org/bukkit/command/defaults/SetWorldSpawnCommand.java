@@ -35,7 +35,7 @@ public class SetWorldSpawnCommand extends VanillaCommand {
         }
 
         final int x, y, z;
-        Float yaw = null, pitch = null; // CobelPvP
+        float yaw, pitch;
 
         if (args.length == 0) {
             if (player == null) {
@@ -48,34 +48,34 @@ public class SetWorldSpawnCommand extends VanillaCommand {
             x = location.getBlockX();
             y = location.getBlockY();
             z = location.getBlockZ();
-            // CobelPvP start
-            yaw = new Float(location.getYaw());
-            pitch = new Float(location.getPitch());
-            // CobelPvP end
+            yaw = location.getYaw();
+            pitch = location.getPitch();
         } else if (args.length == 3) {
             try {
                 x = getInteger(sender, args[0], MIN_COORD, MAX_COORD, true);
                 y = getInteger(sender, args[1], 0, world.getMaxHeight(), true);
                 z = getInteger(sender, args[2], MIN_COORD, MAX_COORD, true);
+                yaw = 0;
+                pitch = 0;
             } catch (NumberFormatException ex) {
                 sender.sendMessage(ex.getMessage());
                 return true;
             }
-        } else {
+        } else if(args.length == 5) {
+            x = getInteger(sender, args[0], MIN_COORD, MAX_COORD, true);
+            y = getInteger(sender, args[1], 0, world.getMaxHeight(), true);
+            z = getInteger(sender, args[2], MIN_COORD, MAX_COORD, true);
+            yaw = getInteger(sender, args[0], -360, 360, true);
+            pitch = getInteger(sender, args[0], -90, 90, true);
+        }
+        else {
             sender.sendMessage(ChatColor.RED + "Usage: " + usageMessage);
             return false;
         }
 
-        // CobelPvP start
-        if(yaw != null && pitch != null) {
-            world.setSpawnLocation(x, y, z, yaw.floatValue(), pitch.floatValue());
-            Command.broadcastCommandMessage(sender, "Set world " + world.getName() + "'s spawnpoint to (" + x + ", " + y + ", " + z + ", yaw=" + yaw.floatValue() + ", pitch=" + pitch.floatValue());
-        } else {
-            world.setSpawnLocation(x, y, z);
-            Command.broadcastCommandMessage(sender, "Set world " + world.getName() + "'s spawnpoint to (" + x + ", " + y + ", " + z + ")");
-        }
-        // CobelPvP end
+        world.setSpawnLocation(x, y, z, yaw, pitch);
 
+        Command.broadcastCommandMessage(sender, "Set world " + world.getName() + "'s spawnpoint to (" + x + ", " + y + ", " + z + ")");
         return true;
 
     }
