@@ -5,19 +5,15 @@ import java.net.SocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
-
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.google.common.collect.Lists;
 import net.minecraft.util.com.google.common.collect.Maps;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-// CraftBukkit start
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.TravelAgent;
@@ -33,7 +29,6 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
 import org.spigotmc.SpigotConfig;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
-// CraftBukkit end
 
 public abstract class PlayerList {
 
@@ -46,7 +41,7 @@ public abstract class PlayerList {
     private static final Logger g = LogManager.getLogger();
     private static final SimpleDateFormat h = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
     private final MinecraftServer server;
-    public final List players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
+    public final List<EntityPlayer> players = new java.util.concurrent.CopyOnWriteArrayList<>(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
     // PaperSpigot start - Player lookup improvements
     public final Map<String, EntityPlayer> playerMap = new java.util.HashMap<String, EntityPlayer>() {
         @Override
@@ -125,11 +120,7 @@ public abstract class PlayerList {
 
         entityplayer.spawnIn(this.server.getWorldServer(entityplayer.dimension));
         entityplayer.playerInteractManager.a((WorldServer) entityplayer.world);
-        String s1 = "local";
-
-        if (networkmanager.getSocketAddress() != null) {
-            s1 = networkmanager.getSocketAddress().toString();
-        }
+        String s1 = (networkmanager.getSocketAddress() == null ? "local" : networkmanager.getSocketAddress().toString());
 
         // Spigot start - spawn location event
         Player bukkitPlayer = entityplayer.getBukkitEntity();
@@ -214,7 +205,6 @@ public abstract class PlayerList {
     }
 
     public void sendScoreboard(ScoreboardServer scoreboardserver, EntityPlayer entityplayer) { // CraftBukkit - protected -> public
-        HashSet hashset = new HashSet();
         Iterator iterator = scoreboardserver.getTeams().iterator();
 
         while (iterator.hasNext()) {
@@ -223,21 +213,20 @@ public abstract class PlayerList {
             entityplayer.playerConnection.sendPacket(new PacketPlayOutScoreboardTeam(scoreboardteam, 0));
         }
 
+        Set set = new HashSet();
+
         for (int i = 0; i < 3; ++i) {
             ScoreboardObjective scoreboardobjective = scoreboardserver.getObjectiveForSlot(i);
+            if (scoreboardobjective == null || set.contains(scoreboardobjective))continue;
+            Iterator iterator1 = scoreboardserver.getScoreboardScorePacketsForObjective(scoreboardobjective).iterator();
 
-            if (scoreboardobjective != null && !hashset.contains(scoreboardobjective)) {
-                List list = scoreboardserver.getScoreboardScorePacketsForObjective(scoreboardobjective);
-                Iterator iterator1 = list.iterator();
+            while (iterator1.hasNext()) {
+                Packet packet = (Packet) iterator1.next();
 
-                while (iterator1.hasNext()) {
-                    Packet packet = (Packet) iterator1.next();
-
-                    entityplayer.playerConnection.sendPacket(packet);
-                }
-
-                hashset.add(scoreboardobjective);
+                entityplayer.playerConnection.sendPacket(packet);
             }
+
+            set.add(scoreboardobjective);
         }
 
         scoreboardserver.addViewer(entityplayer); // CobelPvP
@@ -324,34 +313,32 @@ public abstract class PlayerList {
         if (SpigotConfig.onlyCustomTab) return; // CobelPvP
 
         // CraftBukkit start - sendAll above replaced with this loop
-        PacketPlayOutPlayerInfo packet = PacketPlayOutPlayerInfo.addPlayer( entityplayer ); // Spigot - protocol patch
-        PacketPlayOutPlayerInfo displayPacket = PacketPlayOutPlayerInfo.updateDisplayName( entityplayer ); // Spigot Update - 20140927a
-        for (int i = 0; i < this.players.size(); ++i) {
-            EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
+        PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.ADD_PLAYER, entityplayer); // Spigot - protocol patch
+        PacketPlayOutPlayerInfo displayPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.UPDATE_DISPLAY_NAME, entityplayer); // Spigot - protocol patch
+        for (EntityPlayer entityplayer1 : this.players) {
 
             if (entityplayer1.getBukkitEntity().canSeeFromTab(entityplayer.getBukkitEntity())) {
                 entityplayer1.playerConnection.sendPacket(packet);
                 // Spigot start - Update 20140927a // Update - 20141001a
-                if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer1.playerConnection.networkManager.getVersion() > 28 ) {
-                    entityplayer1.playerConnection.sendPacket( displayPacket );
+                if (!entityplayer.getName().equals(entityplayer.listName) && entityplayer1.playerConnection.networkManager.getVersion() > 28) {
+                    entityplayer1.playerConnection.sendPacket(displayPacket);
                 }
                 // Spigot end
             }
         }
         // CraftBukkit end
 
-        for (int i = 0; i < this.players.size(); ++i) {
-            EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
+        for (EntityPlayer player : this.players) {
 
             // CraftBukkit start
-            if (!entityplayer.getBukkitEntity().canSeeFromTab(entityplayer1.getBukkitEntity())) {
+            if (!entityplayer.getBukkitEntity().canSee(player.getBukkitEntity())) {
                 continue;
             }
             // .name -> .listName
-            entityplayer.playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( entityplayer1 )); // Spigot - protocol patch
+            entityplayer.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.ADD_PLAYER, player)); // Spigot - protocol patch
             // Spigot start - Update 20140927a // Update - 20141001a
-            if ( !entityplayer.getName().equals( entityplayer.listName ) && entityplayer.playerConnection.networkManager.getVersion() > 28 ) {
-                entityplayer.playerConnection.sendPacket( PacketPlayOutPlayerInfo.updateDisplayName( entityplayer1 ) );
+            if (!entityplayer.getName().equals(entityplayer.listName) && entityplayer.playerConnection.networkManager.getVersion() > 28) {
+                entityplayer.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.UPDATE_DISPLAY_NAME, player));
             }
             // Spigot end
             // CraftBukkit end
@@ -392,9 +379,8 @@ public abstract class PlayerList {
 
         // CraftBukkit start - .name -> .listName, replace sendAll with loop
         // this.sendAll(new PacketPlayOutPlayerInfo(entityplayer.getName(), false, 9999));
-        PacketPlayOutPlayerInfo packet = PacketPlayOutPlayerInfo.removePlayer( entityplayer ); // Spigot - protocol patch
-        for (int i = 0; i < this.players.size(); ++i) {
-            EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
+        PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.REMOVE_PLAYER, entityplayer); // Spigot - protocol patch
+        for (EntityPlayer entityplayer1 : this.players) {
 
             if (entityplayer1.getBukkitEntity().canSeeFromTab(entityplayer.getBukkitEntity())) {
                 if (!SpigotConfig.playerListPackets) continue; // CobelPvP
@@ -468,8 +454,8 @@ public abstract class PlayerList {
         EntityPlayer entityplayer;
 
         /* // PaperSpigot start - Use exact lookup below
-        for (int i = 0; i < this.players.size(); ++i) {
-            entityplayer = (EntityPlayer) this.players.get(i);
+        for (EntityPlayer player : this.players) {
+            player.playerConnection.sendPacket(packet);
             if (entityplayer.getUniqueID().equals(uuid)) {
                 arraylist.add(entityplayer);
             }
@@ -905,7 +891,7 @@ public abstract class PlayerList {
                 int newPingToBars = pingToBars(player.ping);
                 if ( player.lastPing == -1 || oldPingToBars != newPingToBars )
                 {
-                    Packet packet = PacketPlayOutPlayerInfo.updatePing( player ); // Spigot - protocol patch
+                    Packet packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.UPDATE_LATENCY, player); // Spigot - protocol patch
                     for ( EntityPlayer splayer : (List<EntityPlayer>) this.players )
                     {
                         if ( splayer.getBukkitEntity().canSeeFromTab( player.getBukkitEntity() ) )
@@ -941,12 +927,11 @@ public abstract class PlayerList {
     }
 
     public void a(Packet packet, int i) {
-        for (int j = 0; j < this.players.size(); ++j) {
-            EntityPlayer entityplayer = (EntityPlayer) this.players.get(j);
+        for (EntityPlayer player : this.players) {
 
-            if (entityplayer.dimension == i) {
-                entityplayer.playerConnection.sendPacket(packet);
-            }
+            if (player.dimension != i) continue;
+
+            player.playerConnection.sendPacket(packet);
         }
     }
 
@@ -1064,8 +1049,7 @@ public abstract class PlayerList {
                 s1 = s1.substring(1);
             }
 
-            for (int i2 = 0; i2 < this.players.size(); ++i2) {
-                EntityPlayer entityplayer = (EntityPlayer) this.players.get(i2);
+            for (EntityPlayer entityplayer : this.players) {
 
                 if ((world == null || entityplayer.world == world) && (s == null || flag1 != s.equalsIgnoreCase(entityplayer.getName()))) {
                     if (s1 != null) {
@@ -1155,8 +1139,7 @@ public abstract class PlayerList {
     }
 
     public void sendPacketNearby(EntityHuman entityhuman, double d0, double d1, double d2, double d3, int i, Packet packet, boolean self) {
-        for (int j = 0; j < this.players.size(); ++j) {
-            EntityPlayer entityplayer = (EntityPlayer) this.players.get(j);
+        for (EntityPlayer entityplayer : this.players) {
 
             // CraftBukkit start - Test if player receiving packet can see the source of the packet
             if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSeeFromTab(((EntityPlayer) entityhuman).getBukkitEntity())) {
@@ -1179,8 +1162,8 @@ public abstract class PlayerList {
     public void savePlayers() {
         if (SpigotConfig.disableSaving) return; // CobelPvP
         if (org.spigotmc.SpigotConfig.disablePlayerFileSaving) { return; } // CobelPvP
-        for (int i = 0; i < this.players.size(); ++i) {
-            this.b((EntityPlayer) this.players.get(i));
+        for (EntityPlayer player : this.players) {
+            this.b(player);
         }
     }
 
@@ -1338,8 +1321,7 @@ public abstract class PlayerList {
             WorldServer[] aworldserver = this.server.worldServer;
             int j = aworldserver.length;
 
-            for (int k = 0; k < j; ++k) {
-                WorldServer worldserver = aworldserver[k];
+            for (WorldServer worldserver : aworldserver) {
 
                 if (worldserver != null) {
                     worldserver.getPlayerChunkMap().a(i);

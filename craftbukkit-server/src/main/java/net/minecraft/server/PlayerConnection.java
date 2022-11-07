@@ -993,6 +993,27 @@ public class PlayerConnection implements PacketPlayInListener {
         }
 
         if (!async && s.startsWith("/")) {
+            if (!org.spigotmc.AsyncCatcher.shuttingDown && !org.bukkit.Bukkit.isPrimaryThread()) {
+                final String fCommandLine = s;
+                MinecraftServer.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Command Dispatched Async: " + fCommandLine);
+                MinecraftServer.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Please notify author of plugin causing this execution to fix this bug! see: http://bit.ly/1oSiM6C", new Throwable());
+                Waitable wait = new Waitable() {
+                    @Override
+                    protected Object evaluate() {
+                        chat(fCommandLine, false);
+                        return null;
+                    }
+                };
+                minecraftServer.processQueue.add(wait);
+                try {
+                    wait.get();
+                    return;
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt(); // This is proper habit for java. If we aren't handling it, pass it on!
+                } catch (Exception e) {
+                    throw new RuntimeException("Exception processing chat command", e.getCause());
+                }
+            }
             this.handleCommand(s);
         } else if (this.player.getChatFlags() == EnumChatVisibility.SYSTEM) {
             // Do nothing, this is coming from a plugin
@@ -1183,8 +1204,7 @@ public class PlayerConnection implements PacketPlayInListener {
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
         Entity entity = packetplayinuseentity.a((World) worldserver);
         // Spigot Start
-        if ( entity == player )
-        {
+        if ( entity == player ) {
             disconnect( "Cannot interact with self!" );
             return;
         }
@@ -1223,6 +1243,7 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (event.isCancelled()) {
+                        this.player.updateInventory(this.player.activeContainer);
                         return;
                     }
                     // CraftBukkit end
@@ -1677,11 +1698,7 @@ public class PlayerConnection implements PacketPlayInListener {
             // CraftBukkit end
 
             if (flag1 && flag2 && flag3) {
-                if (itemstack == null) {
-                    this.player.defaultContainer.setItem(packetplayinsetcreativeslot.c(), (ItemStack) null);
-                } else {
-                    this.player.defaultContainer.setItem(packetplayinsetcreativeslot.c(), itemstack);
-                }
+                this.player.defaultContainer.setItem(packetplayinsetcreativeslot.c(), (itemstack == null ? (ItemStack) null : itemstack));
 
                 this.player.defaultContainer.a(this.player, true);
             } else if (flag && flag2 && flag3 && this.x < 200) {
@@ -1817,16 +1834,16 @@ public class PlayerConnection implements PacketPlayInListener {
             return;
         }
         // Spigot end
-        ArrayList arraylist = Lists.newArrayList();
-        Iterator iterator = this.minecraftServer.a(this.player, packetplayintabcomplete.c()).iterator();
+        List<String> list = Lists.newArrayList();
+        Iterator<String> iterator = this.minecraftServer.a(this.player, packetplayintabcomplete.c()).iterator();
 
         while (iterator.hasNext()) {
-            String s = (String) iterator.next();
+            String s = iterator.next();
 
-            arraylist.add(s);
+            list.add(s);
         }
 
-        this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete((String[]) arraylist.toArray(new String[arraylist.size()])));
+        this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete((String[]) list.toArray(new String[list.size()])));
     }
 
     public void a(PacketPlayInSettings packetplayinsettings) {
@@ -2057,7 +2074,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
     // CraftBukkit start - Add "isDisconnected" method
     public boolean isDisconnected() {
-        return !this.player.joining && !NetworkManager.a(this.networkManager).config().isAutoRead();
+        return (!this.player.joining && !this.networkManager.isConnected()) || this.processedDisconnect;
     }
     // CraftBukkit end
 }

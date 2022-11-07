@@ -215,10 +215,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         // Spigot start - protocol patch
         String temp = getHandle().listName;
         getHandle().listName = oldName;
-        PacketPlayOutPlayerInfo oldpacket = PacketPlayOutPlayerInfo.removePlayer(getHandle());
+        PacketPlayOutPlayerInfo oldpacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.REMOVE_PLAYER, getHandle());
         getHandle().listName = temp;
-        PacketPlayOutPlayerInfo packet = PacketPlayOutPlayerInfo.addPlayer(getHandle());
-        PacketPlayOutPlayerInfo newPacket = PacketPlayOutPlayerInfo.updateDisplayName(getHandle());
+        PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.ADD_PLAYER, getHandle());
+        PacketPlayOutPlayerInfo newPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.UPDATE_DISPLAY_NAME, getHandle());
         for (int i = 0; i < server.getHandle().players.size(); ++i) {
             EntityPlayer entityplayer = (EntityPlayer) server.getHandle().players.get(i);
             if (entityplayer.playerConnection == null) continue;
@@ -226,10 +226,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             if (entityplayer.getBukkitEntity().canSeeFromTab(this)) {
                 if (entityplayer.playerConnection.networkManager.getVersion() < 28)
                 {
-                    entityplayer.playerConnection.sendPacket( oldpacket );
-                    entityplayer.playerConnection.sendPacket( packet );
+                    entityplayer.playerConnection.sendPacket(oldpacket);
+                    entityplayer.playerConnection.sendPacket(packet);
                 } else {
-                    entityplayer.playerConnection.sendPacket( newPacket );
+                    entityplayer.playerConnection.sendPacket(newPacket);
                 }
             }
         }
@@ -953,7 +953,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (hideFromList && !hiddenPlayersFromTab.contains(player.getUniqueId())) {
             //remove the hidden player from this player user list
             hiddenPlayersFromTab.add(player.getUniqueId());
-            getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.removePlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch
+            getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.REMOVE_PLAYER, ((CraftPlayer) player).getHandle())); // Spigot - protocol patch
         }
 
         if (hiddenPlayers.contains(player.getUniqueId())) return;
@@ -991,7 +991,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             entry.updatePlayer(getHandle());
         }
 
-         getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch // CobelPvP - unneeded
+        getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.ADD_PLAYER, ((CraftPlayer) player).getHandle())); // Spigot - protocol patch
     }
 
     public void removeDisconnectingPlayer(Player player) {
@@ -1002,6 +1002,30 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     public boolean canSee(Player player) {
         return !hiddenPlayers.contains(player.getUniqueId());
+    }
+
+    // DO NOT OVERRIDE!
+    public boolean canSeeEntity(final org.bukkit.entity.Entity entity) {
+        final net.minecraft.server.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+        if (nmsEntity instanceof EntityProjectile) {
+            final EntityProjectile entityProjectile = (EntityProjectile) nmsEntity;
+            if (entityProjectile.getShooter() instanceof EntityPlayer) {
+                return this.canSee(((EntityPlayer) entityProjectile.getShooter()).getBukkitEntity());
+            }
+        }
+        if (nmsEntity instanceof EntityItem) {
+            final EntityItem entityItem = (EntityItem) nmsEntity;
+            if (entityItem.owner instanceof EntityPlayer) {
+                return this.canSee(((EntityPlayer) entityItem.owner).getBukkitEntity());
+            }
+        }
+        if (nmsEntity instanceof EntityArrow) {
+            final EntityArrow entityProjectile = (EntityArrow) nmsEntity;
+            if (entityProjectile.shooter instanceof EntityPlayer) {
+                return this.canSee(((EntityPlayer) entityProjectile.shooter).getBukkitEntity());
+            }
+        }
+        return !(entity instanceof Player) || this.canSee((Player) entity);
     }
 
     public boolean canSeeFromTab(Player player) { return !hiddenPlayersFromTab.contains(player.getUniqueId()); }

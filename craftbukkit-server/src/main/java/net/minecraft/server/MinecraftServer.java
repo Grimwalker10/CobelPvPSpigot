@@ -240,12 +240,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
             if (j == 0) {
                 IDataManager idatamanager = new ServerNBTManager(server.getWorldContainer(), s1, true);
-                if (this.R()) {
-                    world = new DemoWorldServer(this, idatamanager, s1, dimension, this.methodProfiler);
-                } else {
-                    // world =, b0 to dimension, added Environment and gen
-                    world = new WorldServer(this, idatamanager, s1, dimension, worldsettings, this.methodProfiler, Environment.getEnvironment(dimension), gen);
-                }
+                world = (this.R() ? new DemoWorldServer(this, idatamanager, s1, dimension, this.methodProfiler) : new WorldServer(this, idatamanager, s1, dimension, worldsettings, this.methodProfiler, Environment.getEnvironment(dimension), gen));
                 this.server.scoreboardManager = new org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager(this, world.getScoreboard());
             } else {
                 String dim = "DIM" + dimension;
@@ -857,7 +852,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.methodProfiler.a("tracker");
                 worldserver.timings.tracker.startTiming(); // Spigot
                 PRE_ENTITY_TRACKER_RUNNABLE_LIST.forEach(Runnable::run);
-                worldserver.getTracker().updatePlayers();
+                if (u.players.size() > 0) worldserver.getTracker().updatePlayers();
                 POST_ENTITY_TRACKER_RUNNABLE_LIST.forEach(Runnable::run);
                 worldserver.timings.tracker.stopTiming(); // Spigot
                 this.methodProfiler.b();
@@ -1151,7 +1146,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public List a(ICommandListener icommandlistener, String s) {
         // CraftBukkit start - Allow tab-completion of Bukkit commands
         /*
-        ArrayList arraylist = new ArrayList();
+        List arraylist = new ArrayList();
 
         if (s.startsWith("/")) {
             s = s.substring(1);
@@ -1164,11 +1159,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 while (iterator.hasNext()) {
                     String s1 = (String) iterator.next();
 
-                    if (flag) {
-                        arraylist.add("/" + s1);
-                    } else {
-                        arraylist.add(s1);
-                    }
+                    arraylist.add((flag ? "/" : "") + s1);
                 }
             }
 

@@ -457,11 +457,6 @@ public class SpigotConfig
         instantRespawn = getBoolean("settings.instantRespawn", false);
     }
 
-    // CobelPvP start
-    private static void noTrackCommand() {
-        commands.put( "notrack", new NoTrackCommand( "notrack" ) );
-    }
-
     public static boolean disableTracking;
     private static void disableTracking() {
         disableTracking = getBoolean("settings.disable.entityTracking", false);

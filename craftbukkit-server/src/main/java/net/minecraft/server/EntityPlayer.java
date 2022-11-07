@@ -33,6 +33,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public double e;
     public final List chunkCoordIntPairQueue = new LinkedList();
     public final Set<ChunkCoordIntPair> paddingChunks = new HashSet<ChunkCoordIntPair>();
+    public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public
     private final ServerStatisticManager bO;
     private float bP = Float.MIN_VALUE;
     private float bQ = -1.0E8F;
@@ -122,11 +123,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         super.a(nbttagcompound);
         if (this.locY > 300) this.locY = 255;
         if (nbttagcompound.hasKeyOfType("playerGameType", 99)) {
-            if (MinecraftServer.getServer().getForceGamemode()) {
-                this.playerInteractManager.setGameMode(MinecraftServer.getServer().getGamemode());
-            } else {
-                this.playerInteractManager.setGameMode(EnumGamemode.getById(nbttagcompound.getInt("playerGameType")));
-            }
+            this.playerInteractManager.setGameMode((MinecraftServer.getServer().getForceGamemode() ? MinecraftServer.getServer().getGamemode() : EnumGamemode.getById(nbttagcompound.getInt("playerGameType"))));
         }
         this.getBukkitEntity().readExtraData(nbttagcompound); // CraftBukkit
     }
@@ -419,11 +416,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         String deathMessage = event.getDeathMessage();
 
         if (deathMessage != null && deathMessage.length() > 0) {
-            if (deathMessage.equals(deathmessage)) {
-                this.server.getPlayerList().sendMessage(chatmessage);
-            } else {
-                this.server.getPlayerList().sendMessage(org.bukkit.craftbukkit.util.CraftChatMessage.fromString(deathMessage));
-            }
+            this.server.getPlayerList().sendMessage((deathMessage.equals(deathmessage) ? new IChatBaseComponent[]{chatmessage} : org.bukkit.craftbukkit.util.CraftChatMessage.fromString(deathMessage)));
         }
 
         // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
@@ -1164,7 +1157,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void d(Entity entity) {
-        this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[] { entity.getId() })); // CobelPvP
+        if (entity instanceof EntityHuman) {
+            this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(entity.getId()));
+        } else {
+            this.removeQueue.add(entity.getId());
+        }
     }
 
     public long x() {

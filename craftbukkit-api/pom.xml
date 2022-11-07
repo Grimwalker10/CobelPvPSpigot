@@ -135,6 +135,7 @@
             <version>1.16.10</version>
             <scope>compile</scope>
         </dependency>
+        <!--<dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -147,5 +148,6 @@
             <version>1.3</version>
             <scope>test</scope>
         </dependency>
+        </dependency>-->
     </dependencies>
 </project>

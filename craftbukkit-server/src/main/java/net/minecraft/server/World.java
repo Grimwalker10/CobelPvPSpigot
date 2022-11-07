@@ -9,23 +9,15 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-
-// PaperSpigot start
 import java.util.HashMap;
 import java.util.Map;
-
 import com.cobelpvp.generator.GeneratorConfig;
-// PaperSpigot end
-
-// CraftBukkit start
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.generator.ChunkGenerator;
-
 import com.google.common.base.Function;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -34,16 +26,12 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
-// CraftBukkit end
-
-// CobelPvP start
 import net.minecraft.optimizations.LightingUpdater;
 import net.minecraft.optimizations.PlayerMap;
 import net.minecraft.optimizations.WeakChunkCache;
 import net.minecraft.optimizations.ThreadingManager;
 import net.minecraft.optimizations.ThreadingManager.TaskQueueWorker;
 import com.cobelpvp.autosave.AutoSaveWorldData;
-// CobelPvP end
 
 public abstract class World implements IBlockAccess {
 
@@ -118,7 +106,7 @@ public abstract class World implements IBlockAccess {
     public boolean populating;
     private int tickPosition;
     // CraftBukkit end
-    private ArrayList L;
+    private List<AxisAlignedBB> L;
     private boolean M;
     int[] I;
 
@@ -273,7 +261,7 @@ public abstract class World implements IBlockAccess {
         this.K = this.random.nextInt(12000);
         this.allowMonsters = true;
         this.allowAnimals = true;
-        this.L = new ArrayList();
+        this.L = new ArrayList<>();
         this.I = new int['\u8000'];
         this.dataManager = idatamanager;
         this.methodProfiler = methodprofiler;
@@ -1354,7 +1342,7 @@ public abstract class World implements IBlockAccess {
         this.u.add(iworldaccess);
     }
 
-    public List getCubes(Entity entity, AxisAlignedBB axisalignedbb) {
+    public List<AxisAlignedBB> getCubes(Entity entity, AxisAlignedBB axisalignedbb) {
         this.L.clear();
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
@@ -1364,7 +1352,7 @@ public abstract class World implements IBlockAccess {
         int j1 = MathHelper.floor(axisalignedbb.f + 1.0D);
 
         // Spigot start
-        int ystart = ( ( k - 1 ) < 0 ) ? 0 : ( k - 1 );
+        int ystart = Math.max((k - 1), 0);
         for ( int chunkx = ( i >> 4 ); chunkx <= ( ( j - 1 ) >> 4 ); chunkx++ )
         {
             int cx = chunkx << 4;
@@ -1378,10 +1366,10 @@ public abstract class World implements IBlockAccess {
                 int cz = chunkz << 4;
                 Chunk chunk = this.getChunkAt( chunkx, chunkz );
                 // Compute ranges within chunk
-                int xstart = ( i < cx ) ? cx : i;
-                int xend = ( j < ( cx + 16 ) ) ? j : ( cx + 16 );
-                int zstart = ( i1 < cz ) ? cz : i1;
-                int zend = ( j1 < ( cz + 16 ) ) ? j1 : ( cz + 16 );
+                int xstart = Math.max(i, cx);
+                int xend = Math.min(j, (cx + 16));
+                int zstart = Math.max(i1, cz);
+                int zend = Math.min(j1, (cz + 16));
                 // Loop through blocks within chunk
                 for ( int x = xstart; x < xend; x++ )
                 {
@@ -1412,14 +1400,14 @@ public abstract class World implements IBlockAccess {
         /*double d0 = 0.25D;
         List list = this.getEntities(entity, axisalignedbb.grow(d0, d0, d0));
 
-        for (int j2 = 0; j2 < list.size(); ++j2) {
-            AxisAlignedBB axisalignedbb1 = ((Entity) list.get(j2)).J();
+        for (Object value : list) {
+            AxisAlignedBB axisalignedbb1 = ((Entity) value).J();
 
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
                 this.L.add(axisalignedbb1);
             }
 
-            axisalignedbb1 = entity.h((Entity) list.get(j2));
+            axisalignedbb1 = entity.h((Entity) value);
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
                 this.L.add(axisalignedbb1);
             }
@@ -1819,11 +1807,10 @@ public abstract class World implements IBlockAccess {
                     this.getChunkAt(entity.ah, entity.aj).a(entity, entity.ai);
                 }
 
-                if (this.isChunkLoaded(k, i1)) {
-                    entity.ag = true;
+                final boolean loaded = entity.ag = this.isChunkLoaded(k, i1);
+
+                if (loaded) {
                     this.getChunkAt(k, i1).a(entity);
-                } else {
-                    entity.ag = false;
                 }
             }
 

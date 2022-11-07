@@ -280,6 +280,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <!--<plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -292,6 +293,7 @@
                     </excludes>
                 </configuration>
             </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>net.md-5</groupId>
                 <artifactId>specialsource-maven-plugin</artifactId>

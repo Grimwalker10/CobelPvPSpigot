@@ -180,13 +180,13 @@ public class EntityArrow extends Entity implements IProjectile {
             }
 
             Entity entity = null;
-            List list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
+            List<Entity> list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
             double d0 = 0.0D;
 
             int j;
             float f1;
 
-            Iterator<Entity> iterator = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D)).iterator();
+            Iterator<Entity> iterator = list.iterator();
 
             while (iterator.hasNext()){
                 Entity entity1 = iterator.next();
@@ -409,6 +409,7 @@ public class EntityArrow extends Entity implements IProjectile {
             ItemStack itemstack = new ItemStack(Items.ARROW);
             if (this.fromPlayer == 1 && entityhuman.inventory.canHold(itemstack) > 0) {
                 EntityItem item = new EntityItem(this.world, this.locX, this.locY, this.locZ, itemstack);
+                item.owner = shooter;
 
                 PlayerPickupItemEvent event = new PlayerPickupItemEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), new org.bukkit.craftbukkit.entity.CraftItem(this.world.getServer(), this, item), 0);
                 // event.setCancelled(!entityhuman.canPickUpLoot); TODO

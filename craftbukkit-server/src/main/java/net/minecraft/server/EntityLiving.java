@@ -12,16 +12,10 @@ import org.bukkit.event.entity.PotionEffectAddEvent;
 import org.bukkit.event.entity.PotionEffectExpireEvent;
 import org.bukkit.event.entity.PotionEffectExtendEvent;
 import org.bukkit.event.entity.PotionEffectRemoveEvent;
-import java.util.concurrent.ConcurrentHashMap;
 import org.spigotmc.ActivationRange;
 import org.spigotmc.SpigotConfig;
-
 import com.google.common.base.Function;
-
 import java.util.*;
-
-// CraftBukkit start
-// CraftBukkit end
 
 public abstract class EntityLiving extends Entity {
     private static final UUID b = UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D");

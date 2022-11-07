@@ -417,13 +417,9 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         }
 
         this.i((float) attributeinstance.getValue());
-        float f = MathHelper.sqrt(this.motX * this.motX + this.motZ * this.motZ);
+        float f = Math.min(MathHelper.sqrt(this.motX * this.motX + this.motZ * this.motZ), 0.1F);
         // CraftBukkit - Math -> TrigMath
         float f1 = (float) org.bukkit.craftbukkit.TrigMath.atan(-this.motY * 0.20000000298023224D) * 15.0F;
-
-        if (f > 0.1F) {
-            f = 0.1F;
-        }
 
         if (!this.onGround || this.getHealth() <= 0.0F) {
             f = 0.0F;
@@ -971,9 +967,9 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
 
                     // Kohi start
                     // Save the victim's velocity before they are potentially knocked back
-                    double victimMotX = entity.motX;
-                    double victimMotY = entity.motY;
-                    double victimMotZ = entity.motZ;
+                    final double victimMotX = entity.motX;
+                    final double victimMotY = entity.motY;
+                    final double victimMotZ = entity.motZ;
                     // Kohi end
 
                     final boolean flag2 = entity.damageEntity(DamageSource.playerAttack(this), f);
@@ -1565,7 +1561,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     }
 
     public boolean a(int i, int j, int k, int l, ItemStack itemstack) {
-        return this.abilities.mayBuild ? true : (itemstack != null ? itemstack.z() : false);
+        return this.abilities.mayBuild || (itemstack != null && itemstack.z());
     }
 
     protected int getExpValue(EntityHuman entityhuman) {

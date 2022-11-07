@@ -6,96 +6,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import com.google.common.collect.MapMaker;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.minecraft.server.ChunkCoordinates;
-import net.minecraft.server.CommandAchievement;
-import net.minecraft.server.CommandBan;
-import net.minecraft.server.CommandBanIp;
-import net.minecraft.server.CommandBanList;
-import net.minecraft.server.CommandClear;
-import net.minecraft.server.CommandDeop;
-import net.minecraft.server.CommandDifficulty;
-import net.minecraft.server.CommandEffect;
-import net.minecraft.server.CommandEnchant;
-import net.minecraft.server.CommandGamemode;
-import net.minecraft.server.CommandGamemodeDefault;
-import net.minecraft.server.CommandGamerule;
-import net.minecraft.server.CommandGive;
-import net.minecraft.server.CommandHelp;
-import net.minecraft.server.CommandIdleTimeout;
-import net.minecraft.server.CommandKick;
-import net.minecraft.server.CommandKill;
-import net.minecraft.server.CommandList;
-import net.minecraft.server.CommandMe;
-import net.minecraft.server.CommandNetstat;
-import net.minecraft.server.CommandOp;
-import net.minecraft.server.CommandPardon;
-import net.minecraft.server.CommandPardonIP;
-import net.minecraft.server.CommandPlaySound;
-import net.minecraft.server.CommandSay;
-import net.minecraft.server.CommandScoreboard;
-import net.minecraft.server.CommandSeed;
-import net.minecraft.server.CommandSetBlock;
-import net.minecraft.server.CommandSetWorldSpawn;
-import net.minecraft.server.CommandSpawnpoint;
-import net.minecraft.server.CommandSpreadPlayers;
-import net.minecraft.server.CommandSummon;
-import net.minecraft.server.CommandTell;
-import net.minecraft.server.CommandTellRaw;
-import net.minecraft.server.CommandTestFor;
-import net.minecraft.server.CommandTestForBlock;
-import net.minecraft.server.CommandTime;
-import net.minecraft.server.CommandToggleDownfall;
-import net.minecraft.server.CommandTp;
-import net.minecraft.server.CommandWeather;
-import net.minecraft.server.CommandWhitelist;
-import net.minecraft.server.CommandXp;
-import net.minecraft.server.Convertable;
-import net.minecraft.server.ConvertProgressUpdater;
-import net.minecraft.server.CraftingManager;
-import net.minecraft.server.DedicatedPlayerList;
-import net.minecraft.server.DedicatedServer;
-import net.minecraft.server.Enchantment;
-import net.minecraft.server.EntityPlayer;
-import net.minecraft.server.EntityTracker;
-import net.minecraft.server.EnumDifficulty;
-import net.minecraft.server.EnumGamemode;
-import net.minecraft.server.ExceptionWorldConflict;
-import net.minecraft.server.Items;
-import net.minecraft.server.JsonListEntry;
-import net.minecraft.server.PlayerList;
-import net.minecraft.server.RecipesFurnace;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.MobEffectList;
-import net.minecraft.server.PropertyManager;
-import net.minecraft.server.ServerCommand;
-import net.minecraft.server.RegionFile;
-import net.minecraft.server.RegionFileCache;
-import net.minecraft.server.ServerNBTManager;
-import net.minecraft.server.WorldLoaderServer;
-import net.minecraft.server.WorldManager;
-import net.minecraft.server.WorldMap;
-import net.minecraft.server.PersistentCollection;
-import net.minecraft.server.WorldNBTStorage;
-import net.minecraft.server.WorldServer;
-import net.minecraft.server.WorldSettings;
-import net.minecraft.server.WorldType;
+import net.minecraft.server.*;
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 import net.minecraft.util.io.netty.buffer.ByteBuf;
@@ -546,18 +464,8 @@ public final class CraftServer implements Server {
         }
         // PaperSpigot end
         String lowerName = name.toLowerCase();
-        int delta = Integer.MAX_VALUE;
-        for (Player player : getOnlinePlayers()) {
-            if (player.getName().toLowerCase().startsWith(lowerName)) {
-                int curDelta = player.getName().length() - lowerName.length();
-                if (curDelta < delta) {
-                    found = player;
-                    delta = curDelta;
-                }
-                if (curDelta == 0) break;
-            }
-        }
-        return found;
+        List<CraftPlayer> list = getOnlinePlayers();
+        return list.stream().filter(craftPlayer -> craftPlayer.getName().toLowerCase().startsWith(lowerName)).findFirst().orElse(null);
     }
 
     @Override
@@ -571,8 +479,8 @@ public final class CraftServer implements Server {
 
     @Override
     public Player getPlayer(UUID id) {
-        EntityPlayer player = playerList.uuidMap.get(id);
-        return player != null ? player.getBukkitEntity() : null;
+        List<CraftPlayer> list = getOnlinePlayers();
+        return list.stream().filter(craftPlayer -> craftPlayer.getUniqueId().equals(id)).findFirst().orElse(null);
     }
 
     @Override
@@ -590,7 +498,6 @@ public final class CraftServer implements Server {
         Validate.notNull(partialName, "PartialName cannot be null");
 
         List<Player> matchedPlayers = new ArrayList<Player>();
-
         for (Player iterPlayer : this.getOnlinePlayers()) {
             String iterPlayerName = iterPlayer.getName();
 
@@ -782,6 +689,27 @@ public final class CraftServer implements Server {
         Validate.notNull(sender, "Sender cannot be null");
         Validate.notNull(commandLine, "CommandLine cannot be null");
 
+        if (!org.spigotmc.AsyncCatcher.shuttingDown && !Bukkit.isPrimaryThread()) {
+            final CommandSender fSender = sender;
+            final String fCommandLine = commandLine;
+            Bukkit.getLogger().log(Level.SEVERE, "Command Dispatched Async: " + commandLine);
+            Bukkit.getLogger().log(Level.SEVERE, "Please notify author of plugin causing this execution to fix this bug! see: http://bit.ly/1oSiM6C", new Throwable());
+            org.bukkit.craftbukkit.util.Waitable<Boolean> wait = new org.bukkit.craftbukkit.util.Waitable<Boolean>() {
+                @Override
+                protected Boolean evaluate() {
+                    return dispatchCommand(fSender, fCommandLine);
+                }
+            };
+            net.minecraft.server.MinecraftServer.getServer().processQueue.add(wait);
+            try {
+                return wait.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // This is proper habit for java. If we aren't handling it, pass it on!
+            } catch (Exception e) {
+                throw new RuntimeException("Exception processing dispatch command", e.getCause());
+            }
+        }
+
         if (commandMap.dispatch(sender, commandLine)) {
             return true;
         }
@@ -835,17 +763,8 @@ public final class CraftServer implements Server {
         for (WorldServer world : console.worlds) {
             world.difficulty = difficulty;
             world.setSpawnFlags(monsters, animals);
-            if (this.getTicksPerAnimalSpawns() < 0) {
-                world.ticksPerAnimalSpawns = 400;
-            } else {
-                world.ticksPerAnimalSpawns = this.getTicksPerAnimalSpawns();
-            }
-
-            if (this.getTicksPerMonsterSpawns() < 0) {
-                world.ticksPerMonsterSpawns = 1;
-            } else {
-                world.ticksPerMonsterSpawns = this.getTicksPerMonsterSpawns();
-            }
+            world.ticksPerAnimalSpawns = (this.getTicksPerAnimalSpawns() < 0 ? 400 : this.getTicksPerAnimalSpawns());
+            world.ticksPerMonsterSpawns = (this.getTicksPerMonsterSpawns() < 0 ? 1 : this.getTicksPerMonsterSpawns());
             world.spigotConfig.init(); // Spigot
             world.paperSpigotConfig.init(); // PaperSpigot
         }
@@ -1099,6 +1018,19 @@ public final class CraftServer implements Server {
             } catch (ExceptionWorldConflict ex) {
                 getLogger().log(Level.SEVERE, null, ex);
             }
+        } else {
+            ChunkProviderServer chunkProviderServer = handle.chunkProviderServer;
+
+            ChunkRegionLoader regionLoader = (ChunkRegionLoader) chunkProviderServer.f;
+
+            regionLoader.b.clear();
+            regionLoader.c.clear();
+
+            FileIOThread.a.run();
+
+            chunkProviderServer.f = null;
+            chunkProviderServer.chunkProvider = null;
+            chunkProviderServer.chunks.clear();
         }
 
         worlds.remove(world.getName().toLowerCase());
@@ -1144,12 +1076,8 @@ public final class CraftServer implements Server {
 
     @Override
     public World getWorld(UUID uid) {
-        for (World world : worlds.values()) {
-            if (world.getUID().equals(uid)) {
-                return world;
-            }
-        }
-        return null;
+        Collection<World> worlds = this.worlds.values();
+        return worlds.stream().filter(world -> world.getUID().equals(uid)).findFirst().orElse(null);
     }
 
     public void addWorld(World world) {
@@ -1176,9 +1104,8 @@ public final class CraftServer implements Server {
 
         if (command instanceof PluginCommand) {
             return (PluginCommand) command;
-        } else {
-            return null;
         }
+        return null;
     }
 
     @Override
@@ -1415,18 +1342,11 @@ public final class CraftServer implements Server {
             // Spigot Start
             GameProfile profile = null;
             // Only fetch an online UUID in online mode
-            if ( MinecraftServer.getServer().getOnlineMode() || org.spigotmc.SpigotConfig.bungee )
-            {
+            if ( MinecraftServer.getServer().getOnlineMode() || org.spigotmc.SpigotConfig.bungee ) {
                 profile = MinecraftServer.getServer().getUserCache().getProfile( name );
             }
             // Spigot end
-            if (profile == null) {
-                // Make an OfflinePlayer using an offline mode UUID since the name has no profile
-                result = getOfflinePlayer(new GameProfile(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8)), name));
-            } else {
-                // Use the GameProfile even when we get a UUID so we ensure we still have a name
-                result = getOfflinePlayer(profile);
-            }
+            result = (profile == null ? getOfflinePlayer(new GameProfile(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8)), name)) : getOfflinePlayer(profile));
         } else {
             offlinePlayers.remove(result.getUniqueId());
         }
@@ -1579,11 +1499,7 @@ public final class CraftServer implements Server {
                 String oldName = entityPlayer.listName;
                 int spaceLeft = 16 - oldName.length();
 
-                if (spaceLeft <= 1) { // We also hit the list name length limit!
-                    entityPlayer.listName = oldName.subSequence(0, oldName.length() - 2 - spaceLeft) + String.valueOf(System.currentTimeMillis() % 99);
-                } else {
-                    entityPlayer.listName = oldName + String.valueOf(System.currentTimeMillis() % 99);
-                }
+                entityPlayer.listName = (spaceLeft <= 1 ? oldName.subSequence(0, oldName.length() - 2 - spaceLeft) + String.valueOf(System.currentTimeMillis() % 99) : oldName + String.valueOf(System.currentTimeMillis() % 99));
 
                 return;
             }
