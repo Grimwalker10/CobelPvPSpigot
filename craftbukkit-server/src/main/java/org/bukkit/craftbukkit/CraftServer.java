@@ -717,9 +717,8 @@ public final class CraftServer implements Server {
         // Spigot Start - Automatically set connection throttle for bungee configurations
         if (org.spigotmc.SpigotConfig.bungee) {
             return -1;
-        } else {
-            return this.configuration.getInt("settings.connection-throttle");
         }
+        return this.configuration.getInt("settings.connection-throttle");
         // Spigot End
     }
 
@@ -1273,13 +1272,8 @@ public final class CraftServer implements Server {
 
         if (section != null) {
             for (String key : section.getKeys(false)) {
-                List<String> commands;
 
-                if (section.isList(key)) {
-                    commands = section.getStringList(key);
-                } else {
-                    commands = ImmutableList.of(section.getString(key));
-                }
+                List<String> commands = (section.isList(key) ? section.getStringList(key) : ImmutableList.of(section.getString(key)));
 
                 result.put(key, commands.toArray(new String[commands.size()]));
             }
@@ -1745,7 +1739,7 @@ public final class CraftServer implements Server {
 
     public List<String> tabCompleteCommand(Player player, String message) {
         // Spigot Start
-		if ( (org.spigotmc.SpigotConfig.tabComplete < 0 || message.length() <= org.spigotmc.SpigotConfig.tabComplete) && !message.contains( " " ) )
+        if ( (org.spigotmc.SpigotConfig.tabComplete < 0 || message.length() <= org.spigotmc.SpigotConfig.tabComplete) && !message.contains( " " ) )
         {
             return ImmutableList.of();
         }

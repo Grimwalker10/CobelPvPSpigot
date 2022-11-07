@@ -60,11 +60,7 @@ public class EntityZombie extends EntityMonster {
     }
 
     public int aV() {
-        int i = super.aV() + 2;
-
-        if (i > 20) {
-            i = 20;
-        }
+        int i = Math.min(super.aV() + 2, 20);
 
         return i;
     }
@@ -194,11 +190,7 @@ public class EntityZombie extends EntityMonster {
                             // CraftBukkit start - call EntityTargetEvent
                             org.bukkit.event.entity.EntityTargetLivingEntityEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityTargetLivingEvent(entityzombie, entityliving, EntityTargetEvent.TargetReason.REINFORCEMENT_TARGET);
                             if (!event.isCancelled()) {
-                                if (event.getTarget() == null) {
-                                    entityzombie.setGoalTarget(null);
-                                } else {
-                                    entityzombie.setGoalTarget(((org.bukkit.craftbukkit.entity.CraftLivingEntity) event.getTarget()).getHandle());
-                                }
+                                entityzombie.setGoalTarget((event.getTarget() == null ? null : ((org.bukkit.craftbukkit.entity.CraftLivingEntity) event.getTarget()).getHandle()));
                             }
                             // CraftBukkit end
                             entityzombie.prepare((GroupDataEntity) null);
@@ -298,11 +290,7 @@ public class EntityZombie extends EntityMonster {
         if (this.random.nextFloat() < (this.world.difficulty == EnumDifficulty.HARD ? 0.05F : 0.01F)) {
             int i = this.random.nextInt(3);
 
-            if (i == 0) {
-                this.setEquipment(0, new ItemStack(Items.IRON_SWORD));
-            } else {
-                this.setEquipment(0, new ItemStack(Items.IRON_SPADE));
-            }
+            this.setEquipment(0, new ItemStack((i == 0 ? Items.IRON_SWORD : Items.IRON_SPADE)));
         }
     }
 

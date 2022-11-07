@@ -1,8 +1,8 @@
 package net.minecraft.server;
 
+import java.util.Iterator;
 import java.util.List;
-
-import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 public abstract class EntityFireball extends Entity {
 
@@ -104,8 +104,9 @@ public abstract class EntityFireball extends Entity {
             List list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
             double d0 = 0.0D;
 
-            for (int i = 0; i < list.size(); ++i) {
-                Entity entity1 = (Entity) list.get(i);
+            Iterator<Entity> iterator = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D)).iterator();
+            while (iterator.hasNext()){
+                Entity entity1 = iterator.next();
 
                 if (entity1.R() && (!entity1.i(this.shooter) || this.au >= 25)) {
                     float f = 0.3F;

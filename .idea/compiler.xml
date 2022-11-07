@@ -18,7 +18,7 @@
       <module name="craftbukkit" target="1.8" />
       <module name="CraftBukkit-1.7" target="1.5" />
       <module name="craftbukkit-api" target="1.8" />
-      <module name="craftbukkit-server" target="8" />
+      <module name="craftbukkit-server" target="1.8" />
       <module name="spigot-api" target="1.8" />
       <module name="spigot-server" target="1.8" />
     </bytecodeTargetLevel>
