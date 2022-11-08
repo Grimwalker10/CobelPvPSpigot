@@ -688,7 +688,7 @@ public abstract class EntityLiving extends Entity {
             return;
         }
         // CraftBukkit end
-        this.datawatcher.watch(6, MathHelper.limit(f, 0.0F, this.getMaxHealth()));
+        this.datawatcher.watch(6, Float.valueOf(MathHelper.a(f, 0.0F, this.getMaxHealth())));
     }
 
     public boolean damageEntity(DamageSource damagesource, float f) {
@@ -877,7 +877,7 @@ public abstract class EntityLiving extends Entity {
 
                 // CraftBukkit start - Call death event
                 CraftEventFactory.callEntityDeathEvent(this, this.drops, exp); // Kohi - Specify the exp to drop
-                this.drops.clear();
+                this.drops = null;
             } else {
                 CraftEventFactory.callEntityDeathEvent(this);
                 // CraftBukkit end
@@ -885,7 +885,6 @@ public abstract class EntityLiving extends Entity {
         }
 
         this.world.broadcastEntityEffect(this, (byte) 3);
-        effects.clear();
     }
 
     protected void dropEquipment(boolean flag, int i) {
@@ -1063,7 +1062,7 @@ public abstract class EntityLiving extends Entity {
                 @Override
                 public Double apply(Double f) {
                     if (human) {
-                        if (!damagesource.ignoresArmor() && f > 0.0F) {
+                        if (!damagesource.ignoresArmor() && ((EntityHuman) EntityLiving.this).isBlocking() && f > 0.0F) {
                             return -(f - ((1.0F + f) * 0.5F));
                         }
                     }

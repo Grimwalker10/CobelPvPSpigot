@@ -78,7 +78,7 @@ public abstract class World implements IBlockAccess {
     public Set tileEntityList = new org.spigotmc.WorldTileEntityList(this); // CraftBukkit - ArrayList -> HashSet
     private List a = new ArrayList();
     private List b = new ArrayList();
-    public List<EntityPlayer> players = new ArrayList<EntityPlayer>();
+    public List players = new ArrayList();
     public List i = new ArrayList();
     private long c = 16777215L;
     public int j;
@@ -515,7 +515,7 @@ public abstract class World implements IBlockAccess {
     public void notifyAndUpdatePhysics(int i, int j, int k, Chunk chunk, Block oldBlock, Block newBlock, int flag)
     {
         // should be isReady()
-        if ((flag & 2) != 0 && (!this.isStatic || (flag & 4) == 0) && (chunk == null || chunk.isReady())) { // allow chunk to be null here as chunk.isReady() is false when we send our notification during block placement
+        if ((flag & 2) != 0 && (chunk == null || chunk.isReady())) { // allow chunk to be null here as chunk.isReady() is false when we send our notification during block placement
             this.notify(i, j, k);
         }
 
@@ -676,7 +676,6 @@ public abstract class World implements IBlockAccess {
     }
 
     public void applyPhysics(int i, int j, int k, Block block) {
-        if (captureBlockStates) return;
         this.e(i - 1, j, k, block);
         this.e(i + 1, j, k, block);
         this.e(i, j - 1, k, block);
@@ -1257,11 +1256,11 @@ public abstract class World implements IBlockAccess {
             entity.dead = true; // CraftBukkit
             return false;
         } else {
-            if (entity instanceof EntityPlayer) {
-                EntityPlayer entityPlayer = (EntityPlayer) entity;
+            if (entity instanceof EntityHuman) {
+                EntityHuman entityhuman = (EntityHuman) entity;
 
-                this.players.add(entityPlayer);
-                this.playerMap.add((EntityPlayer) entityPlayer); // CobelPvP
+                this.players.add(entityhuman);
+                this.playerMap.add((EntityPlayer) entityhuman); // CobelPvP 
                 this.everyoneSleeping();
                 this.b(entity);
             }
@@ -2356,7 +2355,7 @@ public abstract class World implements IBlockAccess {
                     this.p = (float) ((double) this.p - 0.01D);
                 }
 
-                this.p = MathHelper.limit(this.p, 0.0F, 1.0F);
+                this.p = MathHelper.a(this.p, 0.0F, 1.0F);
                 int j = this.worldData.getWeatherDuration();
 
                 if (j <= 0) {
@@ -2387,7 +2386,7 @@ public abstract class World implements IBlockAccess {
                     this.n = (float) ((double) this.n - 0.01D);
                 }
 
-                this.n = MathHelper.limit(this.n, 0.0F, 1.0F);
+                this.n = MathHelper.a(this.n, 0.0F, 1.0F);
             }
         }
     }
@@ -2422,7 +2421,7 @@ public abstract class World implements IBlockAccess {
         Chunk chunkObj = null; // CobelPvP
 
         for (i = 0; i < this.players.size(); ++i) {
-            entityhuman = this.players.get(i);
+            entityhuman = (EntityHuman) this.players.get(i);
             j = MathHelper.floor(entityhuman.locX / 16.0D);
             k = MathHelper.floor(entityhuman.locZ / 16.0D);
             l = this.p();
@@ -2454,7 +2453,7 @@ public abstract class World implements IBlockAccess {
         this.methodProfiler.a("playerCheckLight");
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
             i = this.random.nextInt(this.players.size());
-            entityhuman = this.players.get(i);
+            entityhuman = (EntityHuman) this.players.get(i);
             j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
             k = MathHelper.floor(entityhuman.locY) + this.random.nextInt(11) - 5;
             l = MathHelper.floor(entityhuman.locZ) + this.random.nextInt(11) - 5;
@@ -2805,12 +2804,12 @@ public abstract class World implements IBlockAccess {
         return null;
     }
 
-    public List<Entity> getEntities(Entity entity, AxisAlignedBB axisalignedbb) {
+    public List getEntities(Entity entity, AxisAlignedBB axisalignedbb) {
         return this.getEntities(entity, axisalignedbb, (IEntitySelector) null);
     }
 
-    public List<Entity> getEntities(Entity entity, AxisAlignedBB axisalignedbb, IEntitySelector ientityselector) {
-        List<Entity> list = new ArrayList<Entity>();
+    public List getEntities(Entity entity, AxisAlignedBB axisalignedbb, IEntitySelector ientityselector) {
+        ArrayList arraylist = new ArrayList();
         int i = MathHelper.floor((axisalignedbb.a - 2.0D) / 16.0D);
         int j = MathHelper.floor((axisalignedbb.d + 2.0D) / 16.0D);
         int k = MathHelper.floor((axisalignedbb.c - 2.0D) / 16.0D);
@@ -2819,12 +2818,12 @@ public abstract class World implements IBlockAccess {
         for (int i1 = i; i1 <= j; ++i1) {
             for (int j1 = k; j1 <= l; ++j1) {
                 if (this.isChunkLoaded(i1, j1)) {
-                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, list, ientityselector);
+                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, arraylist, ientityselector);
                 }
             }
         }
 
-        return list;
+        return arraylist;
     }
 
     public List a(Class oclass, AxisAlignedBB axisalignedbb) {
@@ -3157,7 +3156,7 @@ public abstract class World implements IBlockAccess {
         EntityHuman entityHuman = null;
 
         for (int i = 0; i < this.players.size(); ++i) {
-            EntityHuman nearestPlayer = this.players.get(i);
+            EntityHuman nearestPlayer = (EntityHuman) this.players.get(i);
 
             if (nearestPlayer == null || nearestPlayer.dead || !nearestPlayer.affectsSpawning) {
                 continue;
@@ -3432,7 +3431,7 @@ public abstract class World implements IBlockAccess {
         if (this.isLoaded(i, j, k)) {
             float f1 = this.y();
 
-            f += MathHelper.limit((float) this.getChunkAtWorldCoords(i, k).s / 3600000.0F, 0.0F, 1.0F) * (flag ? 1.0F : 0.75F);
+            f += MathHelper.a((float) this.getChunkAtWorldCoords(i, k).s / 3600000.0F, 0.0F, 1.0F) * (flag ? 1.0F : 0.75F);
             f += f1 * 0.25F;
         }
 
@@ -3440,7 +3439,7 @@ public abstract class World implements IBlockAccess {
             f *= (float) this.difficulty.a() / 2.0F;
         }
 
-        return MathHelper.limit(f, 0.0F, flag ? 1.5F : 1.0F);
+        return MathHelper.a(f, 0.0F, flag ? 1.5F : 1.0F);
     }
 
     public void X() {

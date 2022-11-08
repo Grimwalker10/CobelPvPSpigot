@@ -1,7 +1,7 @@
 package net.minecraft.server;
 
 import java.util.ArrayList;
-import net.minecraft.util.io.netty.util.internal.ConcurrentSet;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
@@ -10,7 +10,7 @@ import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
 public class BlockRedstoneWire extends Block {
 
     private boolean a = true;
-    private Set b = new ConcurrentSet<>();
+    private Set b = new HashSet();
 
     public BlockRedstoneWire() {
         super(Material.ORIENTABLE);

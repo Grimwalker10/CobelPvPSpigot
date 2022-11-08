@@ -12,6 +12,6 @@ node {
     sh 'mvn clean package -U'
   }
   stage 'Jenkins Archive'
-  step([$class: 'ArtifactArchiver', artifacts: 'spigot-api/target/*.jar', fingerprint: true])
-  step([$class: 'ArtifactArchiver', artifacts: 'spigot-server/target/*.jar', fingerprint: true])
+  step([$class: 'ArtifactArchiver', artifacts: 'craftbukkit-api/target/*.jar', fingerprint: true])
+  step([$class: 'ArtifactArchiver', artifacts: 'craftbukkit-server/target/*.jar', fingerprint: true])
 }

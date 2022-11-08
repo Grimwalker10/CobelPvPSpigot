@@ -1,6 +1,5 @@
 package net.minecraft.server;
 
-import java.util.Iterator;
 import java.util.List;
 
 // CraftBukkit start
@@ -187,10 +186,8 @@ public class EntityArrow extends Entity implements IProjectile {
             int j;
             float f1;
 
-            Iterator<Entity> iterator = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D)).iterator();
-
-            while (iterator.hasNext()){
-                Entity entity1 = iterator.next();
+            for (j = 0; j < list.size(); ++j) {
+                Entity entity1 = (Entity) list.get(j);
 
                 if (entity1.R() && (entity1 != this.shooter || this.au >= 5)) {
                     f1 = 0.3F;
@@ -232,7 +229,7 @@ public class EntityArrow extends Entity implements IProjectile {
             // PaperSpigot end
 
             if (movingobjectposition != null) {
-                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this); // CraftBukkit - Call event
+                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // CraftBukkit - Call event
 
                 if (movingobjectposition.entity != null) {
                     f2 = MathHelper.sqrt(this.motX * this.motX + this.motY * this.motY + this.motZ * this.motZ);

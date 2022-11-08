@@ -39,7 +39,6 @@ public abstract class Entity {
 
     // CraftBukkit start
     private static final int CURRENT_LEVEL = 2;
-    public static Random SHARED_RANDOM = new Random();
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
     }
@@ -158,7 +157,7 @@ public abstract class Entity {
         this.width = 0.6F;
         this.length = 1.8F;
         this.d = 1;
-        this.random = SHARED_RANDOM;
+        this.random = new Random();
         this.maxFireTicks = 1;
         this.justCreated = true;
         this.uniqueID = new UUID(random.nextLong(), random.nextLong()); // Spigot
@@ -1111,9 +1110,10 @@ public abstract class Entity {
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable()) {
             return false;
+        } else {
+            this.Q();
+            return false;
         }
-        this.Q();
-        return false;
     }
 
     public boolean R() {
@@ -1533,7 +1533,7 @@ public abstract class Entity {
             this.vehicle = null;
         } else {
             // CraftBukkit start
-            if ((this.bukkitEntity instanceof LivingEntity) && (entity.getBukkitEntity() instanceof Vehicle) && entity.world.isChunkLoaded(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4)) {
+            if ((this.bukkitEntity instanceof LivingEntity) && (entity.getBukkitEntity() instanceof Vehicle) && entity.world.isChunkLoaded((int) entity.locX >> 4, (int) entity.locZ >> 4)) {
                 // It's possible to move from one vehicle to another.  We need to check if they're already in a vehicle, and fire an exit event if they are.
                 VehicleExitEvent exitEvent = null;
                 if (this.vehicle != null && this.vehicle.getBukkitEntity() instanceof Vehicle) {
@@ -1899,7 +1899,7 @@ public abstract class Entity {
     }
 
     public void teleportTo(Location exit, boolean portal) {
-        if (!this.dead) {
+        if (true) {
             WorldServer worldserver = ((CraftWorld) this.getBukkitEntity().getLocation().getWorld()).getHandle();
             WorldServer worldserver1 = ((CraftWorld) exit.getWorld()).getHandle();
             int i = worldserver1.dimension;

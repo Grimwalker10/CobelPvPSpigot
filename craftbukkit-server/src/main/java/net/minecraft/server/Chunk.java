@@ -933,26 +933,26 @@ public class Chunk {
         this.n = true;
     }
 
-    public void a(Entity entity, AxisAlignedBB axisalignedbb, List<Entity> list, IEntitySelector ientityselector) {
+    public void a(Entity entity, AxisAlignedBB axisalignedbb, List list, IEntitySelector ientityselector) {
         int i = MathHelper.floor((axisalignedbb.b - 2.0D) / 16.0D);
         int j = MathHelper.floor((axisalignedbb.e + 2.0D) / 16.0D);
 
-        i = MathHelper.limit(i, 0, this.entitySlices.length - 1);
-        j = MathHelper.limit(j, 0, this.entitySlices.length - 1);
+        i = MathHelper.a(i, 0, this.entitySlices.length - 1);
+        j = MathHelper.a(j, 0, this.entitySlices.length - 1);
 
         for (int k = i; k <= j; ++k) {
             List list1 = this.entitySlices[k];
 
-            for (Object value : list1) {
-                Entity entity1 = (Entity) value;
+            for (int l = 0; l < list1.size(); ++l) {
+                Entity entity1 = (Entity) list1.get(l);
 
                 if (entity1 != entity && entity1.boundingBox.b(axisalignedbb) && (ientityselector == null || ientityselector.a(entity1))) {
                     list.add(entity1);
                     Entity[] aentity = entity1.at();
 
                     if (aentity != null) {
-                        for (Entity item : aentity) {
-                            entity1 = item;
+                        for (int i1 = 0; i1 < aentity.length; ++i1) {
+                            entity1 = aentity[i1];
                             if (entity1 != entity && entity1.boundingBox.b(axisalignedbb) && (ientityselector == null || ientityselector.a(entity1))) {
                                 list.add(entity1);
                             }
@@ -967,8 +967,8 @@ public class Chunk {
         int i = MathHelper.floor((axisalignedbb.b - 2.0D) / 16.0D);
         int j = MathHelper.floor((axisalignedbb.e + 2.0D) / 16.0D);
 
-        i = MathHelper.limit(i, 0, this.entitySlices.length - 1);
-        j = MathHelper.limit(j, 0, this.entitySlices.length - 1);
+        i = MathHelper.a(i, 0, this.entitySlices.length - 1);
+        j = MathHelper.a(j, 0, this.entitySlices.length - 1);
 
         for (int k = i; k <= j; ++k) {
             List list1 = this.entitySlices[k];

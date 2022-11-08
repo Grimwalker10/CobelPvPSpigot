@@ -493,23 +493,13 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
                 while (this.isRunning) {
                     curTime = System.nanoTime();
-                    // PaperSpigot start - Further improve tick loop
-                    wait = TICK_TIME - (curTime - lastTick);
-                    if (wait > 0) {
-                        if (catchupTime < 2E6) {
-                            wait += Math.abs(catchupTime);
-                        } else if (wait < catchupTime) {
-                            catchupTime -= wait;
-                            wait = 0;
-                        } else {
-                            wait -= catchupTime;
-                            catchupTime = 0;
-                        }
-                    }
+                    wait = TICK_TIME - (curTime - lastTick) - catchupTime;
                     if (wait > 0) {
                         Thread.sleep(wait / 1000000);
-                        curTime = System.nanoTime();
-                        wait = TICK_TIME - (curTime - lastTick);
+                        catchupTime = 0;
+                        continue;
+                    } else {
+                        catchupTime = Math.min(1000000000, Math.abs(wait));
                     }
 
                     if ( MinecraftServer.currentTick++ % SAMPLE_INTERVAL == 0 )
@@ -723,19 +713,10 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
         SpigotTimings.timeUpdateTimer.startTiming(); // Spigot
         // Send time updates to everyone, it will get the right time from the world the player is in.
-        for (final WorldServer world : this.worlds) {
-            final boolean doDaylight = world.getGameRules().getBoolean("doDaylightCycle");
-            final long dayTime = world.getDayTime();
-            long worldTime = world.getTime();
-            final PacketPlayOutUpdateTime worldPacket = new PacketPlayOutUpdateTime(worldTime, dayTime, doDaylight);
-            for (EntityHuman entityhuman : world.players) {
-                if (!(entityhuman instanceof EntityPlayer) || (ticks + entityhuman.getId()) % 20 != 0) {
-                    continue;
-                }
-                EntityPlayer entityplayer = (EntityPlayer) entityhuman;
-                long playerTime = entityplayer.getPlayerTime();
-                PacketPlayOutUpdateTime packet = (playerTime == dayTime) ? worldPacket : new PacketPlayOutUpdateTime(worldTime, playerTime, doDaylight);
-                entityplayer.playerConnection.sendPacket(packet); // Add support for per player time
+        if (this.ticks % 20 == 0) {
+            for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
+                EntityPlayer entityplayer = (EntityPlayer) this.getPlayerList().players.get(i);
+                entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
             }
         }
         SpigotTimings.timeUpdateTimer.stopTiming(); // Spigot

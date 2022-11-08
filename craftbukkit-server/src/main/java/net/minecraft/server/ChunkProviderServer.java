@@ -23,7 +23,7 @@ public class ChunkProviderServer implements IChunkProvider {
     public LongHashSet unloadQueue = new LongHashSet(); // LongHashSet
     public Chunk emptyChunk;
     public IChunkProvider chunkProvider;
-    public IChunkLoader f;
+    private IChunkLoader f;
     public boolean forceChunkLoad = false; // true -> false
     //public LongObjectHashMap<Chunk> chunks = new LongObjectHashMap<Chunk>();
     public Long2ObjectOpenHashMap<Chunk> chunks = new Long2ObjectOpenHashMap<>(); // CobelPvP

@@ -841,7 +841,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         }
         // CraftBukkit end
         if (!this.isInvulnerable()) {
-            if (!damagesource.ignoresArmor() && f > 0.0F) {
+            if (!damagesource.ignoresArmor() && this.isBlocking() && f > 0.0F) {
                 f = (1.0F + f) ;
             }
 
@@ -936,7 +936,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         if (entity.av()) {
             if (!entity.j(this)) {
                 float f = (float) this.getAttributeInstance(GenericAttributes.e).getValue();
-                int i = (this.isSprinting() ? 1 : 0);
+                int i = 0;
                 float f1 = 0.0F;
 
                 if (entity instanceof EntityLiving) {
@@ -944,7 +944,11 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                     i += EnchantmentManager.getKnockbackEnchantmentLevel(this, (EntityLiving) entity);
                 }
 
-                if (f > 0.0F || f1 > 0.0F) {
+                if (this.isSprinting()) {
+                    ++i;
+                }
+
+                if (true) {
                     boolean flag = !world.paperSpigotConfig.disablePlayerCrits && this.fallDistance > 0.0F && !this.onGround && !this.h_() && !this.M() && !this.hasEffect(MobEffectList.BLINDNESS) && this.vehicle == null && entity instanceof EntityLiving;
 
                     if (flag && f > 0.0F) {

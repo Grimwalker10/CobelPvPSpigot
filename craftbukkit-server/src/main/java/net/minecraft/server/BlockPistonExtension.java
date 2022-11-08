@@ -76,46 +76,46 @@ public class BlockPistonExtension extends Block {
         float f4 = 0.75F;
 
         switch (b(l)) {
-            case 0:
-                this.a(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                this.a(0.375F, 0.25F, 0.375F, 0.625F, 1.0F, 0.625F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                break;
+        case 0:
+            this.a(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            this.a(0.375F, 0.25F, 0.375F, 0.625F, 1.0F, 0.625F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            break;
 
-            case 1:
-                this.a(0.0F, 0.75F, 0.0F, 1.0F, 1.0F, 1.0F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                this.a(0.375F, 0.0F, 0.375F, 0.625F, 0.75F, 0.625F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                break;
+        case 1:
+            this.a(0.0F, 0.75F, 0.0F, 1.0F, 1.0F, 1.0F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            this.a(0.375F, 0.0F, 0.375F, 0.625F, 0.75F, 0.625F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            break;
 
-            case 2:
-                this.a(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                this.a(0.25F, 0.375F, 0.25F, 0.75F, 0.625F, 1.0F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                break;
+        case 2:
+            this.a(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            this.a(0.25F, 0.375F, 0.25F, 0.75F, 0.625F, 1.0F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            break;
 
-            case 3:
-                this.a(0.0F, 0.0F, 0.75F, 1.0F, 1.0F, 1.0F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                this.a(0.25F, 0.375F, 0.0F, 0.75F, 0.625F, 0.75F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                break;
+        case 3:
+            this.a(0.0F, 0.0F, 0.75F, 1.0F, 1.0F, 1.0F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            this.a(0.25F, 0.375F, 0.0F, 0.75F, 0.625F, 0.75F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            break;
 
-            case 4:
-                this.a(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                this.a(0.375F, 0.25F, 0.25F, 0.625F, 0.75F, 1.0F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                break;
+        case 4:
+            this.a(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            this.a(0.375F, 0.25F, 0.25F, 0.625F, 0.75F, 1.0F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            break;
 
-            case 5:
-                this.a(0.75F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
-                this.a(0.0F, 0.375F, 0.25F, 0.75F, 0.625F, 0.75F);
-                super.a(world, i, j, k, axisalignedbb, list, entity);
+        case 5:
+            this.a(0.75F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
+            this.a(0.0F, 0.375F, 0.25F, 0.75F, 0.625F, 0.75F);
+            super.a(world, i, j, k, axisalignedbb, list, entity);
         }
 
         this.a(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
@@ -126,28 +126,28 @@ public class BlockPistonExtension extends Block {
         float f = 0.25F;
 
         switch (b(l)) {
-            case 0:
-                this.a(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
-                break;
+        case 0:
+            this.a(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
+            break;
 
-            case 1:
-                this.a(0.0F, 0.75F, 0.0F, 1.0F, 1.0F, 1.0F);
-                break;
+        case 1:
+            this.a(0.0F, 0.75F, 0.0F, 1.0F, 1.0F, 1.0F);
+            break;
 
-            case 2:
-                this.a(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
-                break;
+        case 2:
+            this.a(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
+            break;
 
-            case 3:
-                this.a(0.0F, 0.0F, 0.75F, 1.0F, 1.0F, 1.0F);
-                break;
+        case 3:
+            this.a(0.0F, 0.0F, 0.75F, 1.0F, 1.0F, 1.0F);
+            break;
 
-            case 4:
-                this.a(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
-                break;
+        case 4:
+            this.a(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
+            break;
 
-            case 5:
-                this.a(0.75F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+        case 5:
+            this.a(0.75F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 
@@ -164,6 +164,6 @@ public class BlockPistonExtension extends Block {
     }
 
     public static int b(int i) {
-        return MathHelper.limit(i & 7, 0, Facing.b.length - 1);
+        return MathHelper.a(i & 7, 0, Facing.b.length - 1);
     }
 }
