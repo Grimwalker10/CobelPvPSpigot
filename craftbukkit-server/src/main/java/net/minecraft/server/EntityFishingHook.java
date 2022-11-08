@@ -3,7 +3,7 @@ package net.minecraft.server;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Iterator;
+
 // CraftBukkit start
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Fish;
@@ -156,15 +156,13 @@ public class EntityFishingHook extends Entity {
             }
 
             Entity entity = null;
-            List<Entity> list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
+            List list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
             double d4 = 0.0D;
 
             double d5;
 
-            Iterator<Entity> iterator = list.iterator();
-
-            while (iterator.hasNext()){
-                Entity entity1 = iterator.next();
+            for (int i = 0; i < list.size(); ++i) {
+                Entity entity1 = (Entity) list.get(i);
 
                 if (entity1.R() && (entity1 != this.owner || this.aw >= 5)) {
                     float f = 0.3F;
@@ -184,14 +182,6 @@ public class EntityFishingHook extends Entity {
             if (entity != null) {
                 movingobjectposition = new MovingObjectPosition(entity);
             }
-
-            // CobelPvP add the patch of PaperSpigot to allow fishing hook to fly through players
-            if (movingobjectposition != null && movingobjectposition.entity instanceof EntityPlayer && owner != null && owner instanceof EntityPlayer) {
-                if (!((EntityPlayer) owner).getBukkitEntity().canSee(((EntityPlayer) movingobjectposition.entity).getBukkitEntity())) {
-                    movingobjectposition = null;
-                }
-            }
-            // CobelPvP end
 
             if (movingobjectposition != null) {
                 org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // Craftbukkit - Call event
@@ -458,8 +448,8 @@ public class EntityFishingHook extends Entity {
         float f1 = 0.1F - (float) i * 0.025F - (float) j * 0.01F;
         float f2 = 0.05F + (float) i * 0.01F - (float) j * 0.01F;
 
-        f1 = MathHelper.limit(f1, 0.0F, 1.0F);
-        f2 = MathHelper.limit(f2, 0.0F, 1.0F);
+        f1 = MathHelper.a(f1, 0.0F, 1.0F);
+        f2 = MathHelper.a(f2, 0.0F, 1.0F);
         if (f < f1) {
             this.owner.a(StatisticList.A, 1);
             return ((PossibleFishingResult) WeightedRandom.a(this.random, (Collection) d)).a(this.random);

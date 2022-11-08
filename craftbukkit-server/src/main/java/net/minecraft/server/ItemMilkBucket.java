@@ -25,7 +25,13 @@ public class ItemMilkBucket extends Item {
         }
 
         // PaperSpigot start - Stackable Buckets
-        this.e((PaperSpigotConfig.stackableMilkBuckets ? org.bukkit.Material.BUCKET.getMaxStackSize() : 1));
+        if (PaperSpigotConfig.stackableMilkBuckets) {
+            if (itemstack.count <= 0) {
+                return new ItemStack(Items.BUCKET);
+            } else if (!entityhuman.inventory.pickup(new ItemStack(Items.BUCKET))) {
+                entityhuman.drop(new ItemStack(Items.BUCKET), false);
+            }
+        }
         // PaperSpigot end
 
         return itemstack.count <= 0 ? new ItemStack(Items.BUCKET) : itemstack;

@@ -1,7 +1,7 @@
 package net.minecraft.server;
 
 import java.util.List;
-import java.util.Iterator;
+
 import org.bukkit.Bukkit;
 import org.spigotmc.SpigotConfig;
 
@@ -31,16 +31,16 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         this.projectileSource = (org.bukkit.entity.LivingEntity) entityliving.getBukkitEntity(); // CraftBukkit
         this.a(0.25F, 0.25F);
         this.setPositionRotation(entityliving.locX, entityliving.locY + (double) entityliving.getHeadHeight(), entityliving.locZ, entityliving.yaw, entityliving.pitch);
-        this.locX -= (double) (MathHelper.cos(this.yaw / 180.0F * (float) Math.PI) * 0.16F);
+        this.locX -= (double) (MathHelper.cos(this.yaw / 180.0F * 3.1415927F) * 0.16F);
         this.locY -= 0.10000000149011612D;
-        this.locZ -= (double) (MathHelper.sin(this.yaw / 180.0F * (float) Math.PI) * 0.16F);
+        this.locZ -= (double) (MathHelper.sin(this.yaw / 180.0F * 3.1415927F) * 0.16F);
         this.setPosition(this.locX, this.locY, this.locZ);
         this.height = 0.0F;
         float f = 0.4F;
 
-        this.motX = (double) (-MathHelper.sin(this.yaw / 180.0F * (float) Math.PI) * MathHelper.cos(this.pitch / 180.0F * (float) Math.PI) * f);
-        this.motZ = (double) (MathHelper.cos(this.yaw / 180.0F * (float) Math.PI) * MathHelper.cos(this.pitch / 180.0F * (float) Math.PI) * f);
-        this.motY = (double) (-MathHelper.sin((this.pitch + this.f()) / 180.0F * (float) Math.PI) * f);
+        this.motX = (double) (-MathHelper.sin(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F) * f);
+        this.motZ = (double) (MathHelper.cos(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F) * f);
+        this.motY = (double) (-MathHelper.sin((this.pitch + this.f()) / 180.0F * 3.1415927F) * f);
         this.shoot(this.motX, this.motY, this.motZ, this.e(), 1.0F);
     }
 
@@ -122,16 +122,13 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         }
 
         if (!this.world.isStatic) {
-
             Entity entity = null;
-            List<Entity> list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
+            List list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
             double d0 = 0.0D;
             EntityLiving entityliving = this.getShooter();
 
-            Iterator<Entity> iterator =  list.iterator();
-
-            while (iterator.hasNext()){
-                Entity entity1 = iterator.next();
+            for (int i = 0; i < list.size(); ++i) {
+                Entity entity1 = (Entity) list.get(i);
 
                 if (entity1.R() && (entity1 != entityliving || this.at >= 5)) {
                     float f = 0.3F;

@@ -1,7 +1,9 @@
 package net.minecraft.server;
 
+// CraftBukkit start
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.entity.EntityTargetEvent;
+// CraftBukkit end
 
 public class EntityExperienceOrb extends Entity {
 
@@ -57,6 +59,7 @@ public class EntityExperienceOrb extends Entity {
         this.j(this.locX, (this.boundingBox.b + this.boundingBox.e) / 2.0D, this.locZ);
         double d0 = 8.0D;
 
+        // CobelPvP start
         EntityHuman foundTarget = null;
         if (this.targetTime < this.a - 20 + this.getId() % 100) {
             if (this.targetPlayer == null || this.targetPlayer.f(this) > d0 * d0) {
@@ -77,7 +80,7 @@ public class EntityExperienceOrb extends Entity {
                     // CraftBukkit end
                 }
             }
-
+        // CobelPvP end
             this.targetTime = this.a;
         }
 
@@ -87,6 +90,7 @@ public class EntityExperienceOrb extends Entity {
             double d3 = (this.targetPlayer.locZ - this.locZ) / d0;
             double d4 = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3);
             double d5 = 1.0D - d4;
+
             if (d5 > 0.0D) {
                 d5 *= d5;
                 this.motX += d1 / d4 * d5 * 0.1D;
@@ -111,7 +115,7 @@ public class EntityExperienceOrb extends Entity {
 
         ++this.a;
         ++this.b;
-        if (this.b >= 6000) {
+        if (this.b >= this.world.spigotConfig.expDespawnRate) {
             this.die();
         }
     }
@@ -141,13 +145,13 @@ public class EntityExperienceOrb extends Entity {
     public void b(NBTTagCompound nbttagcompound) {
         nbttagcompound.setShort("Health", (short) ((byte) this.d));
         nbttagcompound.setShort("Age", (short) this.b);
-        nbttagcompound.setInt("Value", this.value);
+        nbttagcompound.setShort("Value", (short) this.value);
     }
 
     public void a(NBTTagCompound nbttagcompound) {
         this.d = nbttagcompound.getShort("Health") & 255;
         this.b = nbttagcompound.getShort("Age");
-        this.value = nbttagcompound.getInt("Value");
+        this.value = nbttagcompound.getShort("Value");
     }
 
     public void b_(EntityHuman entityhuman) {

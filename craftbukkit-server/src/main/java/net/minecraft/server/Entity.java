@@ -1,6 +1,5 @@
 package net.minecraft.server;
 
-import org.apache.logging.log4j.LogManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
@@ -25,26 +24,21 @@ import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.plugin.PluginManager;
 import org.spigotmc.CustomTimingsHandler;
+
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+
+// CraftBukkit start
+// CraftBukkit end
+// CobelPvP start
+// CobelPvP end
 
 public abstract class Entity {
 
     // CraftBukkit start
     private static final int CURRENT_LEVEL = 2;
-    public static Random SHARED_RANDOM = new Random() {
-        private boolean locked = false;
-        @Override
-        public synchronized void setSeed(long seed) {
-            if (locked) {
-                LogManager.getLogger().error("Ignoring setSeed on Entity.SHARED_RANDOM", new Throwable());
-            } else {
-                super.setSeed(seed);
-                locked = true;
-            }
-        }
-    };
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
     }
@@ -163,7 +157,7 @@ public abstract class Entity {
         this.width = 0.6F;
         this.length = 1.8F;
         this.d = 1;
-        this.random = SHARED_RANDOM;
+        this.random = new Random();
         this.maxFireTicks = 1;
         this.justCreated = true;
         this.uniqueID = new UUID(random.nextLong(), random.nextLong()); // Spigot
@@ -555,9 +549,11 @@ public abstract class Entity {
                 }
             }
 
-            List<AxisAlignedBB> list = this.world.getCubes(this, this.boundingBox.a(d0, d1, d2));
+            List list = this.world.getCubes(this, this.boundingBox.a(d0, d1, d2));
 
-            for (int i = 0; i < list.size(); ++i) d1 = ((AxisAlignedBB) list.get(i)).b(this.boundingBox, d1);
+            for (int i = 0; i < list.size(); ++i) {
+                d1 = ((AxisAlignedBB) list.get(i)).b(this.boundingBox, d1);
+            }
 
             this.boundingBox.d(0.0D, d1, 0.0D);
             if (!this.J && d7 != d1) {
@@ -955,7 +951,7 @@ public abstract class Entity {
         int currentTick = MinecraftServer.getServer().al();
         if(this.lastLavaCheck != currentTick) {
             this.lastLavaCheck = currentTick;
-            this.isInLava = this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA);
+            this.isInLava = this.world.a(this.boundingBox.grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA, iblockaccess);
         }
         return this.isInLava;
     }
@@ -990,8 +986,9 @@ public abstract class Entity {
             int k = MathHelper.floor(this.locY - (double) this.height + d0);
 
             return this.world.n(i, k, j);
+        } else {
+            return 0.0F;
         }
-        return 0.0F;
     }
 
     public void spawnIn(World world) {
@@ -1023,7 +1020,6 @@ public abstract class Entity {
             this.lastYaw -= 360.0F;
         }
 
-        world.getChunkAt((int) Math.floor(this.locX) >> 4, (int) Math.floor(this.locZ) >> 4);
         this.setPosition(this.locX, this.locY, this.locZ);
         this.b(f, f1);
     }
@@ -1100,7 +1096,7 @@ public abstract class Entity {
         }
     }
 
-    public void g(final double d0, final double d1, final double d2) {
+    public void g(double d0, double d1, double d2) {
         this.motX += d0;
         this.motY += d1;
         this.motZ += d2;
@@ -1114,9 +1110,10 @@ public abstract class Entity {
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable()) {
             return false;
+        } else {
+            this.Q();
+            return false;
         }
-        this.Q();
-        return false;
     }
 
     public boolean R() {
@@ -1136,8 +1133,9 @@ public abstract class Entity {
             nbttagcompound.setString("id", s);
             this.e(nbttagcompound);
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     public boolean d(NBTTagCompound nbttagcompound) {
@@ -1147,14 +1145,15 @@ public abstract class Entity {
             nbttagcompound.setString("id", s);
             this.e(nbttagcompound);
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     public void e(NBTTagCompound nbttagcompound) {
         try {
-            nbttagcompound.set("Pos", this.a(this.locX, this.locY + (double) this.V, this.locZ));
-            nbttagcompound.set("Motion", this.a(this.motX, this.motY, this.motZ));
+            nbttagcompound.set("Pos", this.a(new double[] { this.locX, this.locY + (double) this.V, this.locZ}));
+            nbttagcompound.set("Motion", this.a(new double[] { this.motX, this.motY, this.motZ}));
 
             // CraftBukkit start - Checking for NaN pitch/yaw and resetting to zero
             // TODO: make sure this is the best way to address this.
@@ -1324,7 +1323,11 @@ public abstract class Entity {
 
     protected NBTTagList a(double... adouble) {
         NBTTagList nbttaglist = new NBTTagList();
-        for (double d0 : adouble) {
+        double[] adouble1 = adouble;
+        int i = adouble.length;
+
+        for (int j = 0; j < i; ++j) {
+            double d0 = adouble1[j];
 
             nbttaglist.add(new NBTTagDouble(d0));
         }
@@ -1334,7 +1337,11 @@ public abstract class Entity {
 
     protected NBTTagList a(float... afloat) {
         NBTTagList nbttaglist = new NBTTagList();
-        for (float f : afloat) {
+        float[] afloat1 = afloat;
+        int i = afloat.length;
+
+        for (int j = 0; j < i; ++j) {
+            float f = afloat1[j];
 
             nbttaglist.add(new NBTTagFloat(f));
         }
@@ -1362,11 +1369,11 @@ public abstract class Entity {
             EntityItem entityitem = new EntityItem(this.world, this.locX, this.locY + (double) f, this.locZ, itemstack);
 
             entityitem.pickupDelay = 10;
-            entityitem.owner = this;
             this.world.addEntity(entityitem);
             return entityitem;
+        } else {
+            return null;
         }
-        return null;
     }
 
     public boolean isAlive() {
@@ -1526,7 +1533,7 @@ public abstract class Entity {
             this.vehicle = null;
         } else {
             // CraftBukkit start
-            if ((this.bukkitEntity instanceof LivingEntity) && (entity.getBukkitEntity() instanceof Vehicle) && entity.world.isChunkLoaded(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4)) {
+            if ((this.bukkitEntity instanceof LivingEntity) && (entity.getBukkitEntity() instanceof Vehicle) && entity.world.isChunkLoaded((int) entity.locX >> 4, (int) entity.locZ >> 4)) {
                 // It's possible to move from one vehicle to another.  We need to check if they're already in a vehicle, and fire an exit event if they are.
                 VehicleExitEvent exitEvent = null;
                 if (this.vehicle != null && this.vehicle.getBukkitEntity() instanceof Vehicle) {
@@ -1571,9 +1578,11 @@ public abstract class Entity {
                 this.vehicle.passenger = null;
             }
 
-            for (Entity entity1 = entity.vehicle; entity1 != null; entity1 = entity1.vehicle) {
-                if (entity1 == this) {
-                    return;
+            if (entity != null) {
+                for (Entity entity1 = entity.vehicle; entity1 != null; entity1 = entity1.vehicle) {
+                    if (entity1 == this) {
+                        return;
+                    }
                 }
             }
 
@@ -1605,7 +1614,6 @@ public abstract class Entity {
         }
     }
 
-    public int getMaxAirTicks() { return ai(); }
     public int ai() {
         return 300;
     }
@@ -1662,9 +1670,9 @@ public abstract class Entity {
         byte b0 = this.datawatcher.getByte(0);
 
         if (flag) {
-            this.datawatcher.watch(0, (byte) (b0 | 1 << i));
+            this.datawatcher.watch(0, Byte.valueOf((byte) (b0 | 1 << i)));
         } else {
-            this.datawatcher.watch(0, (byte) (b0 & ~(1 << i)));
+            this.datawatcher.watch(0, Byte.valueOf((byte) (b0 & ~(1 << i))));
         }
     }
 
@@ -1673,7 +1681,7 @@ public abstract class Entity {
     }
 
     public void setAirTicks(int i) {
-        this.datawatcher.watch(1, (short) i);
+        this.datawatcher.watch(1, Short.valueOf((short) i));
     }
 
     public void a(EntityLightning entitylightning) {
@@ -1740,6 +1748,7 @@ public abstract class Entity {
         } else {
             boolean flag = !this.world.q(i - 1, j, k);
             boolean flag1 = !this.world.q(i + 1, j, k);
+            boolean flag2 = !this.world.q(i, j - 1, k);
             boolean flag3 = !this.world.q(i, j + 1, k);
             boolean flag4 = !this.world.q(i, j, k - 1);
             boolean flag5 = !this.world.q(i, j, k + 1);
@@ -1767,29 +1776,34 @@ public abstract class Entity {
             }
 
             if (flag5 && 1.0D - d5 < d6) {
+                d6 = 1.0D - d5;
                 b0 = 5;
             }
 
             float f = this.random.nextFloat() * 0.2F + 0.1F;
 
             if (b0 == 0) {
-                this.motX = (-f);
+                this.motX = (double) (-f);
             }
 
             if (b0 == 1) {
-                this.motX = f;
+                this.motX = (double) f;
+            }
+
+            if (b0 == 2) {
+                this.motY = (double) (-f);
             }
 
             if (b0 == 3) {
-                this.motY = f;
+                this.motY = (double) f;
             }
 
             if (b0 == 4) {
-                this.motZ = (-f);
+                this.motZ = (double) (-f);
             }
 
             if (b0 == 5) {
-                this.motZ = f;
+                this.motZ = (double) f;
             }
 
             return true;
@@ -1832,7 +1846,7 @@ public abstract class Entity {
     }
 
     public String toString() {
-        return String.format("%s[\'%s\'/%d, l=\'%s\', x=%.2f, y=%.2f, z=%.2f]", this.getClass().getSimpleName(), this.getName(), this.id, this.world == null ? "~NULL~" : this.world.getWorldData().getName(), this.locX, this.locY, this.locZ);
+        return String.format("%s[\'%s\'/%d, l=\'%s\', x=%.2f, y=%.2f, z=%.2f]", new Object[] { this.getClass().getSimpleName(), this.getName(), Integer.valueOf(this.id), this.world == null ? "~NULL~" : this.world.getWorldData().getName(), Double.valueOf(this.locX), Double.valueOf(this.locY), Double.valueOf(this.locZ)});
     }
 
     public boolean isInvulnerable() {
@@ -1885,56 +1899,57 @@ public abstract class Entity {
     }
 
     public void teleportTo(Location exit, boolean portal) {
-        if (!this.isAlive()) {
-            return;
-        }
-        WorldServer worldserver1 = ((CraftWorld) exit.getWorld()).getHandle();
-        // CraftBukkit end
+        if (true) {
+            WorldServer worldserver = ((CraftWorld) this.getBukkitEntity().getLocation().getWorld()).getHandle();
+            WorldServer worldserver1 = ((CraftWorld) exit.getWorld()).getHandle();
+            int i = worldserver1.dimension;
+            // CraftBukkit end
 
-        this.dimension = worldserver1.dimension;
-        /* CraftBukkit start - TODO: Check if we need this
-        if (j == 1 && i == 1) {
-            worldserver1 = minecraftserver.getWorldServer(0);
-            this.dimension = 0;
-        }
-        // CraftBukkit end */
-
-        this.world.kill(this);
-        this.dead = false;
-        this.world.methodProfiler.a("reposition");
-        // CraftBukkit start - Ensure chunks are loaded in case TravelAgent is not used which would initially cause chunks to load during find/create
-        // minecraftserver.getPlayerList().a(this, j, worldserver, worldserver1);
-        boolean before = worldserver1.chunkProviderServer.forceChunkLoad;
-        worldserver1.chunkProviderServer.forceChunkLoad = true;
-        //worldserver1.getMinecraftServer().getPlayerList().repositionEntity(this, exit, portal); // PaperSpigot - no... this entity is dead
-        worldserver1.chunkProviderServer.forceChunkLoad = before;
-        // CraftBukkit end
-        this.world.methodProfiler.c("reloading");
-        Entity entity = EntityTypes.createEntityByName(EntityTypes.b(this), worldserver1);
-
-        if (entity != null) {
-            entity.a(this, true);
-            // PaperSpigot start - move entity to new location
-            exit.getBlock(); // force load
-            entity.setLocation(exit.getX(), exit.getY(), exit.getZ(), exit.getYaw(), exit.getPitch());
-            // PaperSpigot end
-            /* CraftBukkit start - We need to do this...
+            this.dimension = i;
+            /* CraftBukkit start - TODO: Check if we need this
             if (j == 1 && i == 1) {
-                ChunkCoordinates chunkcoordinates = worldserver1.getSpawn();
-                chunkcoordinates.y = this.world.i(chunkcoordinates.x, chunkcoordinates.z);
-                entity.setPositionRotation((double) chunkcoordinates.x, (double) chunkcoordinates.y, (double) chunkcoordinates.z, entity.yaw, entity.pitch);
+                worldserver1 = minecraftserver.getWorldServer(0);
+                this.dimension = 0;
             }
             // CraftBukkit end */
 
-            worldserver1.addEntity(entity);
-            // CraftBukkit start - Forward the CraftEntity to the new entity
-            this.getBukkitEntity().setHandle(entity);
-            entity.bukkitEntity = this.getBukkitEntity();
+            this.world.kill(this);
+            this.dead = false;
+            this.world.methodProfiler.a("reposition");
+            // CraftBukkit start - Ensure chunks are loaded in case TravelAgent is not used which would initially cause chunks to load during find/create
+            // minecraftserver.getPlayerList().a(this, j, worldserver, worldserver1);
+            boolean before = worldserver1.chunkProviderServer.forceChunkLoad;
+            worldserver1.chunkProviderServer.forceChunkLoad = true;
+            //worldserver1.getMinecraftServer().getPlayerList().repositionEntity(this, exit, portal); // PaperSpigot - no... this entity is dead
+            worldserver1.chunkProviderServer.forceChunkLoad = before;
             // CraftBukkit end
+            this.world.methodProfiler.c("reloading");
+            Entity entity = EntityTypes.createEntityByName(EntityTypes.b(this), worldserver1);
+
+            if (entity != null) {
+                entity.a(this, true);
+                // PaperSpigot start - move entity to new location
+                exit.getBlock(); // force load
+                entity.setLocation(exit.getX(), exit.getY(), exit.getZ(), exit.getYaw(), exit.getPitch());
+                // PaperSpigot end
+                /* CraftBukkit start - We need to do this...
+                if (j == 1 && i == 1) {
+                    ChunkCoordinates chunkcoordinates = worldserver1.getSpawn();
+
+                    chunkcoordinates.y = this.world.i(chunkcoordinates.x, chunkcoordinates.z);
+                    entity.setPositionRotation((double) chunkcoordinates.x, (double) chunkcoordinates.y, (double) chunkcoordinates.z, entity.yaw, entity.pitch);
+                }
+                // CraftBukkit end */
+                worldserver1.addEntity(entity);
+                // CraftBukkit start - Forward the CraftEntity to the new entity
+                this.getBukkitEntity().setHandle(entity);
+                entity.bukkitEntity = this.getBukkitEntity();
+                // CraftBukkit end
+            }
 
             this.dead = true;
             this.world.methodProfiler.b();
-            ((CraftWorld) this.getBukkitEntity().getLocation().getWorld()).getHandle().i();
+            worldserver.i();
             worldserver1.i();
             this.world.methodProfiler.b();
         }
@@ -1961,12 +1976,12 @@ public abstract class Entity {
     }
 
     public void a(CrashReportSystemDetails crashreportsystemdetails) {
-        crashreportsystemdetails.a("Entity Type", (new CrashReportEntityType(this)));
-        crashreportsystemdetails.a("Entity ID", this.id);
-        crashreportsystemdetails.a("Entity Name", (new CrashReportEntityName(this)));
-        crashreportsystemdetails.a("Entity\'s Exact location", String.format("%.2f, %.2f, %.2f", this.locX, this.locY, this.locZ));
+        crashreportsystemdetails.a("Entity Type", (Callable) (new CrashReportEntityType(this)));
+        crashreportsystemdetails.a("Entity ID", Integer.valueOf(this.id));
+        crashreportsystemdetails.a("Entity Name", (Callable) (new CrashReportEntityName(this)));
+        crashreportsystemdetails.a("Entity\'s Exact location", String.format("%.2f, %.2f, %.2f", new Object[] { Double.valueOf(this.locX), Double.valueOf(this.locY), Double.valueOf(this.locZ)}));
         crashreportsystemdetails.a("Entity\'s Block location", CrashReportSystemDetails.a(MathHelper.floor(this.locX), MathHelper.floor(this.locY), MathHelper.floor(this.locZ)));
-        crashreportsystemdetails.a("Entity\'s Momentum", String.format("%.2f, %.2f, %.2f", this.motX, this.motY, this.motZ));
+        crashreportsystemdetails.a("Entity\'s Momentum", String.format("%.2f, %.2f, %.2f", new Object[] { Double.valueOf(this.motX), Double.valueOf(this.motY), Double.valueOf(this.motZ)}));
     }
 
     public UUID getUniqueID() {

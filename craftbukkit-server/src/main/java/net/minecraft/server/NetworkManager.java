@@ -155,7 +155,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void handle(Packet packet, GenericFutureListener... agenericfuturelistener) {
-        if (this.isConnected()) {
+        if (this.m != null && this.m.isOpen()) {
             // this.i(); // CobelPvP
             this.b(packet, agenericfuturelistener);
         } else {
@@ -188,7 +188,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     // CobelPvP start - remove unneeded packet queue
     /*
     private void i() {
-        if (this.isConnected()) {
+        if (this.m != null && this.m.isOpen()) {
             // PaperSpigot  start - Improve Network Manager packet handling
             QueuedPacket queuedpacket;
             while ((queuedpacket = (QueuedPacket) this.l.poll()) != null) {

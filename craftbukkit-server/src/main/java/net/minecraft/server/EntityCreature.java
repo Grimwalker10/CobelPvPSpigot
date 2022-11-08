@@ -109,7 +109,7 @@ public abstract class EntityCreature extends EntityInsentient {
                 this.issueSearch(this.target, f11); // CobelPvP
             }
         } else if (this.target.isAlive()) {
-            float f1 = this.target.e(this);
+            float f1 = this.target.e((Entity) this);
 
             // CobelPvP start - don't constantly ray trace
             if (this.lastRayTraceTick + 50 < this.ticksLived) {
@@ -163,8 +163,8 @@ public abstract class EntityCreature extends EntityInsentient {
         this.pitch = 0.0F;
         if (this.pathEntity != null && this.random.nextInt(100) != 0) {
             this.world.methodProfiler.a("followpath");
-            Vec3D vec3d = this.pathEntity.a(this);
-            double d0 = this.width * 2.0F;
+            Vec3D vec3d = this.pathEntity.a((Entity) this);
+            double d0 = (double) (this.width * 2.0F);
 
             while (vec3d != null && vec3d.d(this.locX, vec3d.b, this.locZ) < d0 * d0) {
                 this.pathEntity.a();
@@ -172,7 +172,7 @@ public abstract class EntityCreature extends EntityInsentient {
                     vec3d = null;
                     this.pathEntity = null;
                 } else {
-                    vec3d = this.pathEntity.a(this);
+                    vec3d = this.pathEntity.a((Entity) this);
                 }
             }
 
@@ -300,7 +300,7 @@ public abstract class EntityCreature extends EntityInsentient {
     }
 
     public boolean b(int i, int j, int k) {
-        return this.br == -1.0F || this.bq.e(i, j, k) < this.br * this.br;
+        return this.br == -1.0F ? true : this.bq.e(i, j, k) < this.br * this.br;
     }
 
     public void a(int i, int j, int k, int l) {

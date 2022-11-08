@@ -8,7 +8,7 @@ import org.bukkit.craftbukkit.util.AsynchronousExecutor;
 import org.spigotmc.SpigotConfig; // CobelPvP
 
 public class ChunkIOExecutor {
-    static final int BASE_THREADS = 2;
+    static final int BASE_THREADS = 1;
 
     private static final AsynchronousExecutor<QueuedChunk, Chunk, Runnable, RuntimeException> instance = new AsynchronousExecutor<QueuedChunk, Chunk, Runnable, RuntimeException>(new ChunkIOProvider(), BASE_THREADS);
 

@@ -3,11 +3,9 @@ package net.minecraft.server;
 import java.util.Iterator;
 import java.util.List;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 
 public class EntityPotion extends EntityProjectile {
 
@@ -71,16 +69,18 @@ public class EntityPotion extends EntityProjectile {
                     Iterator iterator = list1.iterator();
 
                     // CraftBukkit
-                    Map<LivingEntity, Double> affected = new HashMap<LivingEntity, Double>();
+                    HashMap<LivingEntity, Double> affected = new HashMap<LivingEntity, Double>();
 
                     while (iterator.hasNext()) {
                         EntityLiving entityliving = (EntityLiving) iterator.next();
                         double d0 = this.f(entityliving);
 
                         if (d0 < 16.0D) {
-                            double d1 = 1.0D;
+                            double d1 = 1.0D - Math.sqrt(d0) / 4.0D;
 
-                            if (entityliving != movingobjectposition.entity) d1 -= Math.sqrt(d0) / 4.0D;
+                            if (entityliving == movingobjectposition.entity) {
+                                d1 = 1.0D;
+                            }
 
                             // CraftBukkit start
                             affected.put((LivingEntity) entityliving.getBukkitEntity(), d1);
@@ -90,12 +90,11 @@ public class EntityPotion extends EntityProjectile {
                     org.bukkit.event.entity.PotionSplashEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPotionSplashEvent(this, affected);
                     if (!event.isCancelled() && list != null && !list.isEmpty()) { // do not process effects if there are no effects to process
                         for (LivingEntity victim : event.getAffectedEntities()) {
-                            if (!(victim instanceof CraftLivingEntity)) continue;
+                            if (!(victim instanceof CraftLivingEntity)) {
+                                continue;
+                            }
 
                             EntityLiving entityliving = ((CraftLivingEntity) victim).getHandle();
-                            if ((this.getShooter() instanceof EntityPlayer
-                                    && entityliving instanceof EntityPlayer)
-                                    && !((EntityPlayer)this.getShooter()).getBukkitEntity().canSee((Player) entityliving.getBukkitEntity())) continue;
                             double d1 = event.getIntensity(victim);
                             // CraftBukkit end
 

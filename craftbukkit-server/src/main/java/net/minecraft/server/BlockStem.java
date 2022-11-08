@@ -80,7 +80,11 @@ public class BlockStem extends BlockPlant implements IBlockFragilePlantElement {
     }
 
     public void m(World world, int i, int j, int k) {
-        int l = Math.min(world.getData(i, j, k) + MathHelper.nextInt(world.random, 2, 5), 7);
+        int l = world.getData(i, j, k) + MathHelper.nextInt(world.random, 2, 5);
+
+        if (l > 7) {
+            l = 7;
+        }
 
         CraftEventFactory.handleBlockGrowEvent(world, i, j, k, this, l); // CraftBukkit
     }

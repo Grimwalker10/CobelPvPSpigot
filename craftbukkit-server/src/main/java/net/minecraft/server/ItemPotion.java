@@ -1,124 +1,148 @@
 package net.minecraft.server;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-public class ItemPotion extends Item
-{
-    private Map<Integer, List<MobEffect>> a;
-    private static final Map b;
+public class ItemPotion extends Item {
+
+    private HashMap a = new HashMap();
+    private static final Map b = new LinkedHashMap();
 
     public ItemPotion() {
-        this.a = new HashMap<>();
         this.e(1);
         this.a(true);
         this.setMaxDurability(0);
         this.a(CreativeModeTab.k);
     }
 
-    public List<MobEffect> g(final ItemStack itemStack) {
-        if (!itemStack.hasTag() || !itemStack.getTag().hasKeyOfType("CustomPotionEffects", 9)) {
-            List<MobEffect> effects = this.a.get(itemStack.getData());
-            if (effects == null) {
-                effects = PotionBrewer.getEffects(itemStack.getData(), false);
-                this.a.put(itemStack.getData(), effects);
+    public List g(ItemStack itemstack) {
+        if (itemstack.hasTag() && itemstack.getTag().hasKeyOfType("CustomPotionEffects", 9)) {
+            ArrayList arraylist = new ArrayList();
+            NBTTagList nbttaglist = itemstack.getTag().getList("CustomPotionEffects", 10);
+
+            for (int i = 0; i < nbttaglist.size(); ++i) {
+                NBTTagCompound nbttagcompound = nbttaglist.get(i);
+                MobEffect mobeffect = MobEffect.b(nbttagcompound);
+
+                if (mobeffect != null) {
+                    arraylist.add(mobeffect);
+                }
             }
-            return effects;
-        }
-        final List<MobEffect> list = new ArrayList<>();
-        final NBTTagList list2 = itemStack.getTag().getList("CustomPotionEffects", 10);
-        for (int i = 0; i < list2.size(); ++i) {
-            final MobEffect b = MobEffect.b(list2.get(i));
-            if (b != null) {
-                list.add(b);
+
+            return arraylist;
+        } else {
+            List list = (List) this.a.get(Integer.valueOf(itemstack.getData()));
+
+            if (list == null) {
+                list = PotionBrewer.getEffects(itemstack.getData(), false);
+                this.a.put(Integer.valueOf(itemstack.getData()), list);
             }
+
+            return list;
         }
+    }
+
+    public List c(int i) {
+        List list = (List) this.a.get(Integer.valueOf(i));
+
+        if (list == null) {
+            list = PotionBrewer.getEffects(i, false);
+            this.a.put(Integer.valueOf(i), list);
+        }
+
         return list;
     }
 
-    public List c(final int n) {
-        List<MobEffect> effects = this.a.get(n);
-        if (effects == null) {
-            effects = PotionBrewer.getEffects(n, false);
-            this.a.put(n, effects);
+    public ItemStack b(ItemStack itemstack, World world, EntityHuman entityhuman) {
+        if (!entityhuman.abilities.canInstantlyBuild) {
+            --itemstack.count;
         }
-        return effects;
-    }
 
-    @Override
-    public ItemStack b(final ItemStack itemStack, final World world, final EntityHuman entityHuman) {
-        if (!entityHuman.abilities.canInstantlyBuild) {
-            --itemStack.count;
-        }
         if (!world.isStatic) {
-            final List<MobEffect> g = this.g(itemStack);
-            if (g != null) {
-                final Iterator<MobEffect> iterator = g.iterator();
+            List list = this.g(itemstack);
+
+            if (list != null) {
+                Iterator iterator = list.iterator();
+
                 while (iterator.hasNext()) {
-                    entityHuman.addEffect(new MobEffect(iterator.next()));
+                    MobEffect mobeffect = (MobEffect) iterator.next();
+
+                    entityhuman.addEffect(new MobEffect(mobeffect));
                 }
             }
         }
-        if (!entityHuman.abilities.canInstantlyBuild) {
-            if (itemStack.count <= 0) {
+
+        if (!entityhuman.abilities.canInstantlyBuild) {
+            if (itemstack.count <= 0) {
                 return new ItemStack(Items.GLASS_BOTTLE);
             }
-            entityHuman.inventory.pickup(new ItemStack(Items.GLASS_BOTTLE));
+
+            entityhuman.inventory.pickup(new ItemStack(Items.GLASS_BOTTLE));
         }
-        return itemStack;
+
+        return itemstack;
     }
 
-    @Override
-    public int d_(final ItemStack itemStack) {
+    public int d_(ItemStack itemstack) {
         return 32;
     }
 
-    @Override
-    public EnumAnimation d(final ItemStack itemStack) {
+    public EnumAnimation d(ItemStack itemstack) {
         return EnumAnimation.DRINK;
     }
 
-    @Override
-    public ItemStack a(final ItemStack itemStack, final World world, final EntityHuman entityHuman) {
-        if (g(itemStack.getData())) {
-            if (!entityHuman.abilities.canInstantlyBuild) {
-                --itemStack.count;
+    public ItemStack a(ItemStack itemstack, World world, EntityHuman entityhuman) {
+        if (g(itemstack.getData())) {
+            // CobelPvP start
+            if (!world.isStatic && world.addEntity(new EntityPotion(world, entityhuman, itemstack))) {
+                if (!entityhuman.abilities.canInstantlyBuild) {
+                    --itemstack.count;
+                }
+
+                world.makeSound(entityhuman, "random.bow", 0.5F, 0.4F / (g.nextFloat() * 0.4F + 0.8F));
             }
-            world.makeSound(entityHuman, "random.bow", 0.5f, 0.4f / (ItemPotion.g.nextFloat() * 0.4f + 0.8f));
-            if (!world.isStatic) {
-                world.addEntity(new EntityPotion(world, entityHuman, itemStack));
-            }
-            return itemStack;
+            // CobelPvP end
+
+            return itemstack;
+        } else {
+            entityhuman.a(itemstack, this.d_(itemstack));
+            return itemstack;
         }
-        entityHuman.a(itemStack, this.d_(itemStack));
-        return itemStack;
     }
 
-    @Override
-    public boolean interactWith(final ItemStack itemStack, final EntityHuman entityHuman, final World world, final int n, final int n2, final int n3, final int n4, final float n5, final float n6, final float n7) {
+    public boolean interactWith(ItemStack itemstack, EntityHuman entityhuman, World world, int i, int j, int k, int l, float f, float f1, float f2) {
         return false;
     }
 
-    public static boolean g(final int n) {
-        return (n & 0x4000) != 0x0;
+    public static boolean g(int i) {
+        return (i & 16384) != 0;
     }
 
-    @Override
-    public String n(final ItemStack itemstack) {
+    public String n(ItemStack itemstack) {
         if (itemstack.getData() == 0) {
             return LocaleI18n.get("item.emptyPotion.name").trim();
-        }
-        String string = "";
-        if (g(itemstack.getData())) {
-            string = LocaleI18n.get("potion.prefix.grenade").trim() + " ";
-        }
-        final List<MobEffect> g = Items.POTION.g(itemstack);
-        if (g != null && !g.isEmpty()) {
-            return string + LocaleI18n.get(g.get(0).f() + ".postfix").trim();
-        }
-        return LocaleI18n.get(PotionBrewer.c(itemstack.getData())).trim() + " " + super.n(itemstack);
-    }
+        } else {
+            String s = "";
 
-    static {
-        b = new LinkedHashMap();
+            if (g(itemstack.getData())) {
+                s = LocaleI18n.get("potion.prefix.grenade").trim() + " ";
+            }
+
+            List list = Items.POTION.g(itemstack);
+            String s1;
+
+            if (list != null && !list.isEmpty()) {
+                s1 = ((MobEffect) list.get(0)).f();
+                s1 = s1 + ".postfix";
+                return s + LocaleI18n.get(s1).trim();
+            } else {
+                s1 = PotionBrewer.c(itemstack.getData());
+                return LocaleI18n.get(s1).trim() + " " + super.n(itemstack);
+            }
+        }
     }
 }

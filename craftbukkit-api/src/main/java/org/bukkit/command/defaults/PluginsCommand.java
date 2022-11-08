@@ -1,8 +1,7 @@
 package org.bukkit.command.defaults;
 
 import java.util.Arrays;
-import java.util.Map;
-import java.util.TreeMap;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -26,23 +25,20 @@ public class PluginsCommand extends BukkitCommand {
     }
 
     private String getPluginList() {
-        TreeMap<String, ChatColor> plugins = new TreeMap<String, ChatColor>(String.CASE_INSENSITIVE_ORDER);
-        for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
-            plugins.put(plugin.getDescription().getName(), plugin.isEnabled() ? ChatColor.GREEN : ChatColor.RED);
-        }
-
         StringBuilder pluginList = new StringBuilder();
-        for (Map.Entry<String, ChatColor> entry : plugins.entrySet()) {
+        Plugin[] plugins = Bukkit.getPluginManager().getPlugins();
+
+        for (Plugin plugin : plugins) {
             if (pluginList.length() > 0) {
-                pluginList.append(ChatColor.GREEN);
+                pluginList.append(ChatColor.GOLD);
                 pluginList.append(", ");
             }
 
-            pluginList.append(entry.getValue());
-            pluginList.append(entry.getKey());
+            pluginList.append(plugin.isEnabled() ? ChatColor.GREEN : ChatColor.RED);
+            pluginList.append(plugin.getDescription().getName());
         }
 
-        return "(" + plugins.size() + "): " + pluginList.toString();
+        return ChatColor.GOLD + "(" + ChatColor.GREEN + plugins.length + ChatColor.GOLD + "): " + ChatColor.RESET + pluginList.toString();
     }
 
     // Spigot Start

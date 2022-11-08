@@ -7,13 +7,9 @@ import org.bukkit.inventory.ItemStack;
  */
 public interface Item extends Entity {
 
-    public Entity getOwner();
-
-    public void setOwner(Entity newOwner);
-
     /**
      * Gets the item stack associated with this item drop.
-     *c
+     *
      * @return An item stack.
      */
     public ItemStack getItemStack();

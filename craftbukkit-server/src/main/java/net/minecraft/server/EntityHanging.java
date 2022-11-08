@@ -2,10 +2,13 @@ package net.minecraft.server;
 
 import java.util.Iterator;
 import java.util.List;
+
+// CraftBukkit start
 import org.bukkit.entity.Hanging;
 import org.bukkit.entity.Painting;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.painting.PaintingBreakEvent;
+// CraftBukkit end
 
 public abstract class EntityHanging extends Entity {
 
@@ -54,21 +57,33 @@ public abstract class EntityHanging extends Entity {
 
         if (i == 2) {
             f5 -= f6;
-            f3 -= this.c(this.f());
         }
 
         if (i == 1) {
             f3 -= f6;
-            f5 += this.c(this.f());
         }
 
         if (i == 0) {
             f5 += f6;
-            f3 += this.c(this.f());
         }
 
         if (i == 3) {
             f3 += f6;
+        }
+
+        if (i == 2) {
+            f3 -= this.c(this.f());
+        }
+
+        if (i == 1) {
+            f5 += this.c(this.f());
+        }
+
+        if (i == 0) {
+            f3 += this.c(this.f());
+        }
+
+        if (i == 3) {
             f5 -= this.c(this.f());
         }
 
@@ -92,7 +107,14 @@ public abstract class EntityHanging extends Entity {
             if (!this.dead && !this.survives()) {
                 // CraftBukkit start - fire break events
                 Material material = this.world.getType((int) this.locX, (int) this.locY, (int) this.locZ).getMaterial();
-                HangingBreakEvent.RemoveCause cause = (!material.equals(Material.AIR) ? HangingBreakEvent.RemoveCause.OBSTRUCTION : HangingBreakEvent.RemoveCause.PHYSICS);
+                HangingBreakEvent.RemoveCause cause;
+
+                if (!material.equals(Material.AIR)) {
+                    // TODO: This feels insufficient to catch 100% of suffocation cases
+                    cause = HangingBreakEvent.RemoveCause.OBSTRUCTION;
+                } else {
+                    cause = HangingBreakEvent.RemoveCause.PHYSICS;
+                }
 
                 HangingBreakEvent event = new HangingBreakEvent((Hanging) this.getBukkitEntity(), cause);
                 this.world.getServer().getPluginManager().callEvent(event);
@@ -146,7 +168,13 @@ public abstract class EntityHanging extends Entity {
 
             for (int j1 = 0; j1 < i; ++j1) {
                 for (int k1 = 0; k1 < j; ++k1) {
-                    Material material = (this.direction != 2 && this.direction != 0 ? this.world.getType(this.x, l + k1, i1 + j1).getMaterial() : this.world.getType(k + j1, l + k1, this.z).getMaterial());
+                    Material material;
+
+                    if (this.direction != 2 && this.direction != 0) {
+                        material = this.world.getType(this.x, l + k1, i1 + j1).getMaterial();
+                    } else {
+                        material = this.world.getType(k + j1, l + k1, this.z).getMaterial();
+                    }
 
                     if (!material.isBuildable()) {
                         return false;
@@ -255,20 +283,20 @@ public abstract class EntityHanging extends Entity {
         nbttagcompound.setInt("TileY", this.y);
         nbttagcompound.setInt("TileZ", this.z);
         switch (this.direction) {
-            case 0:
-                nbttagcompound.setByte("Dir", (byte) 2);
-                break;
+        case 0:
+            nbttagcompound.setByte("Dir", (byte) 2);
+            break;
 
-            case 1:
-                nbttagcompound.setByte("Dir", (byte) 1);
-                break;
+        case 1:
+            nbttagcompound.setByte("Dir", (byte) 1);
+            break;
 
-            case 2:
-                nbttagcompound.setByte("Dir", (byte) 0);
-                break;
+        case 2:
+            nbttagcompound.setByte("Dir", (byte) 0);
+            break;
 
-            case 3:
-                nbttagcompound.setByte("Dir", (byte) 3);
+        case 3:
+            nbttagcompound.setByte("Dir", (byte) 3);
         }
     }
 
@@ -277,20 +305,20 @@ public abstract class EntityHanging extends Entity {
             this.direction = nbttagcompound.getByte("Direction");
         } else {
             switch (nbttagcompound.getByte("Dir")) {
-                case 0:
-                    this.direction = 2;
-                    break;
+            case 0:
+                this.direction = 2;
+                break;
 
-                case 1:
-                    this.direction = 1;
-                    break;
+            case 1:
+                this.direction = 1;
+                break;
 
-                case 2:
-                    this.direction = 0;
-                    break;
+            case 2:
+                this.direction = 0;
+                break;
 
-                case 3:
-                    this.direction = 3;
+            case 3:
+                this.direction = 3;
             }
         }
 

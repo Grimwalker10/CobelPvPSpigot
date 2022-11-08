@@ -112,6 +112,11 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
     public int autosavePeriod;
     // CraftBukkit end
+    // Spigot start
+    private static final int TPS = 20;
+    private static final int TICK_TIME = 1000000000 / TPS;
+    private static final int SAMPLE_INTERVAL = 100;
+    public final double[] recentTps = new double[ 3 ];
     // Spigot end
     protected boolean abnormalTermination; // SportBukkit
 
@@ -240,7 +245,12 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
             if (j == 0) {
                 IDataManager idatamanager = new ServerNBTManager(server.getWorldContainer(), s1, true);
-                world = (this.R() ? new DemoWorldServer(this, idatamanager, s1, dimension, this.methodProfiler) : new WorldServer(this, idatamanager, s1, dimension, worldsettings, this.methodProfiler, Environment.getEnvironment(dimension), gen));
+                if (this.R()) {
+                    world = new DemoWorldServer(this, idatamanager, s1, dimension, this.methodProfiler);
+                } else {
+                    // world =, b0 to dimension, added Environment and gen
+                    world = new WorldServer(this, idatamanager, s1, dimension, worldsettings, this.methodProfiler, Environment.getEnvironment(dimension), gen);
+                }
                 this.server.scoreboardManager = new org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager(this, world.getScoreboard());
             } else {
                 String dim = "DIM" + dimension;
@@ -461,61 +471,13 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.isRunning = false;
     }
 
-    // PaperSpigot start - Further improve tick loop
-    private static final int TPS = 20;
-    private static final long SEC_IN_NANO = 1000000000;
-    private static final long TICK_TIME = SEC_IN_NANO / TPS;
-    private static final long MAX_CATCHUP_BUFFER = TICK_TIME * TPS * 60L;
-    private static final int SAMPLE_INTERVAL = 20;
-    public final RollingAverage tps1 = new RollingAverage(60);
-    public final RollingAverage tps5 = new RollingAverage(60*5);
-    public final RollingAverage tps15 = new RollingAverage(60*15);
-    public double[] recentTps = new double[ 3 ]; // PaperSpigot - Fine have your darn compat with bad plugins
-    public static long LAST_TICK_TIME;
-
-    public static class RollingAverage {
-        private final int size;
-        private long time;
-        private java.math.BigDecimal total;
-        private int index = 0;
-        private final java.math.BigDecimal[] samples;
-        private final long[] times;
-
-        RollingAverage(int size) {
-            this.size = size;
-            this.time = size * SEC_IN_NANO;
-            this.total = dec(TPS).multiply(dec(SEC_IN_NANO)).multiply(dec(size));
-            this.samples = new java.math.BigDecimal[size];
-            this.times = new long[size];
-            for (int i = 0; i < size; i++) {
-                this.samples[i] = dec(TPS);
-                this.times[i] = SEC_IN_NANO;
-            }
-        }
-
-        private static java.math.BigDecimal dec(long t) {
-            return new java.math.BigDecimal(t);
-        }
-
-        public void add(java.math.BigDecimal x, long t) {
-            time -= times[index];
-            total = total.subtract(samples[index].multiply(dec(times[index])));
-            samples[index] = x;
-            times[index] = t;
-            time += t;
-            total = total.add(x.multiply(dec(t)));
-            if (++index == size) {
-                index = 0;
-            }
-        }
-
-        public double getAverage() {
-            return total.divide(dec(time), 30, java.math.RoundingMode.HALF_UP).doubleValue();
-        }
+    // Spigot Start
+    private static double calcTps(double avg, double exp, double tps)
+    {
+        return ( avg * exp ) + ( tps * ( 1 - exp ) );
     }
-    private static final java.math.BigDecimal TPS_BASE = new java.math.BigDecimal(1E9).multiply(new java.math.BigDecimal(SAMPLE_INTERVAL));
-    // PaperSpigot End
-
+    // Spigot End
+ 
     public void run() {
         try {
             if (this.init()) {
@@ -527,66 +489,44 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.a(this.q);
 
                 // Spigot start
-                // PaperSpigot start - Further improve tick loop
                 Arrays.fill( recentTps, 20 );
-                //long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
-                long start = System.nanoTime(), lastTick = start - TICK_TIME, catchupTime = 0, curTime, wait, tickSection = start;
-                // PaperSpigot end
+                long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
                 while (this.isRunning) {
                     curTime = System.nanoTime();
-                    // PaperSpigot start - Further improve tick loop
-                    wait = TICK_TIME - (curTime - lastTick);
-                    if (wait > 0) {
-                        if (catchupTime < 2E6) {
-                            wait += Math.abs(catchupTime);
-                        } else if (wait < catchupTime) {
-                            catchupTime -= wait;
-                            wait = 0;
-                        } else {
-                            wait -= catchupTime;
-                            catchupTime = 0;
-                        }
-                    }
+                    wait = TICK_TIME - (curTime - lastTick) - catchupTime;
                     if (wait > 0) {
                         Thread.sleep(wait / 1000000);
-                        curTime = System.nanoTime();
-                        wait = TICK_TIME - (curTime - lastTick);
+                        catchupTime = 0;
+                        continue;
+                    } else {
+                        catchupTime = Math.min(1000000000, Math.abs(wait));
                     }
 
-                    catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime - wait);
-                    // Paperspigot end
-
-                    if ( ++MinecraftServer.currentTick % SAMPLE_INTERVAL == 0 ) // PaperSpigot - Further improve tick loop
+                    if ( MinecraftServer.currentTick++ % SAMPLE_INTERVAL == 0 )
                     {
-                        // PaperSpigot start - Further improve tick loop
-                        final long diff = curTime - tickSection;
-                        java.math.BigDecimal currentTps = TPS_BASE.divide(new java.math.BigDecimal(diff), 30, java.math.RoundingMode.HALF_UP);
-                        tps1.add(currentTps, diff);
-                        tps5.add(currentTps, diff);
-                        tps15.add(currentTps, diff);
-                        // Backwards compat with bad plugins
-                        recentTps[0] = tps1.getAverage();
-                        recentTps[1] = tps5.getAverage();
-                        recentTps[2] = tps15.getAverage();
+                        double currentTps = 1E9 / ( curTime - tickSection ) * SAMPLE_INTERVAL;
+                        recentTps[0] = calcTps( recentTps[0], 0.92, currentTps ); // 1/exp(5sec/1min)
+                        recentTps[1] = calcTps( recentTps[1], 0.9835, currentTps ); // 1/exp(5sec/5min)
+                        recentTps[2] = calcTps( recentTps[2], 0.9945, currentTps ); // 1/exp(5sec/15min)
                         tickSection = curTime;
-                        // PaperSpigot end
                     }
                     lastTick = curTime;
-                    LAST_TICK_TIME = System.currentTimeMillis();
 
                     this.u();
                     this.O = true;
                 }
                 // Spigot end
             } else {
-                this.a((CrashReport) null);
+                //this.a((CrashReport) null); // CraftBukkit - if init fails, stop the server
+                this.abnormalTermination = true; // SportBukkit
             }
         } catch (Throwable throwable) {
-            i.error("Encountered an unexpected exception", throwable);
+            this.abnormalTermination = true; // SportBukkit
+            getLogger().error("Encountered an unexpected exception", throwable);
             // Spigot Start
             if ( throwable.getCause() != null )
             {
-                i.error( "\tCause of unexpected exception was", throwable.getCause() );
+                getLogger().error( "\tCause of unexpected exception was", throwable.getCause() );
             }
             // Spigot End
             CrashReport crashreport = null;
@@ -600,9 +540,9 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             File file1 = new File(new File(this.s(), "crash-reports"), "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-server.txt");
 
             if (crashreport.a(file1)) {
-                i.error("This crash report has been saved to: " + file1.getAbsolutePath());
+                getLogger().error("This crash report has been saved to: " + file1.getAbsolutePath());
             } else {
-                i.error("We were unable to save this crash report to disk.");
+                getLogger().error("We were unable to save this crash report to disk.");
             }
 
             this.a(crashreport);
@@ -612,7 +552,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.stop();
                 this.isStopped = true;
             } catch (Throwable throwable1) {
-                i.error("Exception stopping the server", throwable1);
+                getLogger().error("Exception stopping the server", throwable1);
             } finally {
                 // CraftBukkit start - Restore terminal to original settings
                 try {
@@ -773,19 +713,10 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
         SpigotTimings.timeUpdateTimer.startTiming(); // Spigot
         // Send time updates to everyone, it will get the right time from the world the player is in.
-        for (final WorldServer world : this.worlds) {
-            final boolean doDaylight = world.getGameRules().getBoolean("doDaylightCycle");
-            final long dayTime = world.getDayTime();
-            long worldTime = world.getTime();
-            final PacketPlayOutUpdateTime worldPacket = new PacketPlayOutUpdateTime(worldTime, dayTime, doDaylight);
-            for (EntityHuman entityhuman : world.players) {
-                if (!(entityhuman instanceof EntityPlayer) || (ticks + entityhuman.getId()) % 20 != 0) {
-                    continue;
-                }
-                EntityPlayer entityplayer = (EntityPlayer) entityhuman;
-                long playerTime = entityplayer.getPlayerTime();
-                PacketPlayOutUpdateTime packet = (playerTime == dayTime) ? worldPacket : new PacketPlayOutUpdateTime(worldTime, playerTime, doDaylight);
-                entityplayer.playerConnection.sendPacket(packet); // Add support for per player time
+        if (this.ticks % 20 == 0) {
+            for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
+                EntityPlayer entityplayer = (EntityPlayer) this.getPlayerList().players.get(i);
+                entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
             }
         }
         SpigotTimings.timeUpdateTimer.stopTiming(); // Spigot
@@ -852,7 +783,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.methodProfiler.a("tracker");
                 worldserver.timings.tracker.startTiming(); // Spigot
                 PRE_ENTITY_TRACKER_RUNNABLE_LIST.forEach(Runnable::run);
-                if (u.players.size() > 0) worldserver.getTracker().updatePlayers();
+                worldserver.getTracker().updatePlayers();
                 POST_ENTITY_TRACKER_RUNNABLE_LIST.forEach(Runnable::run);
                 worldserver.timings.tracker.stopTiming(); // Spigot
                 this.methodProfiler.b();
@@ -1146,7 +1077,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public List a(ICommandListener icommandlistener, String s) {
         // CraftBukkit start - Allow tab-completion of Bukkit commands
         /*
-        List arraylist = new ArrayList();
+        ArrayList arraylist = new ArrayList();
 
         if (s.startsWith("/")) {
             s = s.substring(1);
@@ -1159,7 +1090,11 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 while (iterator.hasNext()) {
                     String s1 = (String) iterator.next();
 
-                    arraylist.add((flag ? "/" : "") + s1);
+                    if (flag) {
+                        arraylist.add("/" + s1);
+                    } else {
+                        arraylist.add(s1);
+                    }
                 }
             }
 

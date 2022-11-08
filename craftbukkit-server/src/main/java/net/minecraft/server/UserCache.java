@@ -17,7 +17,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-import net.minecraft.util.org.apache.commons.lang3.StringUtils;
 import org.spigotmc.SpigotConfig;
 
 import net.minecraft.util.com.google.common.base.Charsets;
@@ -57,7 +56,7 @@ public class UserCache {
         GameProfileLookup gameprofilelookup = new GameProfileLookup(agameprofile);
 
         minecraftserver.getGameProfileRepository().findProfilesByNames(new String[] { s}, Agent.MINECRAFT, gameprofilelookup);
-        if (!minecraftserver.getOnlineMode() && agameprofile[0] == null && !StringUtils.isBlank(s)) {
+        if (!minecraftserver.getOnlineMode() && agameprofile[0] == null) {
             UUID uuid = EntityHuman.a(new GameProfile((UUID) null, s));
             GameProfile gameprofile = new GameProfile(uuid, s);
 

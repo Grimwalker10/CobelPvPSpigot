@@ -199,7 +199,7 @@ public class PlayerConnection implements PacketPlayInListener {
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
 
         this.g = true;
-        if (!this.player.viewingCredits && !this.player.dead) {
+        if (!this.player.viewingCredits) {
             double d0;
 
             if (!this.checkMovement) {
@@ -212,7 +212,8 @@ public class PlayerConnection implements PacketPlayInListener {
             // CraftBukkit start - fire PlayerMoveEvent
             Player player = this.getPlayer();
             // Spigot Start
-            if (!hasMoved) {
+            if ( !hasMoved )
+            {
                 Location curPos = player.getLocation();
                 lastPosX = curPos.getX();
                 lastPosY = curPos.getY();
@@ -238,57 +239,60 @@ public class PlayerConnection implements PacketPlayInListener {
                 to.setPitch(packetplayinflying.pitch);
             }
 
-            if (this.checkMovement && !this.player.dead) {
-                // Prevent 40 event-calls for less than a single pixel of movement >.>
-                final double delta = Math.pow(this.lastPosX - to.getX(), 2.0D) + Math.pow(this.lastPosY - to.getY(), 2.0D) + Math.pow(this.lastPosZ - to.getZ(), 2.0D);
-                final float deltaAngle = Math.abs(this.lastYaw - to.getYaw()) + Math.abs(this.lastPitch - to.getPitch());
-                if (deltaAngle > 10.0F) {
-                    this.lastYaw = to.getYaw();
-                    this.lastPitch = to.getPitch();
-                }
-                if (delta > 0.00390625D) {
-                    this.lastPosX = to.getX();
-                    this.lastPosY = to.getY();
-                    this.lastPosZ = to.getZ();
+            // Prevent 40 event-calls for less than a single pixel of movement >.>
+            double delta = Math.pow(this.lastPosX - to.getX(), 2) + Math.pow(this.lastPosY - to.getY(), 2) + Math.pow(this.lastPosZ - to.getZ(), 2);
+            float deltaAngle = Math.abs(this.lastYaw - to.getYaw()) + Math.abs(this.lastPitch - to.getPitch());
 
-                    // Skip the first time we do this
-                    if (true) { // Spigot - don't skip any move events
-                        Location oldTo = to.clone(); // PaperSpigot
-                        PlayerMoveEvent event = new PlayerMoveEvent(player, from, to);
-                        this.server.getPluginManager().callEvent(event);
+            if ((delta > 1f / 256 || deltaAngle > 10f) && (this.checkMovement && !this.player.dead)) {
+                this.lastPosX = to.getX();
+                this.lastPosY = to.getY();
+                this.lastPosZ = to.getZ();
+                this.lastYaw = to.getYaw();
+                this.lastPitch = to.getPitch();
 
-                        // If the event is cancelled we move the player back to their old location.
-                        if (event.isCancelled()) {
-                            //this.player.playerConnection.sendPacket(new PacketPlayOutPosition(from.getX(), from.getY() + 1.6200000047683716D, from.getZ(), from.getYaw(), from.getPitch(), false));
-                            teleport(from);
-                            return;
-                        }
+                // Skip the first time we do this
+                if (true) { // Spigot - don't skip any move events
+                    Location oldTo = to.clone(); // PaperSpigot
+                    PlayerMoveEvent event = new PlayerMoveEvent(player, from, to);
+                    this.server.getPluginManager().callEvent(event);
 
-                        /* If a Plugin has changed the To destination then we teleport the Player
-                        there to avoid any 'Moved wrongly' or 'Moved too quickly' errors.
-                        We only do this if the Event was not cancelled. */
-                        if ((!oldTo.equals(event.getTo())) && (!event.isCancelled())) {
-                            this.player.getBukkitEntity().teleport(event.getTo(), PlayerTeleportEvent.TeleportCause.UNKNOWN);
-                            return;
-                        }
+                    // If the event is cancelled we move the player back to their old location.
+                    if (event.isCancelled()) {
+                        this.player.playerConnection.sendPacket(new PacketPlayOutPosition(from.getX(), from.getY() + 1.6200000047683716D, from.getZ(), from.getYaw(), from.getPitch(), false));
+                        return;
+                    }
 
-                        /* Check to see if the Players Location has some how changed during the call of the event.
-                        This can happen due to a plugin teleporting the player instead of using .setTo() */
-                        if ((!from.equals(getPlayer().getLocation())) && (this.justTeleported)) {
-                            this.justTeleported = false;
-                            return;
-                        }
+                    /* If a Plugin has changed the To destination then we teleport the Player
+                    there to avoid any 'Moved wrongly' or 'Moved too quickly' errors.
+                    We only do this if the Event was not cancelled. */
+                    if (!oldTo.equals(event.getTo()) && !event.isCancelled()) { // PaperSpigot
+                        this.player.getBukkitEntity().teleport(event.getTo(), PlayerTeleportEvent.TeleportCause.UNKNOWN);
+                        return;
+                    }
+
+                    /* Check to see if the Players Location has some how changed during the call of the event.
+                    This can happen due to a plugin teleporting the player instead of using .setTo() */
+                    if (!from.equals(this.getPlayer().getLocation()) && this.justTeleported) {
+                        this.justTeleported = false;
+                        return;
                     }
                 }
+            }
+
+            if (this.checkMovement && !this.player.dead) {
+                // CraftBukkit end
+                double d1;
+                double d2;
+                double d3;
 
                 if (this.player.vehicle != null) {
                     float f = this.player.yaw;
                     float f1 = this.player.pitch;
 
                     this.player.vehicle.ac();
-                    double d1 = this.player.locX;
-                    double d2 = this.player.locY;
-                    double d3 = this.player.locZ;
+                    d1 = this.player.locX;
+                    d2 = this.player.locY;
+                    d3 = this.player.locZ;
                     if (packetplayinflying.k()) {
                         f = packetplayinflying.g();
                         f1 = packetplayinflying.h();
@@ -324,9 +328,9 @@ public class PlayerConnection implements PacketPlayInListener {
                 this.y = this.player.locX;
                 this.z = this.player.locY;
                 this.q = this.player.locZ;
-                double d1 = this.player.locX;
-                double d2 = this.player.locY;
-                double d3 = this.player.locZ;
+                d1 = this.player.locX;
+                d2 = this.player.locY;
+                d3 = this.player.locZ;
                 float f2 = this.player.yaw;
                 float f3 = this.player.pitch;
 
@@ -376,11 +380,21 @@ public class PlayerConnection implements PacketPlayInListener {
                 double d10 = d7 * d7 + d8 * d8 + d9 * d9;
 
                 // Spigot: make "moved too quickly" limit configurable
+                // CobelPvP start
+                boolean violationDelayPassed = (this.lastViolationTick + 60 < MinecraftServer.currentTick);
+                if(this.movedTooQuicklyViolations > 0 && violationDelayPassed) {
+                    c.warn(this.player.getName() + " moved too quickly! Violations: " + this.movedTooQuicklyViolations);
+                    this.movedTooQuicklyViolations = 0;
+                }
                 if (d10 > org.spigotmc.SpigotConfig.movedTooQuicklyThreshold && this.checkMovement && (!this.minecraftServer.N() || !this.minecraftServer.M().equals(this.player.getName()))) { // CraftBukkit - Added this.checkMovement condition to solve this check being triggered by teleports
-                    c.warn(this.player.getName() + " moved too quickly! " + d4 + "," + d5 + "," + d6 + " (" + d7 + ", " + d8 + ", " + d9 + ")");
+                    this.movedTooQuicklyViolations++;
+                    this.lastViolationTick = MinecraftServer.currentTick;
+                    // CobelPvP end
                     this.a(this.y, this.z, this.q, this.player.yaw, this.player.pitch);
                     return;
                 }
+
+                SpigotTimings.connectionTimer_PacketFlying_move.startTiming(); // CobelPvP
 
                 float f4 = 0.0625F;
                 boolean flag = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
@@ -405,18 +419,47 @@ public class PlayerConnection implements PacketPlayInListener {
                 boolean flag1 = false;
 
                 // Spigot: make "moved wrongly" limit configurable
-                if (d10 > org.spigotmc.SpigotConfig.movedWronglyThreshold && !this.player.isSleeping() && !this.player.playerInteractManager.isCreative()) {
-                    flag1 = true;
-                    c.warn(this.player.getName() + " moved wrongly!");
+                // CobelPvP start
+                double positionOffset = d10;
+                if(this.player.playerInteractManager.isCreative()) {
+                    positionOffset *= 2.0D;
                 }
 
+                if(this.movedWronglyViolations > 0 && violationDelayPassed) {
+                    c.warn(this.player.getName() + " moved wrongly! Violations: " + this.movedWronglyViolations + " Average Offset: " + String.format("%.2f", (this.offsetDistanceSum / (double) this.movedWronglyViolations)));
+                    this.movedWronglyViolations = 0;
+                    this.offsetDistanceSum = 0.0D;
+                }
+
+                if (positionOffset > org.spigotmc.SpigotConfig.movedWronglyThreshold && !this.player.isSleeping()) {
+                    flag1 = true;
+                    this.lastViolationTick = MinecraftServer.currentTick;
+                    this.movedWronglyViolations++;
+                    this.offsetDistanceSum += MathHelper.sqrt(d10);
+                }
+                // CobelPvP end
+
+                // CobelPvP start
+                double calculatedX = this.player.locX;
+                double calculatedY = this.player.locY;
+                double calculatedZ = this.player.locZ;
                 this.player.setLocation(d1, d2, d3, f2, f3);
                 boolean flag2 = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
+                boolean rayTraceCollision = delta > 0.3 && worldserver.rayTrace(Vec3D.a(this.y, this.z + 1.0, this.q), Vec3D.a(d1, d2 + 1.0, d3), false, true, false) != null;
 
-                if (flag && (flag1 || !flag2) && !this.player.isSleeping()) {
-                    this.a(this.y, this.z, this.q, f2, f3);
+                this.player.setLocation(calculatedX, calculatedY, calculatedZ, f2, f3);
+
+                SpigotTimings.connectionTimer_PacketFlying_move.stopTiming(); // CobelPvP
+
+                if (flag1 || (!this.player.isSleeping() && flag && !flag2) || rayTraceCollision) {
+                    if(!rayTraceCollision && !flag && e % 3 != 0) {
+                        this.player.setPosition(this.y, this.z, this.q);
+                    } else {
+                        this.a(this.y, this.z, this.q, f2, f3);
+                    }
                     return;
                 }
+                // CobelPvP end
 
                 AxisAlignedBB axisalignedbb = this.player.boundingBox.clone().grow((double) f4, (double) f4, (double) f4).a(0.0D, -0.55D, 0.0D);
 
@@ -434,7 +477,9 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
 
                 this.player.onGround = packetplayinflying.i();
+                SpigotTimings.connectionTimer_PacketFlying_playerChunks.startTiming(); // CobelPvP
                 this.minecraftServer.getPlayerList().d(this.player);
+                SpigotTimings.connectionTimer_PacketFlying_playerChunks.stopTiming(); // CobelPvP
                 this.player.b(this.player.locY - d0, packetplayinflying.i());
             } else if (this.e % 20 == 0) {
                 this.a(this.y, this.z, this.q, this.player.yaw, this.player.pitch);
@@ -517,7 +562,7 @@ public class PlayerConnection implements PacketPlayInListener {
             } else {
                 // Else we increment the drop count and check the amount.
                 this.dropCount++;
-                if (this.dropCount >= 12) {
+                if (this.dropCount >= 20) {
                     PlayerConnection.c.warn(this.player.getName() + " dropped their items too quickly!");
                     this.disconnect("You dropped your items too quickly (Hacking?)");
                     return;
@@ -993,27 +1038,6 @@ public class PlayerConnection implements PacketPlayInListener {
         }
 
         if (!async && s.startsWith("/")) {
-            if (!org.spigotmc.AsyncCatcher.shuttingDown && !org.bukkit.Bukkit.isPrimaryThread()) {
-                final String fCommandLine = s;
-                MinecraftServer.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Command Dispatched Async: " + fCommandLine);
-                MinecraftServer.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Please notify author of plugin causing this execution to fix this bug! see: http://bit.ly/1oSiM6C", new Throwable());
-                Waitable wait = new Waitable() {
-                    @Override
-                    protected Object evaluate() {
-                        chat(fCommandLine, false);
-                        return null;
-                    }
-                };
-                minecraftServer.processQueue.add(wait);
-                try {
-                    wait.get();
-                    return;
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // This is proper habit for java. If we aren't handling it, pass it on!
-                } catch (Exception e) {
-                    throw new RuntimeException("Exception processing chat command", e.getCause());
-                }
-            }
             this.handleCommand(s);
         } else if (this.player.getChatFlags() == EnumChatVisibility.SYSTEM) {
             // Do nothing, this is coming from a plugin
@@ -1204,7 +1228,8 @@ public class PlayerConnection implements PacketPlayInListener {
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
         Entity entity = packetplayinuseentity.a((World) worldserver);
         // Spigot Start
-        if ( entity == player ) {
+        if ( entity == player )
+        {
             disconnect( "Cannot interact with self!" );
             return;
         }
@@ -1243,7 +1268,6 @@ public class PlayerConnection implements PacketPlayInListener {
                     }
 
                     if (event.isCancelled()) {
-                        this.player.updateInventory(this.player.activeContainer);
                         return;
                     }
                     // CraftBukkit end
@@ -1369,7 +1393,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
                 if (packetplayinwindowclick.e() == 0 || packetplayinwindowclick.e() == 1) {
                     action = InventoryAction.NOTHING; // Don't want to repeat ourselves
-                    if (packetplayinwindowclick.d() < 0) {
+                    if (packetplayinwindowclick.d() == -999) {
                         if (player.inventory.getCarried() != null) {
                             action = packetplayinwindowclick.e() == 0 ? InventoryAction.DROP_ALL_CURSOR : InventoryAction.DROP_ONE_CURSOR;
                         }
@@ -1698,7 +1722,11 @@ public class PlayerConnection implements PacketPlayInListener {
             // CraftBukkit end
 
             if (flag1 && flag2 && flag3) {
-                this.player.defaultContainer.setItem(packetplayinsetcreativeslot.c(), (itemstack == null ? (ItemStack) null : itemstack));
+                if (itemstack == null) {
+                    this.player.defaultContainer.setItem(packetplayinsetcreativeslot.c(), (ItemStack) null);
+                } else {
+                    this.player.defaultContainer.setItem(packetplayinsetcreativeslot.c(), itemstack);
+                }
 
                 this.player.defaultContainer.a(this.player, true);
             } else if (flag && flag2 && flag3 && this.x < 200) {
@@ -1834,16 +1862,16 @@ public class PlayerConnection implements PacketPlayInListener {
             return;
         }
         // Spigot end
-        List<String> list = Lists.newArrayList();
-        Iterator<String> iterator = this.minecraftServer.a(this.player, packetplayintabcomplete.c()).iterator();
+        ArrayList arraylist = Lists.newArrayList();
+        Iterator iterator = this.minecraftServer.a(this.player, packetplayintabcomplete.c()).iterator();
 
         while (iterator.hasNext()) {
-            String s = iterator.next();
+            String s = (String) iterator.next();
 
-            list.add(s);
+            arraylist.add(s);
         }
 
-        this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete((String[]) list.toArray(new String[list.size()])));
+        this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete((String[]) arraylist.toArray(new String[arraylist.size()])));
     }
 
     public void a(PacketPlayInSettings packetplayinsettings) {
@@ -2074,7 +2102,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
     // CraftBukkit start - Add "isDisconnected" method
     public boolean isDisconnected() {
-        return (!this.player.joining && !this.networkManager.isConnected()) || this.processedDisconnect;
+        return !this.player.joining && !NetworkManager.a(this.networkManager).config().isAutoRead();
     }
     // CraftBukkit end
 }

@@ -1,9 +1,12 @@
 package net.minecraft.server;
 
 import java.util.List;
+
+// CraftBukkit start
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
+// CraftBukkit end
 
 public class BlockPiston extends Block {
 
@@ -356,7 +359,7 @@ public class BlockPiston extends Block {
             Block[] ablock;
             int l2;
             int i3;
-            int j3 = 0;
+            int j3;
 
             for (ablock = new Block[13]; i1 != i || j1 != j || k1 != k; k1 = j3) {
                 l2 = i1 - Facing.b[l];

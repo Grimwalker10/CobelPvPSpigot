@@ -9,15 +9,23 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+
+// PaperSpigot start
 import java.util.HashMap;
 import java.util.Map;
+
 import com.cobelpvp.generator.GeneratorConfig;
+// PaperSpigot end
+
+// CraftBukkit start
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.SpigotTimings;
+import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.generator.ChunkGenerator;
+
 import com.google.common.base.Function;
+
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -26,12 +34,16 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
+// CraftBukkit end
+
+// CobelPvP start
 import net.minecraft.optimizations.LightingUpdater;
 import net.minecraft.optimizations.PlayerMap;
 import net.minecraft.optimizations.WeakChunkCache;
 import net.minecraft.optimizations.ThreadingManager;
 import net.minecraft.optimizations.ThreadingManager.TaskQueueWorker;
 import com.cobelpvp.autosave.AutoSaveWorldData;
+// CobelPvP end
 
 public abstract class World implements IBlockAccess {
 
@@ -66,7 +78,7 @@ public abstract class World implements IBlockAccess {
     public Set tileEntityList = new org.spigotmc.WorldTileEntityList(this); // CraftBukkit - ArrayList -> HashSet
     private List a = new ArrayList();
     private List b = new ArrayList();
-    public List<EntityPlayer> players = new ArrayList<EntityPlayer>();
+    public List players = new ArrayList();
     public List i = new ArrayList();
     private long c = 16777215L;
     public int j;
@@ -106,7 +118,7 @@ public abstract class World implements IBlockAccess {
     public boolean populating;
     private int tickPosition;
     // CraftBukkit end
-    private List<AxisAlignedBB> L;
+    private ArrayList L;
     private boolean M;
     int[] I;
 
@@ -261,7 +273,7 @@ public abstract class World implements IBlockAccess {
         this.K = this.random.nextInt(12000);
         this.allowMonsters = true;
         this.allowAnimals = true;
-        this.L = new ArrayList<>();
+        this.L = new ArrayList();
         this.I = new int['\u8000'];
         this.dataManager = idatamanager;
         this.methodProfiler = methodprofiler;
@@ -374,8 +386,9 @@ public abstract class World implements IBlockAccess {
                 crashreportsystemdetails.a("Location", CrashReportSystemDetails.a(i, j, k));
                 throw new ReportedException(crashreport);
             }
+        } else {
+            return Blocks.AIR;
         }
-        return Blocks.AIR;
     }
 
     public boolean isEmpty(int i, int j, int k) {
@@ -406,8 +419,9 @@ public abstract class World implements IBlockAccess {
             }
 
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     protected boolean isChunkLoaded(int i, int j) {
@@ -501,7 +515,7 @@ public abstract class World implements IBlockAccess {
     public void notifyAndUpdatePhysics(int i, int j, int k, Chunk chunk, Block oldBlock, Block newBlock, int flag)
     {
         // should be isReady()
-        if ((flag & 2) != 0 && (!this.isStatic || (flag & 4) == 0) && (chunk == null || chunk.isReady())) { // allow chunk to be null here as chunk.isReady() is false when we send our notification during block placement
+        if ((flag & 2) != 0 && (chunk == null || chunk.isReady())) { // allow chunk to be null here as chunk.isReady() is false when we send our notification during block placement
             this.notify(i, j, k);
         }
 
@@ -662,7 +676,6 @@ public abstract class World implements IBlockAccess {
     }
 
     public void applyPhysics(int i, int j, int k, Block block) {
-        if (captureBlockStates) return;
         this.e(i - 1, j, k, block);
         this.e(i + 1, j, k, block);
         this.e(i, j - 1, k, block);
@@ -858,8 +871,9 @@ public abstract class World implements IBlockAccess {
 
                 return chunk.b(i & 15, j & 15);
             }
+        } else {
+            return 64;
         }
-        return 64;
     }
 
     public int g(int i, int j) {
@@ -1242,11 +1256,11 @@ public abstract class World implements IBlockAccess {
             entity.dead = true; // CraftBukkit
             return false;
         } else {
-            if (entity instanceof EntityPlayer) {
-                EntityPlayer entityPlayer = (EntityPlayer) entity;
+            if (entity instanceof EntityHuman) {
+                EntityHuman entityhuman = (EntityHuman) entity;
 
-                this.players.add(entityPlayer);
-                this.playerMap.add((EntityPlayer) entityPlayer); // CobelPvP
+                this.players.add(entityhuman);
+                this.playerMap.add((EntityPlayer) entityhuman); // CobelPvP 
                 this.everyoneSleeping();
                 this.b(entity);
             }
@@ -1342,7 +1356,7 @@ public abstract class World implements IBlockAccess {
         this.u.add(iworldaccess);
     }
 
-    public List<AxisAlignedBB> getCubes(Entity entity, AxisAlignedBB axisalignedbb) {
+    public List getCubes(Entity entity, AxisAlignedBB axisalignedbb) {
         this.L.clear();
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
@@ -1352,7 +1366,7 @@ public abstract class World implements IBlockAccess {
         int j1 = MathHelper.floor(axisalignedbb.f + 1.0D);
 
         // Spigot start
-        int ystart = Math.max((k - 1), 0);
+        int ystart = ( ( k - 1 ) < 0 ) ? 0 : ( k - 1 );
         for ( int chunkx = ( i >> 4 ); chunkx <= ( ( j - 1 ) >> 4 ); chunkx++ )
         {
             int cx = chunkx << 4;
@@ -1366,10 +1380,10 @@ public abstract class World implements IBlockAccess {
                 int cz = chunkz << 4;
                 Chunk chunk = this.getChunkAt( chunkx, chunkz );
                 // Compute ranges within chunk
-                int xstart = Math.max(i, cx);
-                int xend = Math.min(j, (cx + 16));
-                int zstart = Math.max(i1, cz);
-                int zend = Math.min(j1, (cz + 16));
+                int xstart = ( i < cx ) ? cx : i;
+                int xend = ( j < ( cx + 16 ) ) ? j : ( cx + 16 );
+                int zstart = ( i1 < cz ) ? cz : i1;
+                int zend = ( j1 < ( cz + 16 ) ) ? j1 : ( cz + 16 );
                 // Loop through blocks within chunk
                 for ( int x = xstart; x < xend; x++ )
                 {
@@ -1400,14 +1414,14 @@ public abstract class World implements IBlockAccess {
         /*double d0 = 0.25D;
         List list = this.getEntities(entity, axisalignedbb.grow(d0, d0, d0));
 
-        for (Object value : list) {
-            AxisAlignedBB axisalignedbb1 = ((Entity) value).J();
+        for (int j2 = 0; j2 < list.size(); ++j2) {
+            AxisAlignedBB axisalignedbb1 = ((Entity) list.get(j2)).J();
 
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
                 this.L.add(axisalignedbb1);
             }
 
-            axisalignedbb1 = entity.h((Entity) value);
+            axisalignedbb1 = entity.h((Entity) list.get(j2));
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
                 this.L.add(axisalignedbb1);
             }
@@ -1807,10 +1821,11 @@ public abstract class World implements IBlockAccess {
                     this.getChunkAt(entity.ah, entity.aj).a(entity, entity.ai);
                 }
 
-                final boolean loaded = entity.ag = this.isChunkLoaded(k, i1);
-
-                if (loaded) {
+                if (this.isChunkLoaded(k, i1)) {
+                    entity.ag = true;
                     this.getChunkAt(k, i1).a(entity);
+                } else {
+                    entity.ag = false;
                 }
             }
 
@@ -2340,7 +2355,7 @@ public abstract class World implements IBlockAccess {
                     this.p = (float) ((double) this.p - 0.01D);
                 }
 
-                this.p = MathHelper.limit(this.p, 0.0F, 1.0F);
+                this.p = MathHelper.a(this.p, 0.0F, 1.0F);
                 int j = this.worldData.getWeatherDuration();
 
                 if (j <= 0) {
@@ -2365,8 +2380,13 @@ public abstract class World implements IBlockAccess {
                 }
 
                 this.m = this.n;
-                this.n = (float) ((double) this.n + (this.worldData.hasStorm() ? 0.01D : -0.01D));
-                this.n = MathHelper.limit(this.n, 0.0F, 1.0F);
+                if (this.worldData.hasStorm()) {
+                    this.n = (float) ((double) this.n + 0.01D);
+                } else {
+                    this.n = (float) ((double) this.n - 0.01D);
+                }
+
+                this.n = MathHelper.a(this.n, 0.0F, 1.0F);
             }
         }
     }
@@ -2401,7 +2421,7 @@ public abstract class World implements IBlockAccess {
         Chunk chunkObj = null; // CobelPvP
 
         for (i = 0; i < this.players.size(); ++i) {
-            entityhuman = this.players.get(i);
+            entityhuman = (EntityHuman) this.players.get(i);
             j = MathHelper.floor(entityhuman.locX / 16.0D);
             k = MathHelper.floor(entityhuman.locZ / 16.0D);
             l = this.p();
@@ -2433,7 +2453,7 @@ public abstract class World implements IBlockAccess {
         this.methodProfiler.a("playerCheckLight");
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
             i = this.random.nextInt(this.players.size());
-            entityhuman = this.players.get(i);
+            entityhuman = (EntityHuman) this.players.get(i);
             j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
             k = MathHelper.floor(entityhuman.locY) + this.random.nextInt(11) - 5;
             l = MathHelper.floor(entityhuman.locZ) + this.random.nextInt(11) - 5;
@@ -2784,12 +2804,12 @@ public abstract class World implements IBlockAccess {
         return null;
     }
 
-    public List<Entity> getEntities(Entity entity, AxisAlignedBB axisalignedbb) {
+    public List getEntities(Entity entity, AxisAlignedBB axisalignedbb) {
         return this.getEntities(entity, axisalignedbb, (IEntitySelector) null);
     }
 
-    public List<Entity> getEntities(Entity entity, AxisAlignedBB axisalignedbb, IEntitySelector ientityselector) {
-        List<Entity> list = new ArrayList<Entity>();
+    public List getEntities(Entity entity, AxisAlignedBB axisalignedbb, IEntitySelector ientityselector) {
+        ArrayList arraylist = new ArrayList();
         int i = MathHelper.floor((axisalignedbb.a - 2.0D) / 16.0D);
         int j = MathHelper.floor((axisalignedbb.d + 2.0D) / 16.0D);
         int k = MathHelper.floor((axisalignedbb.c - 2.0D) / 16.0D);
@@ -2798,12 +2818,12 @@ public abstract class World implements IBlockAccess {
         for (int i1 = i; i1 <= j; ++i1) {
             for (int j1 = k; j1 <= l; ++j1) {
                 if (this.isChunkLoaded(i1, j1)) {
-                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, list, ientityselector);
+                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, arraylist, ientityselector);
                 }
             }
         }
 
-        return list;
+        return arraylist;
     }
 
     public List a(Class oclass, AxisAlignedBB axisalignedbb) {
@@ -3136,7 +3156,7 @@ public abstract class World implements IBlockAccess {
         EntityHuman entityHuman = null;
 
         for (int i = 0; i < this.players.size(); ++i) {
-            EntityHuman nearestPlayer = this.players.get(i);
+            EntityHuman nearestPlayer = (EntityHuman) this.players.get(i);
 
             if (nearestPlayer == null || nearestPlayer.dead || !nearestPlayer.affectsSpawning) {
                 continue;
@@ -3411,7 +3431,7 @@ public abstract class World implements IBlockAccess {
         if (this.isLoaded(i, j, k)) {
             float f1 = this.y();
 
-            f += MathHelper.limit((float) this.getChunkAtWorldCoords(i, k).s / 3600000.0F, 0.0F, 1.0F) * (flag ? 1.0F : 0.75F);
+            f += MathHelper.a((float) this.getChunkAtWorldCoords(i, k).s / 3600000.0F, 0.0F, 1.0F) * (flag ? 1.0F : 0.75F);
             f += f1 * 0.25F;
         }
 
@@ -3419,7 +3439,7 @@ public abstract class World implements IBlockAccess {
             f *= (float) this.difficulty.a() / 2.0F;
         }
 
-        return MathHelper.limit(f, 0.0F, flag ? 1.5F : 1.0F);
+        return MathHelper.a(f, 0.0F, flag ? 1.5F : 1.0F);
     }
 
     public void X() {

@@ -19,7 +19,6 @@ import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.inventory.EquipmentSetEvent;
 import org.bukkit.event.player.*;
 // CraftBukkit end
-import org.bukkit.util.Vector;
 import org.spigotmc.ProtocolData; // Spigot - protocol patch
 import org.spigotmc.SpigotConfig;
 
@@ -417,9 +416,13 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         }
 
         this.i((float) attributeinstance.getValue());
-        float f = Math.min(MathHelper.sqrt(this.motX * this.motX + this.motZ * this.motZ), 0.1F);
+        float f = MathHelper.sqrt(this.motX * this.motX + this.motZ * this.motZ);
         // CraftBukkit - Math -> TrigMath
         float f1 = (float) org.bukkit.craftbukkit.TrigMath.atan(-this.motY * 0.20000000298023224D) * 15.0F;
+
+        if (f > 0.1F) {
+            f = 0.1F;
+        }
 
         if (!this.onGround || this.getHealth() <= 0.0F) {
             f = 0.0F;
@@ -595,7 +598,6 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
             }
             // CraftBukkit end
 
-            entityitem.owner = this;
             this.a(entityitem);
             this.a(StatisticList.s, 1);
             return entityitem;
@@ -934,12 +936,16 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         if (entity.av()) {
             if (!entity.j(this)) {
                 float f = (float) this.getAttributeInstance(GenericAttributes.e).getValue();
-                int i = (this.isSprinting() ? 1 : 0);
+                int i = 0;
                 float f1 = 0.0F;
 
                 if (entity instanceof EntityLiving) {
                     f1 = EnchantmentManager.a((EntityLiving) this, (EntityLiving) entity);
                     i += EnchantmentManager.getKnockbackEnchantmentLevel(this, (EntityLiving) entity);
+                }
+
+                if (this.isSprinting()) {
+                    ++i;
                 }
 
                 if (f > 0.0F || f1 > 0.0F) {
@@ -967,12 +973,12 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
 
                     // Kohi start
                     // Save the victim's velocity before they are potentially knocked back
-                    final double victimMotX = entity.motX;
-                    final double victimMotY = entity.motY;
-                    final double victimMotZ = entity.motZ;
+                    double victimMotX = entity.motX;
+                    double victimMotY = entity.motY;
+                    double victimMotZ = entity.motZ;
                     // Kohi end
 
-                    final boolean flag2 = entity.damageEntity(DamageSource.playerAttack(this), f);
+                    boolean flag2 = entity.damageEntity(DamageSource.playerAttack(this), f);
 
                     if (flag2) {
                         if (i > 0) {
@@ -996,20 +1002,19 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                         // inconsistent, we simply reverse the knockback after sending it so that KB, like most other
                         // things, doesn't affect server velocity at all.
                         if (entity instanceof EntityPlayer && entity.velocityChanged) {
-                            final EntityPlayer victim = (EntityPlayer) entity;
-                            final Vector vector = new Vector(victimMotX, victimMotY, victimMotZ);
-
-                            final PlayerVelocityEvent event = new PlayerVelocityEvent(victim.getBukkitEntity(), vector.clone());
+                            EntityPlayer attackedPlayer = (EntityPlayer) entity;
+                            PlayerVelocityEvent event = new PlayerVelocityEvent(attackedPlayer.getBukkitEntity(), attackedPlayer.getBukkitEntity().getVelocity());
                             this.world.getServer().getPluginManager().callEvent(event);
+
                             if (!event.isCancelled()) {
-                                if(!vector.equals(event.getVelocity())) victim.getBukkitEntity().setVelocity(event.getVelocity());
-                                if (entity.motY > 0) entity.fallDistance = 0.0f;
-                                victim.playerConnection.sendPacket(new PacketPlayOutEntityVelocity(entity));
-                                entity.velocityChanged = false;
-                                entity.motX = victimMotX;
-                                entity.motY = victimMotY;
-                                entity.motZ = victimMotZ;
+                                attackedPlayer.getBukkitEntity().setVelocityDirect(event.getVelocity());
+                                attackedPlayer.playerConnection.sendPacket(new PacketPlayOutEntityVelocity(attackedPlayer));
                             }
+
+                            attackedPlayer.velocityChanged = false;
+                            attackedPlayer.motX = victimMotX;
+                            attackedPlayer.motY = victimMotY;
+                            attackedPlayer.motZ = victimMotZ;
                         }
                         // Kohi end
 
@@ -1561,7 +1566,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
     }
 
     public boolean a(int i, int j, int k, int l, ItemStack itemstack) {
-        return this.abilities.mayBuild || (itemstack != null && itemstack.z());
+        return this.abilities.mayBuild ? true : (itemstack != null ? itemstack.z() : false);
     }
 
     protected int getExpValue(EntityHuman entityhuman) {

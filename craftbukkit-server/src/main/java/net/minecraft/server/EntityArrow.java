@@ -1,7 +1,7 @@
 package net.minecraft.server;
 
 import java.util.List;
-import java.util.Iterator;
+
 // CraftBukkit start
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
@@ -180,16 +180,14 @@ public class EntityArrow extends Entity implements IProjectile {
             }
 
             Entity entity = null;
-            List<Entity> list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
+            List list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
             double d0 = 0.0D;
 
             int j;
             float f1;
 
-            Iterator<Entity> iterator = list.iterator();
-
-            while (iterator.hasNext()){
-                Entity entity1 = iterator.next();
+            for (j = 0; j < list.size(); ++j) {
+                Entity entity1 = (Entity) list.get(j);
 
                 if (entity1.R() && (entity1 != this.shooter || this.au >= 5)) {
                     f1 = 0.3F;
@@ -241,7 +239,13 @@ public class EntityArrow extends Entity implements IProjectile {
                         k += this.random.nextInt(k / 2 + 2);
                     }
 
-                    DamageSource damagesource = (this.shooter == null ? DamageSource.arrow(this, this) : DamageSource.arrow(this, this.shooter));
+                    DamageSource damagesource = null;
+
+                    if (this.shooter == null) {
+                        damagesource = DamageSource.arrow(this, this);
+                    } else {
+                        damagesource = DamageSource.arrow(this, this.shooter);
+                    }
 
                     // CraftBukkit start - Moved damage call
                     if (movingobjectposition.entity.damageEntity(damagesource, k)) {
@@ -280,7 +284,7 @@ public class EntityArrow extends Entity implements IProjectile {
                             }
                         }
 
-                        this.world.makeSound(this.shooter, "random.bowhit", 1.0f, 1.2f / (this.random.nextFloat() * 0.2f + 0.9f));
+                        this.makeSound("random.bowhit", 1.0F, 1.2F / (this.random.nextFloat() * 0.2F + 0.9F));
                         if (!(movingobjectposition.entity instanceof EntityEnderman)) {
                             this.die();
                         }
@@ -305,7 +309,7 @@ public class EntityArrow extends Entity implements IProjectile {
                     this.locX -= this.motX / (double) f2 * 0.05000000074505806D;
                     this.locY -= this.motY / (double) f2 * 0.05000000074505806D;
                     this.locZ -= this.motZ / (double) f2 * 0.05000000074505806D;
-                    this.world.makeSound(this.shooter, "random.bowhit", 1.0f, 1.2f / (this.random.nextFloat() * 0.2f + 0.9f));
+                    this.makeSound("random.bowhit", 1.0F, 1.2F / (this.random.nextFloat() * 0.2F + 0.9F));
                     this.inGround = true;
                     this.shake = 7;
                     this.setCritical(false);
@@ -409,7 +413,6 @@ public class EntityArrow extends Entity implements IProjectile {
             ItemStack itemstack = new ItemStack(Items.ARROW);
             if (this.fromPlayer == 1 && entityhuman.inventory.canHold(itemstack) > 0) {
                 EntityItem item = new EntityItem(this.world, this.locX, this.locY, this.locZ, itemstack);
-                item.owner = shooter;
 
                 PlayerPickupItemEvent event = new PlayerPickupItemEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), new org.bukkit.craftbukkit.entity.CraftItem(this.world.getServer(), this, item), 0);
                 // event.setCancelled(!entityhuman.canPickUpLoot); TODO
@@ -458,11 +461,16 @@ public class EntityArrow extends Entity implements IProjectile {
     public void setCritical(boolean flag) {
         byte b0 = this.datawatcher.getByte(16);
 
-        this.datawatcher.watch(16, Byte.valueOf((byte) (flag ? (b0 | 1) : (b0 & -2))));
+        if (flag) {
+            this.datawatcher.watch(16, Byte.valueOf((byte) (b0 | 1)));
+        } else {
+            this.datawatcher.watch(16, Byte.valueOf((byte) (b0 & -2)));
+        }
     }
 
     public boolean isCritical() {
         byte b0 = this.datawatcher.getByte(16);
+
         return (b0 & 1) != 0;
     }
 

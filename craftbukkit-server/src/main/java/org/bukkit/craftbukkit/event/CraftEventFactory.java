@@ -388,7 +388,7 @@ public class CraftEventFactory {
         for (org.bukkit.inventory.ItemStack stack : event.getDrops()) {
             if (stack == null || stack.getType() == Material.AIR || stack.getAmount() == 0) continue;
 
-            world.dropItemNaturally(victim ,entity.getLocation(), stack);
+            world.dropItemNaturally(entity.getLocation(), stack);
         }
 
         return event;
@@ -398,7 +398,7 @@ public class CraftEventFactory {
         CraftPlayer entity = victim.getBukkitEntity();
         PlayerDeathEvent event = new PlayerDeathEvent(entity, drops, victim.getExpReward(), 0, deathMessage);
         event.setKeepInventory(keepInventory);
-        CraftWorld world = (CraftWorld) entity.getWorld();
+        org.bukkit.World world = entity.getWorld();
         Bukkit.getServer().getPluginManager().callEvent(event);
 
         victim.keepLevel = event.getKeepLevel();

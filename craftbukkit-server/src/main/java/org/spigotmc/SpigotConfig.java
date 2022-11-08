@@ -279,6 +279,12 @@ public class SpigotConfig
         System.out.println( "Server Ping Player Sample Count: " + playerSample );
     }
 
+    public static int playerShuffle;
+    private static void playerShuffle()
+    {
+        playerShuffle = getInt( "settings.player-shuffle", 0 );
+    }
+
     public static List<String> spamExclusions;
     private static void spamExclusions()
     {
@@ -455,6 +461,11 @@ public class SpigotConfig
     public static boolean instantRespawn;
     private static void instantRespawn()  {
         instantRespawn = getBoolean("settings.instantRespawn", false);
+    }
+
+    // CobelPvP start
+    private static void noTrackCommand() {
+        commands.put( "notrack", new NoTrackCommand( "notrack" ) );
     }
 
     public static boolean disableTracking;

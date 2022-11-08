@@ -15,7 +15,12 @@ public class ItemBucket extends Item {
 
     public ItemBucket(Block block) {
         // PaperSpigot start - Stackable Buckets
-        this.maxStackSize = ((block == Blocks.LAVA && PaperSpigotConfig.stackableLavaBuckets) || (block == Blocks.WATER && PaperSpigotConfig.stackableWaterBuckets) ? org.bukkit.Material.BUCKET.getMaxStackSize() : 1);
+        if ((block == Blocks.LAVA && PaperSpigotConfig.stackableLavaBuckets) ||
+                (block == Blocks.WATER && PaperSpigotConfig.stackableWaterBuckets)) {
+            this.maxStackSize = org.bukkit.Material.BUCKET.getMaxStackSize();
+        } else {
+            this.maxStackSize = 1;
+        }
         // PaperSpigot end
         this.a = block;
         this.a(CreativeModeTab.f);
@@ -45,18 +50,28 @@ public class ItemBucket extends Item {
                     Material material = world.getType(i, j, k).getMaterial();
                     int l = world.getData(i, j, k);
 
-                    if ((material == Material.WATER || material == Material.LAVA) && l == 0) {
+                    if (material == Material.WATER && l == 0) {
                         // CraftBukkit start
-                        final boolean isLava = material == Material.LAVA;
-                        PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(entityhuman, i, j, k, -1, itemstack, (!isLava ? Items.WATER_BUCKET : Items.LAVA_BUCKET));
+                        PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(entityhuman, i, j, k, -1, itemstack, Items.WATER_BUCKET);
 
                         if (event.isCancelled()) {
-                            ((EntityPlayer)entityhuman).updateInventory(entityhuman.defaultContainer);
                             return itemstack;
                         }
                         // CraftBukkit end
                         world.setAir(i, j, k);
-                        return this.a(itemstack, entityhuman, (!isLava ? Items.WATER_BUCKET : Items.LAVA_BUCKET), event.getItemStack()); // CraftBukkit - added Event stack
+                        return this.a(itemstack, entityhuman, Items.WATER_BUCKET, event.getItemStack()); // CraftBukkit - added Event stack
+                    }
+
+                    if (material == Material.LAVA && l == 0) {
+                        // CraftBukkit start
+                        PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(entityhuman, i, j, k, -1, itemstack, Items.LAVA_BUCKET);
+
+                        if (event.isCancelled()) {
+                            return itemstack;
+                        }
+                        // CraftBukkit end
+                        world.setAir(i, j, k);
+                        return this.a(itemstack, entityhuman, Items.LAVA_BUCKET, event.getItemStack()); // CraftBukkit - added Event stack
                     }
                 } else {
                     if (this.a == Blocks.AIR) {
@@ -64,7 +79,6 @@ public class ItemBucket extends Item {
                         PlayerBucketEmptyEvent event = CraftEventFactory.callPlayerBucketEmptyEvent(entityhuman, i, j, k, movingobjectposition.face, itemstack);
 
                         if (event.isCancelled()) {
-                            ((EntityPlayer)entityhuman).updateInventory(entityhuman.defaultContainer);
                             return itemstack;
                         }
 
@@ -106,7 +120,6 @@ public class ItemBucket extends Item {
                     PlayerBucketEmptyEvent event = CraftEventFactory.callPlayerBucketEmptyEvent(entityhuman, clickedX, clickedY, clickedZ, movingobjectposition.face, itemstack);
 
                     if (event.isCancelled()) {
-                        ((EntityPlayer)entityhuman).updateInventory(entityhuman.defaultContainer);
                         return itemstack;
                     }
                     // CraftBukkit end

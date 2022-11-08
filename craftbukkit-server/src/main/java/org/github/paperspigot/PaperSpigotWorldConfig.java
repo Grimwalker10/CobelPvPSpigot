@@ -273,12 +273,6 @@ public class PaperSpigotWorldConfig
         fastDrainWater = getBoolean( "fast-drain.water", false );
     }
 
-    public int mobSpawnerTickRate;
-    private void mobSpawnerTickRate()
-    {
-        mobSpawnerTickRate = getInt( "mob-spawner-tick-rate", 1 );
-    }
-
     public int lavaFlowSpeedNormal;
     public int lavaFlowSpeedNether;
     private void lavaFlowSpeed()

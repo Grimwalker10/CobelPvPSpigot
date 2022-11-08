@@ -180,7 +180,11 @@ public class EntityCreeper extends EntityMonster {
     }
 
     public void setPowered(boolean powered) {
-        this.datawatcher.watch(17, Byte.valueOf((byte) (!powered ? 0 : 1)));
+        if (!powered) {
+            this.datawatcher.watch(17, Byte.valueOf((byte) 0));
+        } else {
+            this.datawatcher.watch(17, Byte.valueOf((byte) 1));
+        }
         // CraftBukkit end
     }
 

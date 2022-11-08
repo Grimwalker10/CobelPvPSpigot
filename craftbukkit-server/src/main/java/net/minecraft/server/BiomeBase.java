@@ -194,7 +194,11 @@ public abstract class BiomeBase {
 
     protected BiomeBase a(int i, boolean flag) {
         this.ag = i;
-        this.ah = (flag ? (i & 16711422) >> 1 : i);
+        if (flag) {
+            this.ah = (i & 16711422) >> 1;
+        } else {
+            this.ah = i;
+        }
 
         return this;
     }

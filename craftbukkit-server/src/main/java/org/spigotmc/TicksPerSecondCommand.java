@@ -6,11 +6,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+
 import java.lang.management.ManagementFactory;
 
 public class TicksPerSecondCommand extends Command
 {
-    long startTime = System.currentTimeMillis();
 
     public TicksPerSecondCommand(String name)
     {
@@ -50,7 +50,6 @@ public class TicksPerSecondCommand extends Command
             sender.sendMessage(ChatColor.GOLD + "Alive Threads: " + ChatColor.GREEN + ManagementFactory.getThreadMXBean().getThreadCount() + ChatColor.RED + " - " + ChatColor.GOLD + "Daemon Threads: " + ChatColor.GREEN + ManagementFactory.getThreadMXBean().getDaemonThreadCount());
             sender.sendMessage(ChatColor.GOLD + "Active Workers: " + ChatColor.GREEN + Bukkit.getScheduler().getActiveWorkers().size() + ChatColor.RED + " - " + ChatColor.GOLD + "Pending Tasks: " + ChatColor.GREEN + Bukkit.getScheduler().getPendingTasks().size());
             sender.sendMessage(ChatColor.GOLD + "Threads Interrupted: " + ChatColor.GREEN + Thread.getAllStackTraces().keySet().parallelStream().filter(Thread::isInterrupted).count());
-            sender.sendMessage(ChatColor.GOLD + "Uptime: " + ChatColor.YELLOW + formatFullMilis(System.currentTimeMillis() - this.startTime));
         } else {
             double tps = Bukkit.spigot().getTPS()[1];
             StringBuilder tpsBuilder = new StringBuilder();
@@ -80,38 +79,6 @@ public class TicksPerSecondCommand extends Command
 
     private static String formatTickTime(double time) {
         return (time < 40.0D ? ChatColor.GREEN : time < 60.0D ? ChatColor.YELLOW : ChatColor.RED).toString() + Math.round(time * 10.0D) / 10.0D;
-    }
-
-    public static String formatFullMilis(Long millisTime) {
-
-        long seconds = (millisTime / 1000) % 60;
-        long minutes = (millisTime / (1000 * 60)) % 60;
-        long hours = (millisTime / (1000 * 60 * 60)) % 24;
-        long days = (millisTime / (1000 * 60 * 60 * 24)) % 24;
-        long weeks = (millisTime / (1000 * 60 * 60 * 24 * 7)) % 7;
-        long months = (millisTime / (1000 * 60 * 60 * 24 * 7 * 31)) % 31;
-        long years = (millisTime / (1000 * 60 * 60 * 24 * 7 * 31 * 12)) % 12;
-
-        String format = "";
-        if (years >= 1.0D) {
-            format += years + "y ";
-        }
-        if (months >= 1.0D) {
-            format += months + "mon ";
-        }
-        if (weeks >= 1.0D) {
-            format += weeks + "w ";
-        }
-        if (days >= 1.0D) {
-            format += days + "d ";
-        }
-        if (hours >= 1.0D) {
-            format += hours + "h ";
-        }
-        if (minutes >= 1.0D) {
-            format += minutes + "min ";
-        }
-        return format + seconds + "s";
     }
 
     private static String formatAdvancedTps(double tps) {

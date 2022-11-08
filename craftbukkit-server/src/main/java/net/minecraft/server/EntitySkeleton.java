@@ -150,18 +150,21 @@ public class EntitySkeleton extends EntityMonster implements IRangedEntity {
         int j;
         int k;
 
-        int bound = 3 + i;
-        boolean netherSkteleton = this.getSkeletonType() == 1;
+        if (this.getSkeletonType() == 1) {
+            j = this.random.nextInt(3 + i) - 1;
 
-        j = this.random.nextInt(bound) - (netherSkteleton ? 1 : 0);
+            for (k = 0; k < j; ++k) {
+                this.a(Items.COAL, 1);
+            }
+        } else {
+            j = this.random.nextInt(3 + i);
 
-        Item item = (netherSkteleton ? Items.COAL : Items.ARROW);
-        for (k = 0; k < j; ++k) {
-            this.a(item, 1);
+            for (k = 0; k < j; ++k) {
+                this.a(Items.ARROW, 1);
+            }
         }
 
-        j = this.random.nextInt(bound);
-
+        j = this.random.nextInt(3 + i);
 
         for (k = 0; k < j; ++k) {
             this.a(Items.BONE, 1);

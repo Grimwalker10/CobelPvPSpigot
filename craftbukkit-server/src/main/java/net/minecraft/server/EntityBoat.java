@@ -1,6 +1,5 @@
 package net.minecraft.server;
 
-import java.util.Iterator;
 import java.util.List;
 
 // CraftBukkit start
@@ -328,9 +327,7 @@ public class EntityBoat extends Entity {
                 this.motZ *= 0.5D;
             }
 
-            if (Math.abs(this.motX) > 0.05 || Math.abs(this.motY) > 0.05 || Math.abs(this.motZ) > 0.05) {
-                this.move(this.motX, this.motY, this.motZ);
-            }
+            this.move(this.motX, this.motY, this.motZ);
             if (this.positionChanged && d3 > 0.2D) {
                 if (!this.world.isStatic && !this.dead) {
                     // CraftBukkit start
@@ -358,7 +355,15 @@ public class EntityBoat extends Entity {
                 d5 = (double) ((float) (Math.atan2(d11, d10) * 180.0D / 3.141592653589793D));
             }
 
-            double d12 = MathHelper.limit(MathHelper.g(d5 - (double) this.yaw), -20.0D, 20.0D);
+            double d12 = MathHelper.g(d5 - (double) this.yaw);
+
+            if (d12 > 20.0D) {
+                d12 = 20.0D;
+            }
+
+            if (d12 < -20.0D) {
+                d12 = -20.0D;
+            }
 
             this.yaw = (float) ((double) this.yaw + d12);
             this.b(this.yaw, this.pitch);
@@ -380,12 +385,11 @@ public class EntityBoat extends Entity {
             // CraftBukkit end
 
             if (!this.world.isStatic) {
-                List<Entity> list = this.world.getEntities(this, this.boundingBox.grow(0.20000000298023224D, 0.0D, 0.20000000298023224D));
+                List list = this.world.getEntities(this, this.boundingBox.grow(0.20000000298023224D, 0.0D, 0.20000000298023224D));
 
                 if (list != null && !list.isEmpty()) {
-                    Iterator<Entity> iterator = list.iterator();
-                    while (iterator.hasNext()) {
-                        Entity entity = iterator.next();
+                    for (int k1 = 0; k1 < list.size(); ++k1) {
+                        Entity entity = (Entity) list.get(k1);
 
                         if (entity != this.passenger && entity.S() && entity instanceof EntityBoat) {
                             entity.collide(this);
@@ -417,11 +421,13 @@ public class EntityBoat extends Entity {
     public boolean c(EntityHuman entityhuman) {
         if (this.passenger != null && this.passenger instanceof EntityHuman && this.passenger != entityhuman) {
             return true;
+        } else {
+            if (!this.world.isStatic) {
+                entityhuman.mount(this);
+            }
+
+            return true;
         }
-        if (!this.world.isStatic) {
-            entityhuman.mount(this);
-        }
-        return true;
     }
 
     protected void a(double d0, boolean flag) {

@@ -14,7 +14,14 @@ public class TileEntityNote extends TileEntity {
 
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
-        this.note = (byte) MathHelper.limit(nbttagcompound.getByte("note"), 0, 24);
+        this.note = nbttagcompound.getByte("note");
+        if (this.note < 0) {
+            this.note = 0;
+        }
+
+        if (this.note > 24) {
+            this.note = 24;
+        }
     }
 
     public void a() {

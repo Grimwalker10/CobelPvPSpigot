@@ -17,7 +17,6 @@ public class EntityItem extends Entity {
     private String g;
     public float c;
     private int lastTick = MinecraftServer.currentTick; // CraftBukkit
-    public Entity owner;
 
     public EntityItem(World world, double d0, double d1, double d2) {
         super(world);
@@ -133,7 +132,6 @@ public class EntityItem extends Entity {
                     return;
                 }
                 // CraftBukkit end
-                this.owner = null;
                 this.die();
             }
         }
@@ -156,15 +154,12 @@ public class EntityItem extends Entity {
                 return;
             }
             // CraftBukkit end
-            this.owner = null;
             this.die();
         }
     }
     // PaperSpigot end
 
     private void k() {
-        ItemStack stack = getItemStack();
-        if (stack.count >= stack.getMaxStackSize()) return;
         // Spigot start
         double radius = world.spigotConfig.itemMerge;
         Iterator iterator = this.world.a(EntityItem.class, this.boundingBox.grow(radius, radius, radius)).iterator();
@@ -228,17 +223,17 @@ public class EntityItem extends Entity {
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable()) {
             return false;
-        }
-        if (this.getItemStack() != null && this.getItemStack().getItem() == Items.NETHER_STAR && damagesource.isExplosion()) {
+        } else if (this.getItemStack() != null && this.getItemStack().getItem() == Items.NETHER_STAR && damagesource.isExplosion()) {
+            return false;
+        } else {
+            this.Q();
+            this.e = (int) ((float) this.e - f);
+            if (this.e <= 0) {
+                this.die();
+            }
 
             return false;
         }
-        this.Q();
-        this.e = (int) ((float) this.e - f);
-        if (this.e <= 0) {
-            this.die();
-        }
-        return false;
     }
 
     public void b(NBTTagCompound nbttagcompound) {
@@ -352,10 +347,6 @@ public class EntityItem extends Entity {
 
     public String getName() {
         return LocaleI18n.get("item." + this.getItemStack().a());
-    }
-
-    public Entity getOwner() {
-        return this.owner;
     }
 
     public boolean av() {

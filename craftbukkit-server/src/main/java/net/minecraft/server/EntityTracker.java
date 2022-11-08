@@ -1,212 +1,180 @@
 package net.minecraft.server;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import java.util.*;
+import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import net.minecraft.optimizations.util.IndexedLinkedHashSet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.spigotmc.AsyncCatcher;
 import org.spigotmc.TrackingRange;
 
 public class EntityTracker {
+    private IndexedLinkedHashSet<EntityTrackerEntry> c = new IndexedLinkedHashSet();
 
-    private static final Logger a = LogManager.getLogger();
-    private final WorldServer world;
-    private Set<EntityTrackerEntry> c = new HashSet<>();
-    public IntHashMap trackedEntities = new IntHashMap(); // CraftBukkit - private -> public
+    public IntHashMap trackedEntities = new IntHashMap();
+
+    private int noTrackDistance = 0;
+
+    private WorldServer worldServer;
+
     private int e;
 
+    public int getNoTrackDistance() {
+        return this.noTrackDistance;
+    }
+
+    public void setNoTrackDistance(int noTrackDistance) {
+        this.noTrackDistance = noTrackDistance;
+    }
+
     public EntityTracker(WorldServer worldserver) {
-        this.world = worldserver;
-        this.e = worldserver.getMinecraftServer().getPlayerList().d();
+        this.worldServer = worldserver;
+        this.e = 128;
+    }
+
+    public WorldServer getWorldServer() {
+        return this.worldServer;
     }
 
     public void track(Entity entity) {
         if (entity instanceof EntityPlayer) {
-            this.addEntity(entity, 512, 2);
-            EntityPlayer entityplayer = (EntityPlayer) entity;
-            Iterator<EntityTrackerEntry> iterator = this.c.iterator();
-
-            while (iterator.hasNext()) {
-                EntityTrackerEntry entitytrackerentry = iterator.next();
-
-                if (entitytrackerentry.tracker != entityplayer) {
-                    entitytrackerentry.updatePlayer(entityplayer);
-                }
-            }
+            addEntity(entity, 512, 2);
         } else if (entity instanceof EntityFishingHook) {
-            this.addEntity(entity, 64, 5, true);
+            addEntity(entity, 64, 5, true);
         } else if (entity instanceof EntityArrow) {
-            this.addEntity(entity, 64, 20, false);
+            addEntity(entity, 64, 20, false);
         } else if (entity instanceof EntitySmallFireball) {
-            this.addEntity(entity, 64, 10, false);
+            addEntity(entity, 64, 10, false);
         } else if (entity instanceof EntityFireball) {
-            this.addEntity(entity, 64, 10, false);
+            addEntity(entity, 64, 10, false);
         } else if (entity instanceof EntitySnowball) {
-            this.addEntity(entity, 64, 10, true);
+            addEntity(entity, 64, 10, true);
         } else if (entity instanceof EntityEnderPearl) {
-            this.addEntity(entity, 64, 10, true);
+            addEntity(entity, 64, 2, true);
         } else if (entity instanceof EntityEnderSignal) {
-            this.addEntity(entity, 64, 4, true);
+            addEntity(entity, 64, 4, true);
         } else if (entity instanceof EntityEgg) {
-            this.addEntity(entity, 64, 10, true);
+            addEntity(entity, 64, 10, true);
         } else if (entity instanceof EntityPotion) {
-            this.addEntity(entity, 64, 10, true);
+            addEntity(entity, 64, 10, true);
         } else if (entity instanceof EntityThrownExpBottle) {
-            this.addEntity(entity, 64, 10, true);
+            addEntity(entity, 64, 10, true);
         } else if (entity instanceof EntityFireworks) {
-            this.addEntity(entity, 64, 10, true);
+            addEntity(entity, 64, 10, true);
         } else if (entity instanceof EntityItem) {
-            this.addEntity(entity, 64, 20, true);
+            addEntity(entity, 64, 20, true);
         } else if (entity instanceof EntityMinecartAbstract) {
-            this.addEntity(entity, 80, 3, true);
+            addEntity(entity, 80, 3, true);
         } else if (entity instanceof EntityBoat) {
-            this.addEntity(entity, 80, 3, true);
+            addEntity(entity, 80, 3, true);
         } else if (entity instanceof EntitySquid) {
-            this.addEntity(entity, 64, 3, true);
+            addEntity(entity, 64, 3, true);
         } else if (entity instanceof EntityWither) {
-            this.addEntity(entity, 80, 3, false);
+            addEntity(entity, 80, 3, false);
         } else if (entity instanceof EntityBat) {
-            this.addEntity(entity, 80, 3, false);
+            addEntity(entity, 80, 3, false);
         } else if (entity instanceof IAnimal) {
-            this.addEntity(entity, 80, 3, true);
+            addEntity(entity, 80, 3, true);
+        } else if (entity instanceof EntityEnderDragon) {
+            addEntity(entity, 160, 3, true);
         } else if (entity instanceof EntityTNTPrimed) {
-            this.addEntity(entity, 160, 10, true);
+            addEntity(entity, 160, 10, true);
         } else if (entity instanceof EntityFallingBlock) {
-            this.addEntity(entity, 160, 20, true);
+            addEntity(entity, 160, 20, true);
         } else if (entity instanceof EntityHanging) {
-            this.addEntity(entity, 160, Integer.MAX_VALUE, false);
+            addEntity(entity, 160, 2147483647, false);
         } else if (entity instanceof EntityExperienceOrb) {
-            this.addEntity(entity, 160, 20, true);
+            addEntity(entity, 160, 20, true);
         } else if (entity instanceof EntityEnderCrystal) {
-            this.addEntity(entity, 256, Integer.MAX_VALUE, false);
+            addEntity(entity, 256, 2147483647, false);
         }
     }
 
     public void addEntity(Entity entity, int i, int j) {
-        this.addEntity(entity, i, j, false);
+        addEntity(entity, i, j, false);
     }
 
     public void addEntity(Entity entity, int i, int j, boolean flag) {
-        org.spigotmc.AsyncCatcher.catchOp( "entity track"); // Spigot
-        i = Math.min(org.spigotmc.TrackingRange.getEntityTrackingRange(entity, i), this.e); // Spigot
-
+        AsyncCatcher.catchOp("entity track");
+        i = TrackingRange.getEntityTrackingRange(entity, i);
+        if (i > this.e)
+            i = this.e;
         try {
-            if (this.trackedEntities.b(entity.getId())) {
+            if (this.trackedEntities.b(entity.getId()))
                 throw new IllegalStateException("Entity is already tracked!");
-            }
-
-            EntityTrackerEntry entitytrackerentry = new EntityTrackerEntry(entity, i, j, flag);
-
+            EntityTrackerEntry entitytrackerentry = new EntityTrackerEntry(this, entity, i, j, flag);
             this.c.add(entitytrackerentry);
             this.trackedEntities.a(entity.getId(), entitytrackerentry);
-            entitytrackerentry.scanPlayers(this.world.players);
+            entitytrackerentry.addNearPlayers();
         } catch (Throwable throwable) {
-            CrashReport crashreport = CrashReport.a(throwable, "Adding entity to track");
-            CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Entity To Track");
-
-            crashreportsystemdetails.a("Tracking range", (i + " blocks"));
-            crashreportsystemdetails.a("Update interval", new CrashReportEntityTrackerUpdateInterval(this, j));
-            entity.a(crashreportsystemdetails);
-            CrashReportSystemDetails crashreportsystemdetails1 = crashreport.a("Entity That Is Already Tracked");
-
-            ((EntityTrackerEntry) this.trackedEntities.get(entity.getId())).tracker.a(crashreportsystemdetails1);
-
-            try {
-                throw new ReportedException(crashreport);
-            } catch (ReportedException reportedexception) {
-                a.error("\"Silently\" catching entity tracking error.", reportedexception);
-            }
+            throwable.printStackTrace();
         }
     }
 
     public void untrackEntity(Entity entity) {
-        org.spigotmc.AsyncCatcher.catchOp( "entity untrack"); // Spigot
+        AsyncCatcher.catchOp("entity untrack");
         if (entity instanceof EntityPlayer) {
-            EntityPlayer entityplayer = (EntityPlayer) entity;
+            EntityPlayer entityplayer = (EntityPlayer)entity;
             Iterator<EntityTrackerEntry> iterator = this.c.iterator();
-
             while (iterator.hasNext()) {
                 EntityTrackerEntry entitytrackerentry = iterator.next();
-
                 entitytrackerentry.a(entityplayer);
             }
         }
-
-        EntityTrackerEntry entitytrackerentry1 = (EntityTrackerEntry) this.trackedEntities.d(entity.getId());
-
+        EntityTrackerEntry entitytrackerentry1 = (EntityTrackerEntry)this.trackedEntities.d(entity.getId());
         if (entitytrackerentry1 != null) {
             this.c.remove(entitytrackerentry1);
             entitytrackerentry1.a();
         }
     }
 
+    private static int trackerThreads = 4;
+
+    private static ExecutorService pool = Executors.newFixedThreadPool(trackerThreads - 1, (new ThreadFactoryBuilder()).setNameFormat("entity-tracker-%d").build());
+
     public void updatePlayers() {
-        List<EntityPlayer> list = new ArrayList<>();
-
-        Iterator<EntityTrackerEntry> iterator = this.c.iterator();
-
-        while (iterator.hasNext()) {
-            EntityTrackerEntry entitytrackerentry = iterator.next();
-
-            entitytrackerentry.track(this.world.players);
-            if (entitytrackerentry.n && entitytrackerentry.tracker instanceof EntityPlayer) {
-                list.add((EntityPlayer) entitytrackerentry.tracker);
+        int offset = 0;
+        final CountDownLatch latch = new CountDownLatch(trackerThreads);
+        for (int i = 1; i <= trackerThreads; i++) {
+            final int localOffset = offset++;
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    for (int i = localOffset; i < EntityTracker.this.c.size(); i += EntityTracker.trackerThreads)
+                        ((EntityTrackerEntry)EntityTracker.this.c.get(i)).update();
+                    latch.countDown();
+                }
+            };
+            if (i < trackerThreads) {
+                pool.execute(runnable);
+            } else {
+                runnable.run();
             }
         }
-
-        for (EntityPlayer entityplayer : list) {
-            Iterator<EntityTrackerEntry> iterator1 = this.c.iterator();
-
-            while (iterator1.hasNext()) {
-                EntityTrackerEntry entitytrackerentry1 = iterator1.next();
-
-                if (entitytrackerentry1.tracker != entityplayer) {
-                    entitytrackerentry1.updatePlayer(entityplayer);
-                }
-            }
+        try {
+            latch.await();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public void a(Entity entity, Packet packet) {
-        EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) this.trackedEntities.get(entity.getId());
-
-        if (entitytrackerentry != null) {
+        EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry)this.trackedEntities.get(entity.getId());
+        if (entitytrackerentry != null)
             entitytrackerentry.broadcast(packet);
-        }
     }
 
     public void sendPacketToEntity(Entity entity, Packet packet) {
-        EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) this.trackedEntities.get(entity.getId());
-
-        if (entitytrackerentry != null) {
+        EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry)this.trackedEntities.get(entity.getId());
+        if (entitytrackerentry != null)
             entitytrackerentry.broadcastIncludingSelf(packet);
-        }
     }
 
     public void untrackPlayer(EntityPlayer entityplayer) {
         Iterator<EntityTrackerEntry> iterator = this.c.iterator();
-
         while (iterator.hasNext()) {
             EntityTrackerEntry entitytrackerentry = iterator.next();
-
             entitytrackerentry.clear(entityplayer);
-        }
-    }
-
-    public void a(EntityPlayer entityplayer, Chunk chunk) {
-        Iterator<EntityTrackerEntry> iterator = this.c.iterator();
-
-        while (iterator.hasNext()) {
-            EntityTrackerEntry entitytrackerentry = iterator.next();
-
-            if (entitytrackerentry.tracker != entityplayer && entitytrackerentry.tracker.ah == chunk.locX && entitytrackerentry.tracker.aj == chunk.locZ) {
-                entitytrackerentry.updatePlayer(entityplayer);
-            }
         }
     }
 }

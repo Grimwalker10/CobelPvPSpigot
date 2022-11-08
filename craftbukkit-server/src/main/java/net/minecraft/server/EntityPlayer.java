@@ -1,7 +1,12 @@
 package net.minecraft.server;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import net.minecraft.util.com.google.common.collect.Sets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 import net.minecraft.util.io.netty.buffer.Unpooled;
@@ -33,7 +38,6 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public double e;
     public final List chunkCoordIntPairQueue = new LinkedList();
     public final Set<ChunkCoordIntPair> paddingChunks = new HashSet<ChunkCoordIntPair>();
-    public final List removeQueue = new LinkedList(); // CraftBukkit - private -> public
     private final ServerStatisticManager bO;
     private float bP = Float.MIN_VALUE;
     private float bQ = -1.0E8F;
@@ -103,7 +107,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.bO = minecraftserver.getPlayerList().a((EntityHuman) this);
         this.W = 0.0F;
         this.height = 0.0F;
-        this.setPositionRotation((double) i + 0.5D, k, (double) j + 0.5D, worldserver.getWorldData().getSpawnYaw(), worldserver.getWorldData().getSpawnPitch());
+        this.setPositionRotation((double) i + 0.5D, (double) k, (double) j + 0.5D, 0.0F, 0.0F);
 
         while (!worldserver.getCubes(this, this.boundingBox).isEmpty()) {
             this.setPosition(this.locX, this.locY + 1.0D, this.locZ);
@@ -121,9 +125,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
-        if (this.locY > 300) this.locY = 255;
         if (nbttagcompound.hasKeyOfType("playerGameType", 99)) {
-            this.playerInteractManager.setGameMode((MinecraftServer.getServer().getForceGamemode() ? MinecraftServer.getServer().getGamemode() : EnumGamemode.getById(nbttagcompound.getInt("playerGameType"))));
+            if (MinecraftServer.getServer().getForceGamemode()) {
+                this.playerInteractManager.setGameMode(MinecraftServer.getServer().getGamemode());
+            } else {
+                this.playerInteractManager.setGameMode(EnumGamemode.getById(nbttagcompound.getInt("playerGameType")));
+            }
         }
         this.getBukkitEntity().readExtraData(nbttagcompound); // CraftBukkit
     }
@@ -140,8 +147,6 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         if (world == null) {
             this.dead = false;
             ChunkCoordinates position = null;
-            float yaw = 0;
-            float pitch = 0;
             if (this.spawnWorld != null && !this.spawnWorld.equals("")) {
                 CraftWorld cworld = (CraftWorld) Bukkit.getServer().getWorld(this.spawnWorld);
                 if (cworld != null && this.getBed() != null) {
@@ -152,11 +157,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             if (world == null || position == null) {
                 world = ((CraftWorld) Bukkit.getServer().getWorlds().get(0)).getHandle();
                 position = world.getSpawn();
-                yaw = world.getWorldData().getSpawnYaw();
-                pitch = world.getWorldData().getSpawnPitch();
             }
             this.world = world;
-            this.setPositionRotation(position.x + 0.5, position.y, position.z + 0.5, yaw, pitch);
+            this.setPosition(position.x + 0.5, position.y, position.z + 0.5);
         }
         this.dimension = ((WorldServer) this.world).dimension;
         this.playerInteractManager.a((WorldServer) world);
@@ -196,7 +199,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         }
 
         this.activeContainer.b();
-        if (!this.world.isStatic && !this.activeContainer.a(this)) {
+        if (!this.world.isStatic && !this.activeContainer.a((EntityHuman) this)) {
             this.closeInventory();
             this.activeContainer = this.defaultContainer;
         }
@@ -334,7 +337,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             }
 
             if (this.oldLevel != this.expLevel) {
-                CraftEventFactory.callPlayerLevelChangeEvent(this.world.getServer().getPlayer(this), this.oldLevel, this.expLevel);
+                CraftEventFactory.callPlayerLevelChangeEvent(this.world.getServer().getPlayer((EntityPlayer) this), this.oldLevel, this.expLevel);
                 this.oldLevel = this.expLevel;
             }
             // CraftBukkit end
@@ -382,7 +385,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                 }
 
                 if (hashset.isEmpty()) {
-                    this.a(AchievementList.L);
+                    this.a((Statistic) AchievementList.L);
                 }
             }
         }
@@ -394,7 +397,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             return;
         }
 
-        java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<>();
+        java.util.List<org.bukkit.inventory.ItemStack> loot = new java.util.ArrayList<org.bukkit.inventory.ItemStack>();
         boolean keepInventory = this.world.getGameRules().getBoolean("keepInventory");
 
         if (!keepInventory) {
@@ -415,18 +418,26 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
         String deathmessage = chatmessage.c();
         org.bukkit.event.entity.PlayerDeathEvent event = CraftEventFactory.callPlayerDeathEvent(this, loot, deathmessage, keepInventory);
-        loot.clear();
 
         String deathMessage = event.getDeathMessage();
 
         if (deathMessage != null && deathMessage.length() > 0) {
-            this.server.getPlayerList().sendMessage((deathMessage.equals(deathmessage) ? new IChatBaseComponent[]{chatmessage} : org.bukkit.craftbukkit.util.CraftChatMessage.fromString(deathMessage)));
+            if (deathMessage.equals(deathmessage)) {
+                this.server.getPlayerList().sendMessage(chatmessage);
+            } else {
+                this.server.getPlayerList().sendMessage(org.bukkit.craftbukkit.util.CraftChatMessage.fromString(deathMessage));
+            }
         }
 
         // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
         if (!event.getKeepInventory()) {
-            Arrays.fill(this.inventory.items, null);
-            Arrays.fill(this.inventory.armor, null);
+            for (int i = 0; i < this.inventory.items.length; ++i) {
+                this.inventory.setItem(i, null);
+            }
+
+            for (int i = 0; i < this.inventory.armor.length; ++i) {
+                this.inventory.player.setEquipment(i, null);
+            }
         }
 
         this.closeInventory();
@@ -446,7 +457,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
         if (entityliving != null) {
             int i = EntityTypes.a(entityliving);
-            MonsterEggInfo monsteregginfo = (MonsterEggInfo) EntityTypes.eggInfo.get(i);
+            MonsterEggInfo monsteregginfo = (MonsterEggInfo) EntityTypes.eggInfo.get(Integer.valueOf(i));
 
             if (monsteregginfo != null) {
                 this.a(monsteregginfo.e, 1);
@@ -576,7 +587,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                 */
                 // CraftBukkit end
             } else {
-                this.a(AchievementList.y);
+                this.a((Statistic) AchievementList.y);
             }
         }
 
@@ -614,7 +625,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         if (enumbedresult == EnumBedResult.OK) {
             PacketPlayOutBed packetplayoutbed = new PacketPlayOutBed(this, i, j, k);
 
-            this.r().getTracker().a(this, packetplayoutbed);
+            this.r().getTracker().a((Entity) this, (Packet) packetplayoutbed);
             this.playerConnection.a(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
             this.playerConnection.sendPacket(packetplayoutbed);
         }
@@ -672,7 +683,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
     public void a(TileEntity tileentity) {
         if (tileentity instanceof TileEntitySign) {
-            ((TileEntitySign) tileentity).a(this);
+            ((TileEntitySign) tileentity).a((EntityHuman) this);
             this.playerConnection.sendPacket(new PacketPlayOutOpenSignEditor(tileentity.x, tileentity.y, tileentity.z));
         }
     }
@@ -950,7 +961,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void m() {
-        this.activeContainer.b(this);
+        this.activeContainer.b((EntityHuman) this);
         this.activeContainer = this.defaultContainer;
     }
 
@@ -1116,6 +1127,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.locale = packetplayinsettings.c();
         int i = 256 >> packetplayinsettings.d();
 
+        if (i > 3 && i < 20) {
+            ;
+        }
+
         this.bV = packetplayinsettings.e();
         this.bW = packetplayinsettings.f();
         if (this.server.N() && this.server.M().equals(this.getName())) {
@@ -1161,11 +1176,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void d(Entity entity) {
-        if (entity instanceof EntityHuman) {
-            this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(entity.getId()));
-        } else {
-            this.removeQueue.add(entity.getId());
-        }
+        this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(new int[] { entity.getId() })); // CobelPvP
     }
 
     public long x() {
@@ -1240,19 +1251,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.deathTicks = 0;
         this.removeAllEffects();
         this.updateEffects = true;
-        // Clear potion metadata now, because new effects might get added
-        // before the update in the tick has a chance to run, and if they
-        // match the old effects, the metadata will never be marked dirty
-        // and will go out of sync with the client.
-        this.datawatcher.watch(8, (byte) 0);
-        this.datawatcher.watch(7, 0);
-        this.setInvisible(false);
         this.activeContainer = this.defaultContainer;
         this.killer = null;
         this.lastDamager = null;
         this.combatTracker = new CombatTracker(this);
         this.lastSentExp = -1;
-        this.p(0);
         if (this.keepLevel || keepInventory) {
             this.exp = exp;
         } else {

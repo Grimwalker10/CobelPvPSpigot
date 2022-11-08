@@ -139,11 +139,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public double getEyeHeight(boolean ignoreSneaking) {
         if (ignoreSneaking) {
             return 1.62D;
+        } else {
+            if (isSneaking()) {
+                return 1.54D;
+            } else {
+                return 1.62D;
+            }
         }
-        if (isSneaking()) {
-            return 1.54D;
-        }
-        return 1.62D;
     }
 
     @Override
@@ -197,7 +199,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
 
         if (name.length() > 16) {
-            name = name.substring(0, 16);
+            throw new IllegalArgumentException("Player list names can only be a maximum of 16 characters long");
         }
 
         // Collisions will make for invisible people
@@ -215,19 +217,21 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         // Spigot start - protocol patch
         String temp = getHandle().listName;
         getHandle().listName = oldName;
-        PacketPlayOutPlayerInfo oldpacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.REMOVE_PLAYER, getHandle());
+        PacketPlayOutPlayerInfo oldpacket = PacketPlayOutPlayerInfo.removePlayer(getHandle());
         getHandle().listName = temp;
-        PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.ADD_PLAYER, getHandle());
-        PacketPlayOutPlayerInfo newPacket = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.UPDATE_DISPLAY_NAME, getHandle());
-        for (EntityPlayer entityplayer : server.getHandle().players) {
+        PacketPlayOutPlayerInfo packet = PacketPlayOutPlayerInfo.addPlayer(getHandle());
+        PacketPlayOutPlayerInfo newPacket = PacketPlayOutPlayerInfo.updateDisplayName(getHandle());
+        for (int i = 0; i < server.getHandle().players.size(); ++i) {
+            EntityPlayer entityplayer = (EntityPlayer) server.getHandle().players.get(i);
             if (entityplayer.playerConnection == null) continue;
 
             if (entityplayer.getBukkitEntity().canSeeFromTab(this)) {
-                if (entityplayer.playerConnection.networkManager.getVersion() < 28) {
-                    entityplayer.playerConnection.sendPacket(oldpacket);
-                    entityplayer.playerConnection.sendPacket(packet);
+                if (entityplayer.playerConnection.networkManager.getVersion() < 28)
+                {
+                    entityplayer.playerConnection.sendPacket( oldpacket );
+                    entityplayer.playerConnection.sendPacket( packet );
                 } else {
-                    entityplayer.playerConnection.sendPacket(newPacket);
+                    entityplayer.playerConnection.sendPacket( newPacket );
                 }
             }
         }
@@ -539,12 +543,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         // Close any foreign inventory
         if (getHandle().activeContainer != getHandle().defaultContainer) {
             getHandle().closeInventory();
-        }
-
-        // Check if player teleport location chunk is load , if it's not load it.
-        org.bukkit.Chunk chunk = to.getChunk();
-        if (!chunk.isLoaded()) {
-            chunk.load();
         }
 
         // Check if the fromWorld and toWorld are the same.
@@ -951,7 +949,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (hideFromList && !hiddenPlayersFromTab.contains(player.getUniqueId())) {
             //remove the hidden player from this player user list
             hiddenPlayersFromTab.add(player.getUniqueId());
-            //getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.REMOVE_PLAYER, ((CraftPlayer) player).getHandle())); // Spigot - protocol patch
+            getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.removePlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch
         }
 
         if (hiddenPlayers.contains(player.getUniqueId())) return;
@@ -989,7 +987,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             entry.updatePlayer(getHandle());
         }
 
-        //getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.PlayerInfo.ADD_PLAYER, ((CraftPlayer) player).getHandle())); // Spigot - protocol patch
+         getHandle().playerConnection.sendPacket(PacketPlayOutPlayerInfo.addPlayer( ( (CraftPlayer) player ).getHandle ())); // Spigot - protocol patch // CobelPvP - unneeded
     }
 
     public void removeDisconnectingPlayer(Player player) {
@@ -1000,30 +998,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     public boolean canSee(Player player) {
         return !hiddenPlayers.contains(player.getUniqueId());
-    }
-
-    // DO NOT OVERRIDE!
-    public boolean canSeeEntity(final org.bukkit.entity.Entity entity) {
-        final net.minecraft.server.Entity nmsEntity = ((CraftEntity) entity).getHandle();
-        if (nmsEntity instanceof EntityProjectile) {
-            final EntityProjectile entityProjectile = (EntityProjectile) nmsEntity;
-            if (entityProjectile.getShooter() instanceof EntityPlayer) {
-                return this.canSee(((EntityPlayer) entityProjectile.getShooter()).getBukkitEntity());
-            }
-        }
-        if (nmsEntity instanceof EntityItem) {
-            final EntityItem entityItem = (EntityItem) nmsEntity;
-            if (entityItem.owner instanceof EntityPlayer) {
-                return this.canSee(((EntityPlayer) entityItem.owner).getBukkitEntity());
-            }
-        }
-        if (nmsEntity instanceof EntityArrow) {
-            final EntityArrow entityProjectile = (EntityArrow) nmsEntity;
-            if (entityProjectile.shooter instanceof EntityPlayer) {
-                return this.canSee(((EntityPlayer) entityProjectile.shooter).getBukkitEntity());
-            }
-        }
-        return !(entity instanceof Player) || this.canSee((Player) entity);
     }
 
     public boolean canSeeFromTab(Player player) { return !hiddenPlayersFromTab.contains(player.getUniqueId()); }

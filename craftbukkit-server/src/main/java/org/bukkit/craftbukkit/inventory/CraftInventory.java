@@ -27,7 +27,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 
-public class CraftInventory implements Inventory, Cloneable {
+public class CraftInventory implements Inventory {
     protected final IInventory inventory;
 
     public CraftInventory(IInventory inventory) {
@@ -482,14 +482,5 @@ public class CraftInventory implements Inventory, Cloneable {
     @Override
     public boolean equals(final Object obj) {
         return obj instanceof CraftInventory && ((CraftInventory) obj).inventory.equals(this.inventory);
-    }
-
-    @Override
-    public CraftInventory clone() {
-        try {
-            return (CraftInventory) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new Error(e);
-        }
     }
 }
