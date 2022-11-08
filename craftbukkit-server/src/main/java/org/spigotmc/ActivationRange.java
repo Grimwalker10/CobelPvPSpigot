@@ -1,33 +1,7 @@
 package org.spigotmc;
 
-import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.server.AxisAlignedBB;
-import net.minecraft.server.Chunk;
-import net.minecraft.server.Entity;
-import net.minecraft.server.EntityAmbient;
-import net.minecraft.server.EntityAnimal;
-import net.minecraft.server.EntityArrow;
-import net.minecraft.server.EntityComplexPart;
-import net.minecraft.server.EntityCreature;
-import net.minecraft.server.EntityEnderCrystal;
-import net.minecraft.server.EntityEnderDragon;
-import net.minecraft.server.EntityFallingBlock; // PaperSpigot
-import net.minecraft.server.EntityFireball;
-import net.minecraft.server.EntityFireworks;
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityLiving;
-import net.minecraft.server.EntityMonster;
-import net.minecraft.server.EntityProjectile;
-import net.minecraft.server.EntitySheep;
-import net.minecraft.server.EntitySlime;
-import net.minecraft.server.EntityTNTPrimed;
-import net.minecraft.server.EntityVillager;
-import net.minecraft.server.EntityWeather;
-import net.minecraft.server.EntityWither;
-import net.minecraft.server.MathHelper;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.World;
+import net.minecraft.server.*;
 import org.bukkit.craftbukkit.SpigotTimings;
 
 public class ActivationRange
@@ -66,7 +40,7 @@ public class ActivationRange
      * These entities are excluded from Activation range checks.
      *
      * @param entity
-     * @param world
+     * @param config
      * @return boolean If it should always tick.
      */
     public static boolean initializeEntityActivationState(Entity entity, SpigotWorldConfig config)
