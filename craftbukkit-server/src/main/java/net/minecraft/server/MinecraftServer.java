@@ -493,13 +493,23 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
                 while (this.isRunning) {
                     curTime = System.nanoTime();
-                    wait = TICK_TIME - (curTime - lastTick) - catchupTime;
+                    // PaperSpigot start - Further improve tick loop
+                    wait = TICK_TIME - (curTime - lastTick);
+                    if (wait > 0) {
+                        if (catchupTime < 2E6) {
+                            wait += Math.abs(catchupTime);
+                        } else if (wait < catchupTime) {
+                            catchupTime -= wait;
+                            wait = 0;
+                        } else {
+                            wait -= catchupTime;
+                            catchupTime = 0;
+                        }
+                    }
                     if (wait > 0) {
                         Thread.sleep(wait / 1000000);
-                        catchupTime = 0;
-                        continue;
-                    } else {
-                        catchupTime = Math.min(1000000000, Math.abs(wait));
+                        curTime = System.nanoTime();
+                        wait = TICK_TIME - (curTime - lastTick);
                     }
 
                     if ( MinecraftServer.currentTick++ % SAMPLE_INTERVAL == 0 )
