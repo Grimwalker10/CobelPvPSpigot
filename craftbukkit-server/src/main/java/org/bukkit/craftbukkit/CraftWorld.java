@@ -232,7 +232,7 @@ public class CraftWorld implements World {
         }
 
         world.chunkProviderServer.unloadQueue.remove(x, z);
-        world.chunkProviderServer.chunks.remove(x, z); // CobelPvP
+        world.chunkProviderServer.chunks.remove(java.util.Optional.of(x), z); // CobelPvP
 
         return true;
     }
