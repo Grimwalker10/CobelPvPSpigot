@@ -66,13 +66,6 @@ public class ServerConnection {
 
         synchronized (this.f) {
             addPending(); // Paper
-            // Spigot Start
-            // This prevents players from 'gaming' the server, and strategically relogging to increase their position in the tick order
-            if ( org.spigotmc.SpigotConfig.playerShuffle > 0 && MinecraftServer.currentTick % org.spigotmc.SpigotConfig.playerShuffle == 0 )
-            {
-                Collections.shuffle( this.f );
-            }
-            // Spigot End
             Iterator iterator = this.f.iterator();
 
             while (iterator.hasNext()) {
