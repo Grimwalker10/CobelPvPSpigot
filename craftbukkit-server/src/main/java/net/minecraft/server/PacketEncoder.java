@@ -1,7 +1,7 @@
 package net.minecraft.server;
 
 import java.io.IOException;
-
+import net.minecraft.util.io.netty.handler.codec.EncoderException;
 import net.minecraft.util.com.google.common.collect.BiMap;
 import net.minecraft.util.io.netty.buffer.ByteBuf;
 import net.minecraft.util.io.netty.channel.ChannelHandlerContext;
@@ -21,7 +21,7 @@ public class PacketEncoder extends MessageToByteEncoder {
         this.c = networkstatistics;
     }
 
-    protected void a(ChannelHandlerContext channelhandlercontext, Packet packet, ByteBuf bytebuf) throws IOException {
+    protected void a(ChannelHandlerContext channelhandlercontext, Packet packet, ByteBuf bytebuf) throws IOException, EncoderException {
         Integer integer = (Integer) ((BiMap) channelhandlercontext.channel().attr(NetworkManager.f).get()).inverse().get(packet.getClass());
 
         if (a.isDebugEnabled()) {

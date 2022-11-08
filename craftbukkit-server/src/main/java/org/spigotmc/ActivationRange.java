@@ -108,7 +108,8 @@ public class ActivationRange
         maxRange = Math.max(maxRange, miscActivationRange);
         maxRange = Math.min((world.spigotConfig.viewDistance << 4) - 8, maxRange);
 
-        for (Entity player : (List<Entity>) world.players) {
+        for ( Entity player : world.players )
+        {
             player.activatedTick = MinecraftServer.currentTick;
             growBB( maxBB, player.boundingBox, maxRange, 256, maxRange );
             growBB( miscBB, player.boundingBox, miscActivationRange, 256, miscActivationRange );
@@ -132,6 +133,7 @@ public class ActivationRange
             }
         }
     }
+
 
     /**
      * Checks for the activation state of all entities in this chunk.

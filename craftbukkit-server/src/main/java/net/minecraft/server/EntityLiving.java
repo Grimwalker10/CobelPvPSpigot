@@ -877,7 +877,7 @@ public abstract class EntityLiving extends Entity {
 
                 // CraftBukkit start - Call death event
                 CraftEventFactory.callEntityDeathEvent(this, this.drops, exp); // Kohi - Specify the exp to drop
-                this.drops = null;
+                this.drops.clear();
             } else {
                 CraftEventFactory.callEntityDeathEvent(this);
                 // CraftBukkit end
@@ -885,6 +885,7 @@ public abstract class EntityLiving extends Entity {
         }
 
         this.world.broadcastEntityEffect(this, (byte) 3);
+        effects.clear();
     }
 
     protected void dropEquipment(boolean flag, int i) {
