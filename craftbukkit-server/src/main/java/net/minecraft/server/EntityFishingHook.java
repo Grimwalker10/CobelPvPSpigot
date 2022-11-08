@@ -157,12 +157,12 @@ public class EntityFishingHook extends Entity {
             }
 
             Entity entity = null;
-            List list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
+            List<Entity> list = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D));
             double d4 = 0.0D;
 
             double d5;
 
-            Iterator<Entity> iterator = this.world.getEntities(this, this.boundingBox.a(this.motX, this.motY, this.motZ).grow(1.0D, 1.0D, 1.0D)).iterator();
+            Iterator<Entity> iterator = list.iterator();
 
             while (iterator.hasNext()){
                 Entity entity1 = iterator.next();
@@ -186,8 +186,16 @@ public class EntityFishingHook extends Entity {
                 movingobjectposition = new MovingObjectPosition(entity);
             }
 
+            // snHose start - add the patch of PaperSpigot to allow fishing hook to fly through players
+            if (movingobjectposition != null && movingobjectposition.entity instanceof EntityPlayer && owner != null && owner instanceof EntityPlayer) {
+                if (!((EntityPlayer) owner).getBukkitEntity().canSee(((EntityPlayer) movingobjectposition.entity).getBukkitEntity())) {
+                    movingobjectposition = null;
+                }
+            }
+            // snHose end
+
             if (movingobjectposition != null) {
-                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // Craftbukkit - Call event
+                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this); // Craftbukkit - Call event
                 if (movingobjectposition.entity != null) {
                     if (movingobjectposition.entity.damageEntity(DamageSource.projectile(this, this.owner), 0.0F)) {
                         this.hooked = movingobjectposition.entity;
@@ -451,8 +459,8 @@ public class EntityFishingHook extends Entity {
         float f1 = 0.1F - (float) i * 0.025F - (float) j * 0.01F;
         float f2 = 0.05F + (float) i * 0.01F - (float) j * 0.01F;
 
-        f1 = MathHelper.a(f1, 0.0F, 1.0F);
-        f2 = MathHelper.a(f2, 0.0F, 1.0F);
+        f1 = MathHelper.limit(f1, 0.0F, 1.0F);
+        f2 = MathHelper.limit(f2, 0.0F, 1.0F);
         if (f < f1) {
             this.owner.a(StatisticList.A, 1);
             return ((PossibleFishingResult) WeightedRandom.a(this.random, (Collection) d)).a(this.random);

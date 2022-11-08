@@ -27,7 +27,7 @@ public class BlockSapling extends BlockPlant implements IBlockFragilePlantElemen
     public void a(World world, int i, int j, int k, Random random) {
         if (!world.isStatic) {
             super.a(world, i, j, k, random);
-            if (world.isLightLevel(i, j + 1, k, 9) && (random.nextInt(Math.max(2, (int) ((world.growthOdds / world.spigotConfig.saplingModifier * 7) + 0.5F))) == 0)) { // Spigot // CobelPvP
+            if (world.getLightLevel(i, j + 1, k) >= 9 && (random.nextInt(Math.max(2, (int) ((world.growthOdds / world.spigotConfig.saplingModifier * 7) + 0.5F))) == 0)) { // Spigot
                 // CraftBukkit start
                 world.captureTreeGeneration = true;
                 // CraftBukkit end
@@ -84,78 +84,78 @@ public class BlockSapling extends BlockPlant implements IBlockFragilePlantElemen
         boolean flag = false;
 
         switch (l) {
-        case 0:
-        default:
-            break;
+            case 0:
+            default:
+                break;
 
-        case 1:
-            label78:
-            for (i1 = 0; i1 >= -1; --i1) {
-                for (j1 = 0; j1 >= -1; --j1) {
-                    if (this.a(world, i + i1, j, k + j1, 1) && this.a(world, i + i1 + 1, j, k + j1, 1) && this.a(world, i + i1, j, k + j1 + 1, 1) && this.a(world, i + i1 + 1, j, k + j1 + 1, 1)) {
-                        treeType = TreeType.MEGA_REDWOOD; // CraftBukkit
-                        object = new WorldGenMegaTree(false, random.nextBoolean());
-                        flag = true;
-                        break label78;
+            case 1:
+                label78:
+                for (i1 = 0; i1 >= -1; --i1) {
+                    for (j1 = 0; j1 >= -1; --j1) {
+                        if (this.a(world, i + i1, j, k + j1, 1) && this.a(world, i + i1 + 1, j, k + j1, 1) && this.a(world, i + i1, j, k + j1 + 1, 1) && this.a(world, i + i1 + 1, j, k + j1 + 1, 1)) {
+                            treeType = TreeType.MEGA_REDWOOD; // CraftBukkit
+                            object = new WorldGenMegaTree(false, random.nextBoolean());
+                            flag = true;
+                            break label78;
+                        }
                     }
                 }
-            }
 
-            if (!flag) {
-                j1 = 0;
-                i1 = 0;
-                treeType = TreeType.REDWOOD; // CraftBukkit
-                object = new WorldGenTaiga2(true);
-            }
-            break;
+                if (!flag) {
+                    j1 = 0;
+                    i1 = 0;
+                    treeType = TreeType.REDWOOD; // CraftBukkit
+                    object = new WorldGenTaiga2(true);
+                }
+                break;
 
-        case 2:
-            treeType = TreeType.BIRCH; // CraftBukkit
-            object = new WorldGenForest(true, false);
-            break;
+            case 2:
+                treeType = TreeType.BIRCH; // CraftBukkit
+                object = new WorldGenForest(true, false);
+                break;
 
-        case 3:
-            label93:
-            for (i1 = 0; i1 >= -1; --i1) {
-                for (j1 = 0; j1 >= -1; --j1) {
-                    if (this.a(world, i + i1, j, k + j1, 3) && this.a(world, i + i1 + 1, j, k + j1, 3) && this.a(world, i + i1, j, k + j1 + 1, 3) && this.a(world, i + i1 + 1, j, k + j1 + 1, 3)) {
-                        treeType = TreeType.JUNGLE; // CraftBukkit
-                        object = new WorldGenJungleTree(true, 10, 20, 3, 3);
-                        flag = true;
-                        break label93;
+            case 3:
+                label93:
+                for (i1 = 0; i1 >= -1; --i1) {
+                    for (j1 = 0; j1 >= -1; --j1) {
+                        if (this.a(world, i + i1, j, k + j1, 3) && this.a(world, i + i1 + 1, j, k + j1, 3) && this.a(world, i + i1, j, k + j1 + 1, 3) && this.a(world, i + i1 + 1, j, k + j1 + 1, 3)) {
+                            treeType = TreeType.JUNGLE; // CraftBukkit
+                            object = new WorldGenJungleTree(true, 10, 20, 3, 3);
+                            flag = true;
+                            break label93;
+                        }
                     }
                 }
-            }
 
-            if (!flag) {
-                j1 = 0;
-                i1 = 0;
-                treeType = TreeType.SMALL_JUNGLE; // CraftBukkit
-                object = new WorldGenTrees(true, 4 + random.nextInt(7), 3, 3, false);
-            }
-            break;
+                if (!flag) {
+                    j1 = 0;
+                    i1 = 0;
+                    treeType = TreeType.SMALL_JUNGLE; // CraftBukkit
+                    object = new WorldGenTrees(true, 4 + random.nextInt(7), 3, 3, false);
+                }
+                break;
 
-        case 4:
-            treeType = TreeType.ACACIA; // CraftBukkit
-            object = new WorldGenAcaciaTree(true);
-            break;
+            case 4:
+                treeType = TreeType.ACACIA; // CraftBukkit
+                object = new WorldGenAcaciaTree(true);
+                break;
 
-        case 5:
-            label108:
-            for (i1 = 0; i1 >= -1; --i1) {
-                for (j1 = 0; j1 >= -1; --j1) {
-                    if (this.a(world, i + i1, j, k + j1, 5) && this.a(world, i + i1 + 1, j, k + j1, 5) && this.a(world, i + i1, j, k + j1 + 1, 5) && this.a(world, i + i1 + 1, j, k + j1 + 1, 5)) {
-                        object = new WorldGenForestTree(true);
-                        treeType = TreeType.DARK_OAK; // CraftBukkit
-                        flag = true;
-                        break label108;
+            case 5:
+                label108:
+                for (i1 = 0; i1 >= -1; --i1) {
+                    for (j1 = 0; j1 >= -1; --j1) {
+                        if (this.a(world, i + i1, j, k + j1, 5) && this.a(world, i + i1 + 1, j, k + j1, 5) && this.a(world, i + i1, j, k + j1 + 1, 5) && this.a(world, i + i1 + 1, j, k + j1 + 1, 5)) {
+                            object = new WorldGenForestTree(true);
+                            treeType = TreeType.DARK_OAK; // CraftBukkit
+                            flag = true;
+                            break label108;
+                        }
                     }
                 }
-            }
 
-            if (!flag) {
-                return;
-            }
+                if (!flag) {
+                    return;
+                }
         }
 
         Block block = Blocks.AIR;
@@ -186,7 +186,7 @@ public class BlockSapling extends BlockPlant implements IBlockFragilePlantElemen
     }
 
     public int getDropData(int i) {
-        return MathHelper.a(i & 7, 0, 5);
+        return MathHelper.limit(i & 7, 0, 5);
     }
 
     public boolean a(World world, int i, int j, int k, boolean flag) {

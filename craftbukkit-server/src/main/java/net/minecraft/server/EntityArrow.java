@@ -232,7 +232,7 @@ public class EntityArrow extends Entity implements IProjectile {
             // PaperSpigot end
 
             if (movingobjectposition != null) {
-                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // CraftBukkit - Call event
+                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this); // CraftBukkit - Call event
 
                 if (movingobjectposition.entity != null) {
                     f2 = MathHelper.sqrt(this.motX * this.motX + this.motY * this.motY + this.motZ * this.motZ);

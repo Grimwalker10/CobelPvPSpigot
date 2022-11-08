@@ -89,21 +89,21 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
             int i = this.getType();
 
             switch (i) {
-            case 0:
-            default:
-                return LocaleI18n.get("entity.horse.name");
+                case 0:
+                default:
+                    return LocaleI18n.get("entity.horse.name");
 
-            case 1:
-                return LocaleI18n.get("entity.donkey.name");
+                case 1:
+                    return LocaleI18n.get("entity.donkey.name");
 
-            case 2:
-                return LocaleI18n.get("entity.mule.name");
+                case 2:
+                    return LocaleI18n.get("entity.mule.name");
 
-            case 3:
-                return LocaleI18n.get("entity.zombiehorse.name");
+                case 3:
+                    return LocaleI18n.get("entity.zombiehorse.name");
 
-            case 4:
-                return LocaleI18n.get("entity.skeletonhorse.name");
+                case 4:
+                    return LocaleI18n.get("entity.skeletonhorse.name");
             }
         }
     }
@@ -114,12 +114,7 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
 
     private void b(int i, boolean flag) {
         int j = this.datawatcher.getInt(16);
-
-        if (flag) {
-            this.datawatcher.watch(16, Integer.valueOf(j | i));
-        } else {
-            this.datawatcher.watch(16, Integer.valueOf(j & ~i));
-        }
+        this.datawatcher.watch(16, Integer.valueOf((flag ? (j | i) : (j & ~i))));
     }
 
     public boolean cb() {
@@ -149,11 +144,7 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
     }
 
     public void a(boolean flag) {
-        if (flag) {
-            this.a(this.ci());
-        } else {
-            this.a(1.0F);
-        }
+        this.a((flag ? this.ci() : 1.0F));
     }
 
     public boolean cj() {
@@ -169,13 +160,7 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
     }
 
     public boolean bM() {
-        // PaperSpigot start - Configurable undead horse leashing
-        if (this.world.paperSpigotConfig.allowUndeadHorseLeashing) {
-            return super.bM();
-        } else {
-            return !this.cE() && super.bM();
-        }
-        // PaperSpigot end
+        return (this.world.paperSpigotConfig.allowUndeadHorseLeashing ? super.bM() : (!this.cE() && super.bM()));
     }
 
     protected void o(float f) {
@@ -248,7 +233,7 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
     }
 
     public int v(int i) {
-        int j = MathHelper.a(this.getTemper() + i, 0, this.getMaxDomestication());
+        int j = MathHelper.limit(this.getTemper() + i, 0, this.getMaxDomestication());
 
         this.setTemper(j);
         return j;
@@ -628,7 +613,7 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
                 }
 
                 if (flag) {
-                    if (!entityhuman.abilities.canInstantlyBuild && --itemstack.count <= 0) { // EMC
+                    if (!entityhuman.abilities.canInstantlyBuild && --itemstack.count == 0) {
                         entityhuman.inventory.setItem(entityhuman.inventory.itemInHandIndex, (ItemStack) null);
                     }
 
