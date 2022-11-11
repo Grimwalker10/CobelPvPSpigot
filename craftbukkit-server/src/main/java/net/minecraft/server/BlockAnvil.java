@@ -52,12 +52,10 @@ public class BlockAnvil extends BlockFalling {
     }
 
     public boolean interact(World world, int i, int j, int k, EntityHuman entityhuman, int l, float f, float f1, float f2) {
-        if (world.isStatic) {
-            return true;
-        } else {
+        if (!world.isStatic) {
             entityhuman.openAnvil(i, j, k);
-            return true;
         }
+        return true;
     }
 
     public int b() {
