@@ -2,14 +2,19 @@
 <project version="4">
   <component name="RemoteRepositoriesConfiguration">
     <remote-repository>
+      <option name="id" value="md_5-releases" />
+      <option name="name" value="md_5-releases" />
+      <option name="url" value="https://repo.md-5.net/content/repositories/releases/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="repobo-snap" />
+      <option name="name" value="repobo-snap" />
+      <option name="url" value="https://repo.bukkit.org/content/groups/public" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="central" />
       <option name="name" value="Central Repository" />
       <option name="url" value="https://repo.maven.apache.org/maven2" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="md_5-releases" />
-      <option name="name" value="md_5-releases" />
-      <option name="url" value="http://repo.md-5.net/content/repositories/releases/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="bungeecord-releases" />
@@ -29,12 +34,7 @@
     <remote-repository>
       <option name="id" value="elmakers-repo" />
       <option name="name" value="elmakers-repo" />
-      <option name="url" value="http://maven.elmakers.com/repository/" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="repobo-snap" />
-      <option name="name" value="repobo-snap" />
-      <option name="url" value="http://repo.bukkit.org/content/groups/public" />
+      <option name="url" value="https://maven.elmakers.com/repository/" />
     </remote-repository>
   </component>
 </project>
