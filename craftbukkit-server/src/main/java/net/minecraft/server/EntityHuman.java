@@ -843,9 +843,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         if (!this.isInvulnerable()) {
             if (!damagesource.ignoresArmor() && f > 0.0F) {
                 f = (1.0F + f) ;
-            }
-
-            if (this.isBlocking() && f > 0.0F){
+            } if (this.isBlocking()){
                 f = (0.0F + f) ;
             }
 
