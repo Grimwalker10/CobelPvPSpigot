@@ -845,10 +845,6 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                 f = (1.0F + f) ;
             }
 
-            if (this.isBlocking() && f > 0.0F){
-                f = (0.0F + f) ;
-            }
-
             f = this.applyArmorModifier(damagesource, f);
             f = this.applyMagicModifier(damagesource, f);
             float f1 = f;

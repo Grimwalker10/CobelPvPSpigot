@@ -1064,9 +1064,7 @@ public abstract class EntityLiving extends Entity {
                     if (human) {
                         if (!damagesource.ignoresArmor() && f > 0.0F) {
                             return -(f - ((1.0F + f) * 0.5F));
-                        }
-
-                        if (((EntityHuman) EntityLiving.this).isBlocking() && f > 0.0F){
+                        } if (((EntityHuman) EntityLiving.this).isBlocking()){
                             return -(f - ((0.0F + f) * 0.0F));
                         }
                     }
