@@ -2,15 +2,12 @@ package com.cobelpvp.commands;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-
 import net.minecraft.optimizations.ThreadingManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldServer;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -50,13 +47,13 @@ public class WorldStatsCommand extends Command {
         return true;
     }
 
-    public class WorldStatsTask implements Runnable {
+    public static class WorldStatsTask implements Runnable {
 
-        private List<CommandSender> senderList = new ArrayList<CommandSender>();
-        private WorldNameComparator comparator = new WorldNameComparator();
-        private DecimalFormat formater = new DecimalFormat("###0.0");
+        private final List<CommandSender> senderList = new ArrayList<CommandSender>();
+        private final WorldNameComparator comparator = new WorldNameComparator();
+        private final DecimalFormat formater = new DecimalFormat("###0.0");
 
-        private boolean wasTimingAlreadyOn;
+        private final boolean wasTimingAlreadyOn;
 
         public WorldStatsTask(boolean wasTimingAlreadyOn) {
             this.wasTimingAlreadyOn = wasTimingAlreadyOn;
@@ -97,9 +94,8 @@ public class WorldStatsCommand extends Command {
             sb.append("TickTime");
             sb.append("\n");
 
-            List<WorldServer> worlds = new LinkedList<WorldServer>();
-            worlds.addAll(MinecraftServer.getServer().worlds);
-            Collections.sort(worlds, this.comparator);
+            List<WorldServer> worlds = new LinkedList<WorldServer>(MinecraftServer.getServer().worlds);
+            worlds.sort(this.comparator);
             InfoHolder overall = new InfoHolder("TOTAL");
 
             for(WorldServer ws: worlds) {
@@ -180,7 +176,7 @@ public class WorldStatsCommand extends Command {
             return this.formater.format(milli);
         }
 
-        private class InfoHolder {
+        private static class InfoHolder {
             public String name;
             public int chunks = 0;
             public int entities = 0;
@@ -199,7 +195,7 @@ public class WorldStatsCommand extends Command {
             }
         }
 
-        private class WorldNameComparator implements Comparator<WorldServer> {
+        private static class WorldNameComparator implements Comparator<WorldServer> {
             @Override
             public int compare(WorldServer arg0, WorldServer arg1) {
                 String n1 = arg0.getWorld().getName();
@@ -212,7 +208,6 @@ public class WorldStatsCommand extends Command {
             InfoHolder ih = new InfoHolder(ws.getWorld().getName());
             ih.chunks = ws.chunkProviderServer.chunks.size();
             ih.entities = ws.entityList.size();
-            //ih.tileEntities = ws.tileEntityList.size();
             ih.players = ws.players.size();
             return ih;
         }

@@ -10,8 +10,8 @@ import java.util.Set;
 public enum CobelSpigot {
     INSTANCE("INSTANCE", 0);
 
-    private Set<PacketHandler> packetHandlers;
-    private Set<MovementHandler> movementHandlers;
+    private final Set<PacketHandler> packetHandlers;
+    private final Set<MovementHandler> movementHandlers;
 
     private CobelSpigot(final String s, final int n) {
         this.packetHandlers = new HashSet<PacketHandler>();

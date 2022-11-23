@@ -1,15 +1,11 @@
 package com.cobelpvp.autosave;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Queue;
-
 import org.bukkit.event.world.WorldSaveEvent;
 import org.spigotmc.SpigotConfig;
-
 import net.minecraft.server.ExceptionWorldConflict;
 import net.minecraft.server.FileIOThread;
-import net.minecraft.server.IProgressUpdate;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegionFileCache;
 import net.minecraft.server.WorldServer;
@@ -17,10 +13,10 @@ import net.minecraft.server.WorldServer;
 public class AutoSave {
 
     private AutoSaveStep step;
-    private Queue<WorldServer> levelAndMapsQueue;
-    private Queue<WorldServer> saveChunksQueue;
-    private Queue<WorldServer> unloadChunksQueue;
-    private Queue<WorldServer> eventQueue;
+    private final Queue<WorldServer> levelAndMapsQueue;
+    private final Queue<WorldServer> saveChunksQueue;
+    private final Queue<WorldServer> unloadChunksQueue;
+    private final Queue<WorldServer> eventQueue;
     private long fileioStart;
     private long fileioEnd;
     private int regionFileCount;

@@ -1,7 +1,6 @@
 package com.cobelpvp.autosave;
 
 import net.minecraft.server.World;
-import net.minecraft.server.WorldData;
 
 public class AutoSaveWorldData {
 
