@@ -342,6 +342,11 @@ public class SpigotConfig
         movedWronglyThreshold = getDouble( "settings.moved-wrongly-threshold", 0.0625D );
     }
 
+    public static boolean fixEatWhileRunning;
+    private static void fixEatWhileRunning() {
+        fixEatWhileRunning = getBoolean("settings.fix-eat-while-running", true);
+    }
+
     public static double movedTooQuicklyThreshold;
     private static void movedTooQuicklyThreshold()
     {
