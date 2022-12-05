@@ -138,40 +138,11 @@ public class EntityEnderPearl extends EntityProjectile
             if (EntityEnderPearl.pearlAbleType.stream().anyMatch(it -> typeHere.name().contains(it))) {
                 this.lastValidTeleport = this.getBukkitEntity().getLocation();
             }
-            if (shooter != null && EntityEnderPearl.forwardTypes.stream().anyMatch(it -> block.getRelative(getDirection((EntityPlayer)shooter)).getType() == it)) {
-                this.lastValidTeleport = this.getBukkitEntity().getLocation();
-            }
             if (typeHere == Material.FENCE_GATE && ((Openable)block.getState().getData()).isOpen()) {
                 this.lastValidTeleport = this.getBukkitEntity().getLocation();
             }
-            if (shooter != null) {
-                final org.bukkit.block.Block newTrap = block.getRelative(getDirection((EntityPlayer)shooter)).getRelative(BlockFace.DOWN);
-                if (newTrap.getType() == Material.COBBLE_WALL || newTrap.getType() == Material.FENCE) {
-                    this.lastValidTeleport = newTrap.getLocation();
-                }
-            }
             super.h();
         }
-    }
-
-    public static BlockFace getDirection(final EntityPlayer entityPlayer) {
-        float yaw = entityPlayer.getBukkitEntity().getLocation().getYaw();
-        if (yaw < 0.0f) {
-            yaw += 360.0f;
-        }
-        if (yaw >= 315.0f || yaw < 45.0f) {
-            return BlockFace.SOUTH;
-        }
-        if (yaw < 135.0f) {
-            return BlockFace.WEST;
-        }
-        if (yaw < 225.0f) {
-            return BlockFace.NORTH;
-        }
-        if (yaw < 315.0f) {
-            return BlockFace.EAST;
-        }
-        return BlockFace.NORTH;
     }
 
     public Item getToRefundPearl() {
