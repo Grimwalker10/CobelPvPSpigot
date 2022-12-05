@@ -21,7 +21,6 @@ public class NoTrackCommand extends Command {
         } else if (args != null && args.length == 2) {
             String worldName = args[0];
             String newNTR = args[1];
-            boolean var6 = true;
 
             int trackRange;
             try {
