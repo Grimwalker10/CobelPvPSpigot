@@ -3,7 +3,6 @@ package com.cobelpvp;
 import com.cobelpvp.handler.MovementHandler;
 import com.cobelpvp.handler.PacketHandler;
 import org.bukkit.Bukkit;
-
 import java.util.HashSet;
 import java.util.Set;
 

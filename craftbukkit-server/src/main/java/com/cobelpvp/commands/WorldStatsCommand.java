@@ -49,7 +49,7 @@ public class WorldStatsCommand extends Command {
 
     public static class WorldStatsTask implements Runnable {
 
-        private final List<CommandSender> senderList = new ArrayList<CommandSender>();
+        private final List<CommandSender> senderList = new ArrayList<>();
         private final WorldNameComparator comparator = new WorldNameComparator();
         private final DecimalFormat formater = new DecimalFormat("###0.0");
 
@@ -94,7 +94,7 @@ public class WorldStatsCommand extends Command {
             sb.append("TickTime");
             sb.append("\n");
 
-            List<WorldServer> worlds = new LinkedList<WorldServer>(MinecraftServer.getServer().worlds);
+            List<WorldServer> worlds = new LinkedList<>(MinecraftServer.getServer().worlds);
             worlds.sort(this.comparator);
             InfoHolder overall = new InfoHolder("TOTAL");
 
