@@ -655,14 +655,7 @@ public class PlayerConnection implements PacketPlayInListener {
 
         // CraftBukkit start
         if (this.player.dead) return;
-
-        // This is a horrible hack needed because the client sends 2 packets on 'right mouse click'
-        // aimed at a block. We shouldn't need to get the second packet if the data is handled
-        // but we cannot know what the client will do, so we might still get it
-        //
-        // If the time between packets is small enough, and the 'signature' similar, we discard the
-        // second one. This sadly has to remain until Mojang makes their packets saner. :(
-        //  -- Grum
+        
         if (packetplayinblockplace.getFace() == 255) {
             if (packetplayinblockplace.getItemStack() != null && packetplayinblockplace.getItemStack().getItem() == this.lastMaterial && this.lastPacket != null && packetplayinblockplace.timestamp - this.lastPacket < 100) {
                 this.lastPacket = null;
