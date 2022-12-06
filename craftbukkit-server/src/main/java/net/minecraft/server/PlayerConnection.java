@@ -797,13 +797,6 @@ public class PlayerConnection implements PacketPlayInListener {
         // CraftBukkit end
         c.info(this.player.getName() + " lost connection: " + ichatbasecomponent.c()); // CraftBukkit - Don't toString the component
         this.minecraftServer.az();
-        // CraftBukkit start - Replace vanilla quit message handling with our own.
-        /*
-        ChatMessage chatmessage = new ChatMessage("multiplayer.player.left", new Object[] { this.player.getScoreboardDisplayName()});
-
-        chatmessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
-        this.minecraftServer.getPlayerList().sendMessage(chatmessage);
-        */
 
         this.player.n();
         String quitMessage = this.minecraftServer.getPlayerList().disconnect(this.player);
