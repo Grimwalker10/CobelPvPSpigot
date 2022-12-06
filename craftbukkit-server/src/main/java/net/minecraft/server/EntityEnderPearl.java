@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.player.PlayerPearlRefundEvent;
@@ -137,11 +138,25 @@ public class EntityEnderPearl extends EntityProjectile
             if (EntityEnderPearl.pearlAbleType.stream().anyMatch(it -> typeHere.name().contains(it))) {
                 this.lastValidTeleport = this.getBukkitEntity().getLocation();
             }
+            if (shooter != null && EntityEnderPearl.forwardTypes.stream().anyMatch(it -> block.getRelative(getDirection((EntityPlayer)shooter)).getType() == it)) {
+                this.lastValidTeleport = this.getBukkitEntity().getLocation();
+            }
             if (typeHere == Material.FENCE_GATE && ((Openable)block.getState().getData()).isOpen()) {
                 this.lastValidTeleport = this.getBukkitEntity().getLocation();
             }
+            if (shooter != null) {
+                final org.bukkit.block.Block newTrap = block.getRelative(getDirection((EntityPlayer)shooter)).getRelative(BlockFace.DOWN);
+                if (newTrap.getType() == Material.COBBLE_WALL || newTrap.getType() == Material.FENCE) {
+                    this.lastValidTeleport = newTrap.getLocation();
+                }
+            }
             super.h();
         }
+    }
+
+    public static BlockFace getDirection(final EntityPlayer entityPlayer) {
+        float yaw = entityPlayer.getBukkitEntity().getLocation().getYaw();
+        return null;
     }
 
     public Item getToRefundPearl() {
