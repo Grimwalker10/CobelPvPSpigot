@@ -696,8 +696,6 @@ public class PlayerConnection implements PacketPlayInListener {
                 if (isEnderPearl) {
                     flag = true;
                 }
-            } else if (MinecraftServer.currentTick - lastDropTick > 1 && org.spigotmc.SpigotConfig.fixEatWhileRunning) {
-                this.player.playerInteractManager.useItem(this.player, this.player.world, itemstack);
             }
 
             }

@@ -156,7 +156,22 @@ public class EntityEnderPearl extends EntityProjectile
 
     public static BlockFace getDirection(final EntityPlayer entityPlayer) {
         float yaw = entityPlayer.getBukkitEntity().getLocation().getYaw();
-        return null;
+        if (yaw < 0.0f) {
+            yaw += 360.0f;
+        }
+        if (yaw >= 315.0f || yaw < 45.0f) {
+            return BlockFace.SOUTH;
+        }
+        if (yaw < 135.0f) {
+            return BlockFace.WEST;
+        }
+        if (yaw < 225.0f) {
+            return BlockFace.NORTH;
+        }
+        if (yaw < 315.0f) {
+            return BlockFace.EAST;
+        }
+        return BlockFace.NORTH;
     }
 
     public Item getToRefundPearl() {
