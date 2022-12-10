@@ -777,8 +777,8 @@ public abstract class PlayerList {
         // worldserver.methodProfiler.b();
         if (i != 1) {
             // worldserver.methodProfiler.a("placing");
-            d0 = (double) MathHelper.a((int) d0, -29999872, 29999872);
-            d1 = (double) MathHelper.a((int) d1, -29999872, 29999872);
+            d0 = (double) MathHelper.limit((int) d0, -29999872, 29999872);
+            d1 = (double) MathHelper.limit((int) d1, -29999872, 29999872);
             /*
             if (entity.isAlive()) {
                 worldserver1.addEntity(entity);

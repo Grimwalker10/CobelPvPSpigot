@@ -2355,7 +2355,7 @@ public abstract class World implements IBlockAccess {
                     this.p = (float) ((double) this.p - 0.01D);
                 }
 
-                this.p = MathHelper.a(this.p, 0.0F, 1.0F);
+                this.p = MathHelper.limit(this.p, 0.0F, 1.0F);
                 int j = this.worldData.getWeatherDuration();
 
                 if (j <= 0) {
@@ -2386,7 +2386,7 @@ public abstract class World implements IBlockAccess {
                     this.n = (float) ((double) this.n - 0.01D);
                 }
 
-                this.n = MathHelper.a(this.n, 0.0F, 1.0F);
+                this.n = MathHelper.limit(this.n, 0.0F, 1.0F);
             }
         }
     }
@@ -3431,7 +3431,7 @@ public abstract class World implements IBlockAccess {
         if (this.isLoaded(i, j, k)) {
             float f1 = this.y();
 
-            f += MathHelper.a((float) this.getChunkAtWorldCoords(i, k).s / 3600000.0F, 0.0F, 1.0F) * (flag ? 1.0F : 0.75F);
+            f += MathHelper.limit((float) this.getChunkAtWorldCoords(i, k).s / 3600000.0F, 0.0F, 1.0F) * (flag ? 1.0F : 0.75F);
             f += f1 * 0.25F;
         }
 
@@ -3439,7 +3439,7 @@ public abstract class World implements IBlockAccess {
             f *= (float) this.difficulty.a() / 2.0F;
         }
 
-        return MathHelper.a(f, 0.0F, flag ? 1.5F : 1.0F);
+        return MathHelper.limit(f, 0.0F, flag ? 1.5F : 1.0F);
     }
 
     public void X() {
