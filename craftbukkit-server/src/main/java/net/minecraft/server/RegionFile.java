@@ -6,6 +6,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
+import java.util.zip.Deflater;
+import java.lang.reflect.Field;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -210,8 +213,22 @@ public class RegionFile {
         }
     }
 
+    private Field usesDefaultDeflater;
+
     public DataOutputStream b(int i, int j) {
-        return this.d(i, j) ? null : new DataOutputStream(new java.io.BufferedOutputStream(new DeflaterOutputStream(new ChunkBuffer(this, i, j)))); // Spigot - use a BufferedOutputStream to greatly improve file write performance
+        OutputStream deflaterOutput = new DeflaterOutputStream(new ChunkBuffer(this, i, j), new Deflater(Deflater.BEST_COMPRESSION));
+        try {
+            // Force end() on close
+            if (usesDefaultDeflater == null) {
+                usesDefaultDeflater = DeflaterOutputStream.class.getDeclaredField("usesDefaultDeflater");
+                usesDefaultDeflater.setAccessible(true);
+            }
+            usesDefaultDeflater.setBoolean(deflaterOutput, true);
+        } catch (NoSuchFieldException | IllegalAccessException e1) {
+            e1.printStackTrace();
+        }
+        return this.d(i, j) ? null : new DataOutputStream(new java.io.BufferedOutputStream(deflaterOutput)); // Spigot - use a BufferedOutputStream to greatly improve file write performance
+        //return this.d(i, j) ? null : new DataOutputStream(new java.io.BufferedOutputStream(new DeflaterOutputStream(new ChunkBuffer(this, i, j))));
     }
 
     protected synchronized void a(int i, int j, byte[] abyte, int k) {

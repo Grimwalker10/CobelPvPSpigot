@@ -782,9 +782,8 @@ public class PlayerConnection implements PacketPlayInListener {
         // CraftBukkit start - Rarely it would send a disconnect line twice
         if (this.processedDisconnect) {
             return;
-        } else {
-            this.processedDisconnect = true;
         }
+        this.processedDisconnect = true;
         // CraftBukkit end
         c.info(this.player.getName() + " lost connection: " + ichatbasecomponent.c()); // CraftBukkit - Don't toString the component
         this.minecraftServer.az();
@@ -913,9 +912,7 @@ public class PlayerConnection implements PacketPlayInListener {
             this.sendPacket(new PacketPlayOutChat(chatmessage));
         } else {
             this.player.v();
-            String s = packetplayinchat.c();
-
-            s = StringUtils.normalizeSpace(s);
+            String s = StringUtils.normalizeSpace(packetplayinchat.c());
 
             for (int i = 0; i < s.length(); ++i) {
                 if (!SharedConstants.isAllowedChatCharacter(s.charAt(i))) {
@@ -1138,8 +1135,8 @@ public class PlayerConnection implements PacketPlayInListener {
                 double d2 = this.player.lastZ + (this.player.locZ - this.player.lastZ) * (double) f;
                 Vec3D vec3d = Vec3D.a(d0, d1, d2);
 
-                float f3 = MathHelper.cos(-f2 * 0.017453292F - 3.1415927F);
-                float f4 = MathHelper.sin(-f2 * 0.017453292F - 3.1415927F);
+                float f3 = MathHelper.cos(-f2 * 0.017453292F - (float) Math.PI);
+                float f4 = MathHelper.sin(-f2 * 0.017453292F - (float) Math.PI);
                 float f5 = -MathHelper.cos(-f1 * 0.017453292F);
                 float f6 = MathHelper.sin(-f1 * 0.017453292F);
                 float f7 = f4 * f5;
