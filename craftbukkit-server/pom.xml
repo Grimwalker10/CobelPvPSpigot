@@ -38,6 +38,10 @@
             <id>elmakers-repo</id>
             <url>https://maven.elmakers.com/repository/</url>
         </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -134,6 +138,11 @@
             <artifactId>guava</artifactId>
             <version>31.1-android</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.Nesaak</groupId>
+            <artifactId>NoReflection</artifactId>
+            <version>b9fd2940dc <!-- Replace the version with the latest commit on github--> </version>
         </dependency>
     </dependencies>
 
