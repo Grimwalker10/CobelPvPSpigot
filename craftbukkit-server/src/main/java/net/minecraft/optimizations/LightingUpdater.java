@@ -16,7 +16,7 @@ public class LightingUpdater {
     private HashMap<Long, Chunk> chunks;
 
     public LightingUpdater() {
-        this.arrayI = new int['\u8000'];
+        this.arrayI = new int['耀'];
         this.chunks = new HashMap<Long, Chunk>();
     }
 
