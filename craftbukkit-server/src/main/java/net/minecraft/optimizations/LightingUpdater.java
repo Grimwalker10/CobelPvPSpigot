@@ -2,15 +2,12 @@ package net.minecraft.optimizations;
 
 import java.util.HashMap;
 import java.util.List;
-
 import org.bukkit.craftbukkit.util.LongHash;
-
 import net.minecraft.server.Block;
 import net.minecraft.server.Blocks;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.EnumSkyBlock;
 import net.minecraft.server.Facing;
-import net.minecraft.server.IWorldAccess;
 import net.minecraft.server.MathHelper;
 
 public class LightingUpdater {
@@ -84,9 +81,6 @@ public class LightingUpdater {
 
                 l = 0;
             }
-
-            //this.methodProfiler.b();
-            //this.methodProfiler.a("checkedPosition < toCheckCount");
 
             while (l < i1) {
                 l1 = arrayI[l++];

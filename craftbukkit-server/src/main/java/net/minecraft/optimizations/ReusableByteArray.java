@@ -5,12 +5,7 @@ public class ReusableByteArray {
     private final ThreadLocal<byte[]> arrays;
 
     public ReusableByteArray(final int initialSize) {
-        arrays = new ThreadLocal<byte[]>() {
-            @Override
-            protected byte[] initialValue() {
-                return new byte[initialSize];
-            }
-        };
+        arrays = ThreadLocal.withInitial(() -> new byte[initialSize]);
     }
 
     /**
