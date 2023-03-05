@@ -2004,4 +2004,14 @@ public abstract class Entity {
     private boolean paperNetherCheck() {
         return this.world.paperSpigotConfig.netherVoidTopDamage && this.world.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER && this.locY >= 128.0D;
     }
+
+    public static double invSqrt(double x) {
+        double xhalf = 0.5 * x;
+        long i = Double.doubleToLongBits(x);
+        i = 6910470738111508698L - (i >> 1);
+        x = Double.longBitsToDouble(i);
+        x *= 1.5 - xhalf * x * x;
+        x *= 1.5 - xhalf * x * x;
+        return x;
+    }
 }
