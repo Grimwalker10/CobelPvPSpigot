@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import io.netty.buffer.ByteBufAllocator;
+import net.minecraft.util.io.netty.buffer.PooledByteBufAllocator;
 import net.minecraft.util.io.netty.channel.Channel;
 import net.minecraft.util.io.netty.channel.ChannelException;
 import net.minecraft.util.io.netty.channel.ChannelInitializer;
@@ -16,14 +18,10 @@ class ServerConnectionChannel extends ChannelInitializer {
 
     protected void initChannel(Channel channel) {
         try {
-            channel.config().setOption(ChannelOption.IP_TOS, Integer.valueOf(24));
-        } catch (ChannelException channelexception) {
-            ;
-        }
-
-        try {
             channel.config().setOption(ChannelOption.TCP_NODELAY, Boolean.valueOf(true));
-        } catch (ChannelException channelexception1) {
+            channel.config().setOption(ChannelOption.IP_TOS, 0x18); // [Nacho-0027] :: Optimize networking
+            channel.config().setAllocator(PooledByteBufAllocator.DEFAULT);
+        } catch (ChannelException channelexception) {
             ;
         }
 

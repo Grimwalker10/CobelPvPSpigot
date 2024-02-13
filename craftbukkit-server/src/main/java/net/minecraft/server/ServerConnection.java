@@ -47,6 +47,7 @@ public class ServerConnection {
 
         synchronized (this.e) {
             this.e.add(((ServerBootstrap) ((ServerBootstrap) (new ServerBootstrap()).channel(NioServerSocketChannel.class)).childHandler(new ServerConnectionChannel(this)).group(c).localAddress(inetaddress, i)).bind().syncUninterruptibly());
+
         }
     }
 
