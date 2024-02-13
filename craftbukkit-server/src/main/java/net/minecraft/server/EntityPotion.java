@@ -4,8 +4,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.HashMap;
 
+import net.jafama.FastMath;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 
 public class EntityPotion extends EntityProjectile {
 
@@ -61,7 +63,7 @@ public class EntityPotion extends EntityProjectile {
         if (!this.world.isStatic) {
             List list = Items.POTION.g(this.item);
 
-            if (true || list != null && !list.isEmpty()) { // CraftBukkit - Call event even if no effects to apply
+            if (list != null && !list.isEmpty()) { // CraftBukkit - Call event even if no effects to apply
                 AxisAlignedBB axisalignedbb = this.boundingBox.grow(4.0D, 2.0D, 4.0D);
                 List list1 = this.world.a(EntityLiving.class, axisalignedbb);
 
@@ -76,7 +78,7 @@ public class EntityPotion extends EntityProjectile {
                         double d0 = this.f(entityliving);
 
                         if (d0 < 16.0D) {
-                            double d1 = 1.0D - Math.sqrt(d0) / 4.0D;
+                            double d1 = 1.0D - FastMath.sqrt(d0) / 4.0D;
 
                             if (entityliving == movingobjectposition.entity) {
                                 d1 = 1.0D;
@@ -88,7 +90,17 @@ public class EntityPotion extends EntityProjectile {
                     }
 
                     org.bukkit.event.entity.PotionSplashEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPotionSplashEvent(this, affected);
-                    if (!event.isCancelled() && list != null && !list.isEmpty()) { // do not process effects if there are no effects to process
+
+                    // Grimwalker - Start fast potions
+                    if(!event.isCancelled() && this.shooter != null && event.getEntity().getShooter() instanceof Player){
+                        Player shooter = (Player) event.getEntity().getShooter();
+                        if(shooter.isSprinting() && event.getIntensity(shooter) > 0.5D){
+                            event.setIntensity(shooter, 1.0D);
+                        }
+                    }
+                    // Grimwalker - End
+
+                    if (!event.isCancelled() && !list.isEmpty()) { // do not process effects if there are no effects to process
                         for (LivingEntity victim : event.getAffectedEntities()) {
                             if (!(victim instanceof CraftLivingEntity)) {
                                 continue;

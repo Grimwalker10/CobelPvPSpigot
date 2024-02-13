@@ -2,6 +2,7 @@ package net.minecraft.server;
 
 import java.util.List;
 
+import net.jafama.FastMath;
 import org.bukkit.Bukkit;
 import org.spigotmc.SpigotConfig;
 
@@ -31,16 +32,16 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         this.projectileSource = (org.bukkit.entity.LivingEntity) entityliving.getBukkitEntity(); // CraftBukkit
         this.a(0.25F, 0.25F);
         this.setPositionRotation(entityliving.locX, entityliving.locY + (double) entityliving.getHeadHeight(), entityliving.locZ, entityliving.yaw, entityliving.pitch);
-        this.locX -= (double) (MathHelper.cos(this.yaw / 180.0F * 3.1415927F) * 0.16F);
+        this.locX -= (double) (FastMath.cos(this.yaw / 180.0F * 3.1415927F) * 0.16F);
         this.locY -= 0.10000000149011612D;
-        this.locZ -= (double) (MathHelper.sin(this.yaw / 180.0F * 3.1415927F) * 0.16F);
+        this.locZ -= (double) (FastMath.sin(this.yaw / 180.0F * 3.1415927F) * 0.16F);
         this.setPosition(this.locX, this.locY, this.locZ);
         this.height = 0.0F;
         float f = 0.4F;
 
-        this.motX = (double) (-MathHelper.sin(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F) * f);
-        this.motZ = (double) (MathHelper.cos(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F) * f);
-        this.motY = (double) (-MathHelper.sin((this.pitch + this.f()) / 180.0F * 3.1415927F) * f);
+        this.motX = (double) (-FastMath.sin(this.yaw / 180.0F * 3.1415927F) * FastMath.cos(this.pitch / 180.0F * 3.1415927F) * f);
+        this.motZ = (double) (FastMath.cos(this.yaw / 180.0F * 3.1415927F) * FastMath.cos(this.pitch / 180.0F * 3.1415927F) * f);
+        this.motY = (double) (-FastMath.sin((this.pitch + this.f()) / 180.0F * 3.1415927F) * f);
         this.shoot(this.motX, this.motY, this.motZ, this.e(), 1.0F);
     }
 
@@ -77,8 +78,8 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         this.motZ = d2;
         float f3 = MathHelper.sqrt(d0 * d0 + d2 * d2);
 
-        this.lastYaw = this.yaw = (float) (Math.atan2(d0, d2) * 180.0D / 3.1415927410125732D);
-        this.lastPitch = this.pitch = (float) (Math.atan2(d1, (double) f3) * 180.0D / 3.1415927410125732D);
+        this.lastYaw = this.yaw = (float) (FastMath.atan2(d0, d2) * 180.0D / 3.1415927410125732D);
+        this.lastPitch = this.pitch = (float) (FastMath.atan2(d1, (double) f3) * 180.0D / 3.1415927410125732D);
         this.i = 0;
     }
 
@@ -135,6 +136,12 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
                     AxisAlignedBB axisalignedbb = entity1.boundingBox.grow((double) f, (double) f, (double) f);
                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
 
+                    // IonSpigot start - Smooth Potting
+                    if (this instanceof EntityPotion && movingobjectposition1 == null && this.boundingBox.b(entity1.boundingBox)) {
+                        movingobjectposition1 = new MovingObjectPosition(entity1);
+                    }
+                    // IonSpigot end
+
                     if (movingobjectposition1 != null) {
                         double d1 = vec3d.distanceSquared(movingobjectposition1.pos); // CraftBukkit - distance efficiency
 
@@ -177,9 +184,9 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         this.locZ += this.motZ;
         float f1 = MathHelper.sqrt(this.motX * this.motX + this.motZ * this.motZ);
 
-        this.yaw = (float) (Math.atan2(this.motX, this.motZ) * 180.0D / 3.1415927410125732D);
+        this.yaw = (float) (FastMath.atan2(this.motX, this.motZ) * 180.0D / 3.1415927410125732D);
 
-        for (this.pitch = (float) (Math.atan2(this.motY, (double) f1) * 180.0D / 3.1415927410125732D); this.pitch - this.lastPitch < -180.0F; this.lastPitch -= 360.0F) {
+        for (this.pitch = (float) (FastMath.atan2(this.motY, (double) f1) * 180.0D / 3.1415927410125732D); this.pitch - this.lastPitch < -180.0F; this.lastPitch -= 360.0F) {
             ;
         }
 
@@ -230,7 +237,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         nbttagcompound.setByte("inTile", (byte) Block.getId(this.inBlockId));
         nbttagcompound.setByte("shake", (byte) this.shake);
         nbttagcompound.setByte("inGround", (byte) (this.inGround ? 1 : 0));
-        if ((this.shooterName == null || this.shooterName.length() == 0) && this.shooter != null && this.shooter instanceof EntityHuman) {
+        if ((this.shooterName == null || this.shooterName.isEmpty()) && this.shooter != null && this.shooter instanceof EntityHuman) {
             this.shooterName = this.shooter.getName();
         }
 
@@ -245,13 +252,13 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         this.shake = nbttagcompound.getByte("shake") & 255;
         this.inGround = nbttagcompound.getByte("inGround") == 1;
         this.shooterName = nbttagcompound.getString("ownerName");
-        if (this.shooterName != null && this.shooterName.length() == 0) {
+        if (this.shooterName != null && this.shooterName.isEmpty()) {
             this.shooterName = null;
         }
     }
 
     public EntityLiving getShooter() {
-        if (this.shooter == null && this.shooterName != null && this.shooterName.length() > 0) {
+        if (this.shooter == null && this.shooterName != null && !this.shooterName.isEmpty()) {
             this.shooter = this.world.a(this.shooterName);
         }
 
