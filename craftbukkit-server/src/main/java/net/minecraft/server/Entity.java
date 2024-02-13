@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import net.minecraft.optimizations.random.FastRandom;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
@@ -97,7 +98,7 @@ public abstract class Entity {
     public boolean X;
     public float Y;
     public float Z;
-    protected Random random;
+    protected final Random random = new FastRandom();
     public int ticksLived;
     public int maxFireTicks;
     public int fireTicks; // CraftBukkit - private -> public
@@ -157,7 +158,6 @@ public abstract class Entity {
         this.width = 0.6F;
         this.length = 1.8F;
         this.d = 1;
-        this.random = new Random();
         this.maxFireTicks = 1;
         this.justCreated = true;
         this.uniqueID = new UUID(random.nextLong(), random.nextLong()); // Spigot
