@@ -1,6 +1,9 @@
 package org.spigotmc;
 
 import com.cobelpvp.commands.*;
+import com.cobelpvp.json.JsonConfig;
+import com.cobelpvp.knockback.CraftKnockbackProfile;
+import com.cobelpvp.knockback.KnockbackProfile;
 import com.google.common.base.Throwables;
 import java.io.File;
 import java.io.IOException;
@@ -8,29 +11,108 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import net.minecraft.server.AttributeRanged;
 import net.minecraft.server.GenericAttributes;
 import net.minecraft.util.gnu.trove.map.hash.TObjectIntHashMap;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 public class SpigotConfig
 {
+    // Grimwalker start
+    private static JsonConfig knockbackConfig;
+    public static KnockbackProfile globalKbProfile;
+    public static final List<KnockbackProfile> kbProfiles = new ArrayList<>();
+
+    public static KnockbackProfile getKbProfileByName(String name) {
+        for (KnockbackProfile profile : kbProfiles) {
+            if (profile.getName().equalsIgnoreCase(name)) {
+                return profile;
+            }
+        }
+
+        return null;
+    }
+
+    public static void loadKnockbackProfiles() {
+        knockbackConfig = new JsonConfig(new File("config/server", "knockback.json")).load();
+
+        Map<String, Object> profilesMap = (Map<String, Object>) knockbackConfig.get("profiles");
+
+        for (String profileName : profilesMap.keySet()) {
+            KnockbackProfile profile = getKbProfileByName(profileName);
+
+            if (profile == null) {
+                profile = new CraftKnockbackProfile(profileName);
+            }
+
+            profile.setFriction(Double.valueOf(knockbackConfig.getString("profiles." + profileName + ".friction")));
+            profile.setHorizontal(Double.valueOf(knockbackConfig.getString("profiles." + profileName + ".horizontal")));
+            profile.setVertical(Double.valueOf(knockbackConfig.getString("profiles." + profileName + ".vertical")));
+            profile.setVerticalLimit(Double.valueOf(knockbackConfig.getString("profiles." + profileName + ".verticalLimit")));
+            profile.setExtraHorizontal(Double.valueOf(knockbackConfig.getString("profiles." + profileName + ".extraHorizontal")));
+            profile.setExtraVertical(Double.valueOf(knockbackConfig.getString("profiles." + profileName + ".extraVertical")));
+
+            kbProfiles.add(profile);
+        }
+
+        if (kbProfiles.isEmpty()) {
+            kbProfiles.add(new CraftKnockbackProfile("Default"));
+        }
+
+        globalKbProfile = getKbProfileByName(knockbackConfig.getString("global-profile", "Default"));
+
+        if (globalKbProfile == null) {
+            globalKbProfile = kbProfiles.get(0);
+        }
+    }
+
+    public static void saveKnockbackProfiles() {
+        knockbackConfig.clear();
+
+        for (KnockbackProfile profile : kbProfiles) {
+            knockbackConfig.set("profiles." + profile.getName() + ".friction", profile.getFriction());
+            knockbackConfig.set("profiles." + profile.getName() + ".horizontal", profile.getHorizontal());
+            knockbackConfig.set("profiles." + profile.getName() + ".vertical", profile.getVertical());
+            knockbackConfig.set("profiles." + profile.getName() + ".verticalLimit", profile.getVerticalLimit());
+            knockbackConfig.set("profiles." + profile.getName() + ".extraHorizontal", profile.getExtraHorizontal());
+            knockbackConfig.set("profiles." + profile.getName() + ".extraVertical", profile.getExtraVertical());
+        }
+
+        knockbackConfig.save();
+    }
+
+    public static void sendKnockbackInfo(CommandSender sender) {
+        sender.sendMessage(ChatColor.BLUE + ChatColor.STRIKETHROUGH.toString() + StringUtils.repeat("-", 35));
+
+        for (KnockbackProfile profile : kbProfiles) {
+            boolean current = globalKbProfile.getName().equals(profile.getName());
+
+            sender.sendMessage((current ? ChatColor.GREEN.toString() : ChatColor.RED.toString()) + ChatColor.BOLD + profile.getName());
+            sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Friction: " + ChatColor.RED + profile.getFriction());
+            sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Horizontal: " + ChatColor.RED + profile.getHorizontal());
+            sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Vertical: " + ChatColor.RED + profile.getVertical());
+            sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Vertical Limit: " + ChatColor.RED + profile.getVerticalLimit());
+            sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Horizontal: " + ChatColor.RED + profile.getExtraHorizontal());
+            sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Vertical: " + ChatColor.RED + profile.getExtraVertical());
+        }
+
+        sender.sendMessage(ChatColor.BLUE + ChatColor.STRIKETHROUGH.toString() + StringUtils.repeat("-", 35));
+    }
+    // Grimwalker end
+
     private static final File CONFIG_FILE = new File( "config/server", "spigot.yml" ); // CobelPvP - Dedicated config directory
     private static final String HEADER = "This is the main configuration file for Spigot.\n"
             + "As you can see, there's tons to configure. Some options may impact gameplay, so use\n"
@@ -72,6 +154,11 @@ public class SpigotConfig
         version = getInt( "config-version", 8 );
         set( "config-version", 8 );
         readConfig( SpigotConfig.class, null );
+
+        // Grimwalker Start
+        loadKnockbackProfiles();
+        commands.put("CobelPvPWorstNetwork", new KnockbackCommand());
+        // Grimwalker end
     }
 
     public static void registerCommands()
@@ -531,11 +618,4 @@ public class SpigotConfig
         pearlThroughGatesAndTripwire = getBoolean("settings.pearl-through-tripwire", true);
     }
 
-    public static double knockbackFriction = 1.8D;
-    public static double knockbackHorizontal = 0.32D;
-    public static double knockbackVertical = 0.4D;
-    public static double knockbackVerticalLimit = 0.33D;
-    public static double knockbackExtraHorizontal = 0.425D;
-    public static double knockbackExtraVertical = 0.08D;
-    
 }

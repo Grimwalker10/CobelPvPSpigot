@@ -1,6 +1,8 @@
 package net.minecraft.server;
 
+import com.cobelpvp.knockback.KnockbackProfile;
 import com.google.common.collect.Sets;
+import net.jafama.FastMath;
 import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.util.CraftPotionUtils;
@@ -892,22 +894,45 @@ public abstract class EntityLiving extends Entity {
 
     public void a(DamageSource damageSource, float f, double d0, double d1) {
         if (this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.c).getValue()) {
-            this.al = true;
-            // Kohi start - configurable knockback
-            double magnitude = MathHelper.sqrt(d0 * d0 + d1 * d1);
+            if(this instanceof EntityPlayer){
+                EntityPlayer victim = (EntityPlayer)this;
+                KnockbackProfile profile = victim.getKbProfile() == null ? SpigotConfig.globalKbProfile : victim.getKbProfile();
 
-            this.motX /= SpigotConfig.knockbackFriction;
-            this.motY /= SpigotConfig.knockbackFriction;
-            this.motZ /= SpigotConfig.knockbackFriction;
+                this.al = true;
 
-            this.motX -= d0 / magnitude * SpigotConfig.knockbackHorizontal;
-            this.motY += SpigotConfig.knockbackVertical;
-            this.motZ -= d1 / magnitude * SpigotConfig.knockbackHorizontal;
+                double magnitude = FastMath.sqrt(d0 * d0 + d1 * d1);
 
-            if (this.motY > SpigotConfig.knockbackVerticalLimit) {
-                this.motY = SpigotConfig.knockbackVerticalLimit;
+                this.motX /= profile.getFriction();
+                this.motY /= profile.getFriction();
+                this.motZ /= profile.getFriction();
+
+                this.motX -= d0 / magnitude * profile.getHorizontal();
+                this.motY += profile.getVertical();
+                this.motZ -= d1 / magnitude * profile.getHorizontal();
+
+                if (this.motY > profile.getVerticalLimit()) {
+                    this.motY = profile.getVerticalLimit();
+                }
+            }else{
+                this.al = true;
+
+                float magnitude = (float) FastMath.sqrt(d0 * d0 + d1 * d1);
+                float f2 = 0.4F;
+
+                this.motX /= 2.0D;
+                this.motY /= 2.0D;
+                this.motZ /= 2.0D;
+
+                this.motX -= d0 / magnitude * f2;
+                this.motY += f2;
+                this.motZ -= d1 / magnitude * f2;
+
+                if (this.motY > 0.4000000059604645D) {
+                    this.motY = 0.4000000059604645D;
+                }
             }
-            // Kohi end
+
+
         }
     }
 

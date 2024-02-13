@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import net.jafama.FastMath;
+
 import java.util.Random;
 
 public class MathHelper {
@@ -15,11 +17,11 @@ public class MathHelper {
     }
 
     public static final float c(float var0) {
-        return (float)Math.sqrt((double)var0);
+        return (float)FastMath.sqrt((double)var0);
     }
 
     public static final float sqrt(double var0) {
-        return (float)Math.sqrt(var0);
+        return (float) FastMath.sqrt(var0);
     }
 
     public static int d(float var0) {
@@ -174,19 +176,19 @@ public class MathHelper {
     }
 
     public static double limit(double actual, double minimum, double maximum) {
-        return Math.min(Math.max(actual, minimum), maximum);
+        return FastMath.min(FastMath.max(actual, minimum), maximum);
     }
 
     public static int limit(int actual, int minimum, int maximum) {
-        return Math.min(Math.max(actual, minimum), maximum);
+        return FastMath.min(FastMath.max(actual, minimum), maximum);
     }
 
     public static float limit(float actual, float minimum, float maximum) {
-        return Math.min(Math.max(actual, minimum), maximum);
+        return FastMath.min(FastMath.max(actual, minimum), maximum);
     }
 
     public static byte limit(byte actual, byte minimum, byte maximum) {
-        return (byte) Math.min(Math.max(actual, minimum), maximum);
+        return (byte) FastMath.min(FastMath.max(actual, minimum), maximum);
     }
 
     static {

@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
+import com.cobelpvp.knockback.KnockbackProfile;
+import net.jafama.FastMath;
 import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 
@@ -23,6 +26,18 @@ import org.spigotmc.ProtocolData; // Spigot - protocol patch
 import org.spigotmc.SpigotConfig;
 
 public abstract class EntityHuman extends EntityLiving implements ICommandListener {
+
+    // Grimwalker start
+    private KnockbackProfile knockbackProfile;
+
+    public KnockbackProfile getKbProfile() {
+        return knockbackProfile;
+    }
+
+    public void setKbProfile(KnockbackProfile profile) {
+        this.knockbackProfile = profile;
+    }
+    // Grimwalker end
 
     public PlayerInventory inventory = new PlayerInventory(this);
     private InventoryEnderChest enderChest = new InventoryEnderChest();
@@ -981,42 +996,43 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                     boolean flag2 = entity.damageEntity(DamageSource.playerAttack(this), f);
 
                     if (flag2) {
-                        if (i > 0) {
-                            // Kohi start - configurable knockback
-                            entity.g(
-                                    (double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * SpigotConfig.knockbackExtraHorizontal),
-                                    SpigotConfig.knockbackExtraVertical,
-                                    (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * SpigotConfig.knockbackExtraHorizontal));
-                            // Kohi end
-                            this.motX *= 0.6D;
-                            this.motZ *= 0.6D;
-                            this.setSprinting(false);
-                        }
-
-                        // Kohi start
-                        // If the attack caused knockback, send the new velocity to the victim's client immediately,
-                        // and undo the change. Otherwise, if movement packets from the victim are processed before
-                        // the end of the tick, then friction may reduce the velocity considerably before it's sent
-                        // to the client, particularly if the victim was standing on the ground when those packets
-                        // were generated. And because this glitch is also likely to make server-side velocity very
-                        // inconsistent, we simply reverse the knockback after sending it so that KB, like most other
-                        // things, doesn't affect server velocity at all.
-                        if (entity instanceof EntityPlayer && entity.velocityChanged) {
+                        if(entity instanceof EntityPlayer){
                             EntityPlayer attackedPlayer = (EntityPlayer) entity;
-                            PlayerVelocityEvent event = new PlayerVelocityEvent(attackedPlayer.getBukkitEntity(), attackedPlayer.getBukkitEntity().getVelocity());
-                            this.world.getServer().getPluginManager().callEvent(event);
+                            KnockbackProfile profile = attackedPlayer.getKbProfile() == null ? SpigotConfig.globalKbProfile : attackedPlayer.getKbProfile();
+                            if (i > 0) {
+                                entity.g(
+                                        (double) (-FastMath.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal()),
+                                        profile.getExtraVertical(),
+                                        (double) (FastMath.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal()));
 
-                            if (!event.isCancelled()) {
-                                attackedPlayer.getBukkitEntity().setVelocityDirect(event.getVelocity());
-                                attackedPlayer.playerConnection.sendPacket(new PacketPlayOutEntityVelocity(attackedPlayer));
+                                this.motX *= 0.6D;
+                                this.motZ *= 0.6D;
+                                this.setSprinting(false);
                             }
 
-                            attackedPlayer.velocityChanged = false;
-                            attackedPlayer.motX = victimMotX;
-                            attackedPlayer.motY = victimMotY;
-                            attackedPlayer.motZ = victimMotZ;
+                            // Kohi start
+                            // If the attack caused knockback, send the new velocity to the victim's client immediately,
+                            // and undo the change. Otherwise, if movement packets from the victim are processed before
+                            // the end of the tick, then friction may reduce the velocity considerably before it's sent
+                            // to the client, particularly if the victim was standing on the ground when those packets
+                            // were generated. And because this glitch is also likely to make server-side velocity very
+                            // inconsistent, we simply reverse the knockback after sending it so that KB, like most other
+                            // things, doesn't affect server velocity at all.
+                            if (entity.velocityChanged) {
+                                PlayerVelocityEvent event = new PlayerVelocityEvent(attackedPlayer.getBukkitEntity(), attackedPlayer.getBukkitEntity().getVelocity());
+                                this.world.getServer().getPluginManager().callEvent(event);
+
+                                if (!event.isCancelled()) {
+                                    attackedPlayer.getBukkitEntity().setVelocityDirect(event.getVelocity());
+                                    attackedPlayer.playerConnection.sendPacket(new PacketPlayOutEntityVelocity(attackedPlayer));
+                                }
+
+                                attackedPlayer.velocityChanged = false;
+                                attackedPlayer.motX = victimMotX;
+                                attackedPlayer.motY = victimMotY;
+                                attackedPlayer.motZ = victimMotZ;
+                            }
                         }
-                        // Kohi end
 
                         if (flag) {
                             this.b(entity);
